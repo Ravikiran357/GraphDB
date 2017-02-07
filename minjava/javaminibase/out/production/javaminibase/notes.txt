@@ -1,0 +1,177 @@
+Buffer Manager tests
+________________________________
+****Test 1*****
+This tests the does following things.
+-> First get the total number of unpinned pages in the memory using the call.SystemDefs.JavabaseBM.getNumUnpinnedBuffers()
+-> Allocate new pages:
+    Allocate new pages on the disk using SystemDefs.JavabaseBM.newPage( pg, numPages ) 
+function call.
+-> On each of the page the data(pid + 99999) is written using Convert.setIntValue(data, 0,pg.getpage())
+
+-> After that traverse through each page the data is written(pinpage) and read(unpin page) to confirm that read has occurred properly. Reading is done with Convert.getIntValue. Check if the read data matches with pid+99999. 
+-> Free all the pages again
+*****Test 2*****
+This test for some common illegal operations.
+
+-> After getting the total number of unpinned frames available in the memory with getNumUnpnnedBuffers, try to allocate one more than the number of pages available using 
+SystemDefs.JavabaseBM.newPage. After wards try to pin all the pages, the test fails as expected. 
+
+-> Next illegal operation is to unpin the page that is not in the buffer pool. Try to unpin the last pid page that was over allocated. This results in hashEntryNotFoundException as expected.  
+-> Free all the pages again.
+
+****Test 3******
+Tests the internals of the buffer manager.
+Here total of 60 page objects are created.
+Each page is pinned, the data is assigned and, except for pages pid!= 12mod20, unpinned in the end.
+Each time the page is pinned the pin count is increased.
+
+Now each of the page is again pinned and unpinned. Only those pages that were left pinned,  are unpinned twice.
+
+
+DBTest tests
+________________________________
+*****Test1*******
+Add some File Entry:
+ The whole database is one unix file. But the DB class from disk manager lets you create logical files. In this test we are creating 6 files and allocating pages on those files. 
+SystemDefs.JavabaseDB.add_file_entry(name,pgid);
+SystemDefs.JavabaseDB.allocate_page( runStart, 30 );
+
+
+Allocate a run of pages on the disk.
+SystemDefs.JavabaseDB.allocate_page( runStart, 30 ); 
+Allocate 30 pages from the run start. 
+Write “A”+i on 20 of those pages. SystemDefs.JavabaseDB.write_page(new PageId(runStart.pid+i), pg);  
+Deallocate the rest of 10 pages using SystemDefs.JavabaseDB.deallocate_page(new PageId(runStart.pid+20),10);
+
+*****Test2*******
+Out of the 6 logical files that were created in test1 delete 3 files using SystemDefs.JavabaseDB.delete_file_entry(name);
+Check if the last 3 files are still present pgid = SystemDefs.JavabaseDB.get_file_entry(name);
+Read from the pages the 20 pages that we wrote in test1. Also, check if the read matches from what we wrote.
+
+
+******Test3********
+Test3 for some error conditions.
+Try to get the deleted file. Results in error as expected.
+Try to delete file again. Results in error as expected.
+try to create a file size greater than 50.
+
+
+
+
+
+
+
+******Test4********
+Test 4 tests some boundary conditions.
+
+
+
+
+
+
+
+
+
+
+BTree Tests
+___________________________________________
+Before the Btree is constructed, a btree file is constructed with the name “AAA”+postfix.
+All the operations are done on one particular btree file. We will see later that we can create new file, modify btree structure and delete the file.
+
+***************Choices*************
+
+Choice 0:
+This is a misnomer, we are not deleting any record or file. Here we are simply creating a file by setting the parameter naivedeletion for btree to be true.
+In naive deletion, when the number of records in a page fall below a the threshold of the btee, it does not make an attempt to merge and redistribute.
+
+Choice 1:
+Again this is a misnomer, we are creating a new file with the option full deletion. In contrast to naive deletion, we redistribute and merge the records when they are below the threshold of the tree.
+
+
+choice 2:
+Print b+ tree structure.
+It displays the level wise structure of the tree. It displays in this format
+
+|Level  | page id|   
+|      1|	6|
+|      2|	4|
+|      2|	5|
+|      2|	7|
+|      2|	8|
+|      2|	9|
+|      2|      10|
+|      2|      11|
+
+In each level the nodes are displayed from left to right. We will see later that each page id will contain information about Left Link, key and pageId information.
+BT.printBTree(file.getHeaderPage());
+
+choice 3:
+Print all leaf pages. In B+ Tree all the keys are stored in the leaf nodes and they are sorted from left to right. Each leaf node page has information such as left Link, right link and (key,(page no, slotno))
+
+Choice 4:
+Page to print: 
+Given page id this choice shows the information about the pageId, left page child and right page child and the keys stored in the current page.
+PageId(6)
+Left Link      : 34
+Right Link     : 36
+0 (key, [pageNo, slotNo]):   (930,  [ 930 930 ] )
+1 (key, [pageNo, slotNo]):   (931,  [ 931 931 ] )
+2 (key, [pageNo, slotNo]):   (932,  [ 932 932 ] )
+3 (key, [pageNo, slotNo]):   (933,  [ 933 933 ] )
+BT.printPage(new PageId(num), keyType);
+
+Choice 5:
+Insert a record:
+In the current file it accepts the key to be inserted. Inserts the record into the heap file and the btree file with the record ID(page no, key).
+
+file.insert(new IntegerKey(key), rid);
+During insertion, the record is first inserted in the heap file then the entry is made in the btree file. The btree  insertion happens as shown in the pictures.
+
+
+
+Choice 6:
+Delete a record.
+It accepts the key to be deleted. That key if exists is deleted from the current file. First the record is deleted from the heap file and the btree file entry for that record is modified.
+file.Delete(new IntegerKey(key), rid);
+The deletion can be done in 2 ways as mentioned in choice 0 and choice 1; naive deletion and full deletion. This depends on the parameter we used during our BTree file creation.  
+ Full deletion is shown in below pictures.
+
+
+Choice 7:(test 1)
+Open a new file and insert n consecutive keys into it. All the records are inserted in the heap file and pages indexed in the btree.
+
+choice 8: (test 2)
+Same choice 7 but the keys are inserted in the reverse order.
+Even if the same number of keys are entered into the tree. The structure of the btree looks different from the structure in choice 7.
+
+Choice 9: (test 3)
+Same as choice 7 and 8 but here the keys are inserted in the random order.
+Again the structure of btree looks different from other choices.
+
+Choice  10:(test 4)
+Here n records are randomly inserted and m records are randomly deleted.
+
+Choice 11:
+Delete some records
+Accepts the low key value and high key value as the input. It deletes all the values between low and high key value. Deletion happens one key after the other.
+with file.delete
+
+
+Choice 12:
+Initialize Scan
+Accept Lo_key and hi_key, the key where the scanning begins and ends.
+Creates a BTFileScan object scan. This object is set with the given options. Scan has pointers to the nodes starting from the lo_key. Scan also specifies the end key.
+
+Choice 13:
+Scan the next record from the previously scanned object. This is done using the function scan.get_next().
+
+Choice 14:
+Delete the just-scanned record
+With the scan object  from previous choices, delete all the records in the object. 
+Find the page that has t
+
+Choice 9
+BT.printAllLeafPages(file.getHeaderPage());
+***********Test1**********************
+
+
