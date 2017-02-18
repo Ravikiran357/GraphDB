@@ -1,8 +1,8 @@
 package global;
 
-/** 
+/**
  * Enumeration class for AttrType
- * 
+ *
  */
 
 public class AttrType {
@@ -12,10 +12,10 @@ public class AttrType {
   public static final int attrReal    = 2;
   public static final int attrSymbol  = 3;
   public static final int attrNull    = 4;
-  
+  public static final int attrDesc = 5;
   public int attrType;
 
-  /** 
+  /**
    * AttrType Constructor
    * <br>
    * An attribute type of String can be defined as 
@@ -37,16 +37,18 @@ public class AttrType {
   public String toString() {
 
     switch (attrType) {
-    case attrString:
-      return "attrString";
-    case attrInteger:
-      return "attrInteger";
-    case attrReal:
-      return "attrReal";
-    case attrSymbol:
-      return "attrSymbol";
-    case attrNull:
-      return "attrNull";
+      case attrString:
+        return "attrString";
+      case attrInteger:
+        return "attrInteger";
+      case attrReal:
+        return "attrReal";
+      case attrSymbol:
+        return "attrSymbol";
+      case attrDesc:
+        return "attrDesc";
+      case attrNull:
+        return "attrNull";
     }
     return ("Unexpected AttrType " + attrType);
   }

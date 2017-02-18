@@ -151,8 +151,88 @@ public class Convert{
       value = instr.readChar();
       return value;
     }
-  
-  
+
+
+
+  /**
+   * reads 4 Integer bytes from the given byte array at the specified position
+   * convert it to a character
+   * @param       data            a byte array
+   * @param       position        the position in data[]
+   * @exception   java.io.IOException I/O errors
+   * @return      the character
+   */
+  public static Descriptor getDescValue (int position, byte []data)
+          throws java.io.IOException
+  {
+    InputStream in;
+    DataInputStream instr;
+    Descriptor retDesc = new Descriptor();
+    int value[];
+    value = new int[5];
+
+    for (int i = 0; i< 5;i++){
+
+      byte tmp[] = new byte[4];
+      System.arraycopy(data, position,tmp,0,4);
+      /* creates a new data input stream to read data from the
+       * specified input stream
+       */
+      in = new ByteArrayInputStream(tmp);
+      instr = new DataInputStream(in);
+      value[i] = instr.readInt();
+
+
+    }
+    retDesc.set(value[0],value[1],value[2],value[3], value[4]);
+    return retDesc;
+
+
+  }
+
+
+  /**
+   * update an integer value in the given byte array at the specified position
+   * @param  	data 		a byte array
+   * @param	value   	the value to be copied into the data[]
+   * @param	position  	the position of tht value in data[]
+   * @exception   java.io.IOException I/O errors
+   */
+  public static void setDescValue (Descriptor descValue, int position, byte []data)
+          throws java.io.IOException
+  {
+      /* creates a new data output stream to write data to
+       * underlying output stream
+       */
+
+    OutputStream out = new ByteArrayOutputStream();
+    DataOutputStream outstr = new DataOutputStream (out);
+
+
+
+    for (int i = 0; i< 5;i++){
+      int value = descValue.get(i);
+
+      // write the value to the output stream
+      outstr.writeInt(value);
+
+
+      // creates a byte array with this output stream size and the
+      // valid contents of the buffer have been copied into it
+      byte []B = ((ByteArrayOutputStream) out).toByteArray();
+
+      // copies the first 4 bytes of this byte array into data[]
+      System.arraycopy (B, 0, data, position, 4);
+      position += 4;
+
+
+    }
+
+
+
+  }
+
+
   /**
    * update an integer value in the given byte array at the specified position
    * @param  	data 		a byte array
@@ -182,7 +262,8 @@ public class Convert{
       System.arraycopy (B, 0, data, position, 4);
       
     }
-  
+
+
   /**
    * update a float value in the given byte array at the specified position
    * @param  	data 		a byte array
