@@ -11,7 +11,117 @@ import java.lang.*;
  */
 public class TupleUtils
 {
+	
+	/**
+	 * This function compares a tuple with another tuple in respective field,
+	 * and returns:
+	 *
+	 * 0 if the two are equal, 1 if the tuple is greater, -1 if the tuple is
+	 * smaller,
+	 *
+	 * @param fldType
+	 *            the type of the field being compared.
+	 * @param t1
+	 *            one tuple.
+	 * @param t2
+	 *            another tuple.
+	 * @param t1_fld_no
+	 *            the field numbers in the tuples to be compared.
+	 * @param t2_fld_no
+	 *            the field numbers in the tuples to be compared.
+	 * @param distance
+	 *            the distance bw 2 tuples of attrDesc type.
+	 * @exception UnknowAttrType
+	 *                don't know the attribute type
+	 * @exception IOException
+	 *                some I/O fault
+	 * @exception TupleUtilsException
+	 *                exception from this class
+	 * @return 0 if the two are equal, 1 if the tuple is greater, -1 if the
+	 *         tuple is smaller,
+	 */
+	public static int CompareTupleWithTuple(AttrType fldType, Tuple t1, int t1_fld_no, Tuple t2, int t2_fld_no,
+			double distance, Descriptor target) 
+					throws IOException,
+					UnknowAttrType,
+					TupleUtilsException
+	{
+		int t1_i, t2_i;
+		float t1_r, t2_r;
+		String t1_s, t2_s;
+		Descriptor t1_d, t2_d;
 
+		switch (fldType.attrType) {
+		case AttrType.attrInteger: // Compare two integers.
+			try {
+				t1_i = t1.getIntFld(t1_fld_no);
+				t2_i = t2.getIntFld(t2_fld_no);
+			} catch (FieldNumberOutOfBoundException e) {
+				throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+			}
+			if (t1_i == t2_i)
+				return 0;
+			if (t1_i < t2_i)
+				return -1;
+			if (t1_i > t2_i)
+				return 1;
+
+		case AttrType.attrReal: // Compare two floats
+			try {
+				t1_r = t1.getFloFld(t1_fld_no);
+				t2_r = t2.getFloFld(t2_fld_no);
+			} catch (FieldNumberOutOfBoundException e) {
+				throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+			}
+			if (t1_r == t2_r)
+				return 0;
+			if (t1_r < t2_r)
+				return -1;
+			if (t1_r > t2_r)
+				return 1;
+
+		case AttrType.attrString: // Compare two strings
+			try {
+				t1_s = t1.getStrFld(t1_fld_no);
+				t2_s = t2.getStrFld(t2_fld_no);
+			} catch (FieldNumberOutOfBoundException e) {
+				throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+			}
+
+			// Now handle the special case that is posed by the max_values for
+			// strings...
+			if (t1_s.compareTo(t2_s) > 0)
+				return 1;
+			if (t1_s.compareTo(t2_s) < 0)
+				return -1;
+			return 0;
+		case AttrType.attrDesc:
+			try {
+				t1_d = t1.getDescFld(t1_fld_no);
+				t2_d = t2.getDescFld(t2_fld_no);
+			} catch (FieldNumberOutOfBoundException e) {
+				throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+			}
+			Descriptor dummyTar = new Descriptor();
+			dummyTar.set(-1, -1, -1, -1, -1);
+			// if target is [-1,-1,-1,-1,-1] just cmpre t1_d,t2_d dist
+			if (target.equal(dummyTar) == 1) {
+				if (t1_d.distance(t2_d) <= distance)
+					return 0;
+				return 1;
+			}
+
+			if (target.distance(t1_d) == target.distance(t2_d))
+				return 0;
+			if (target.distance(t1_d) < target.distance(t2_d))
+				return 1;
+			return -1;
+		default:
+
+			throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
+
+	}
+}
 	/**
 	 * This function compares a tuple with another tuple in respective field, and
 	 *  returns:
@@ -39,54 +149,35 @@ public class TupleUtils
 			UnknowAttrType,
 			TupleUtilsException
 	{
-		int   t1_i,  t2_i;
-		float t1_r,  t2_r;
-		String t1_s, t2_s;
-
-		switch (fldType.attrType)
-		{
-			case AttrType.attrInteger:                // Compare two integers.
-				try {
-					t1_i = t1.getIntFld(t1_fld_no);
-					t2_i = t2.getIntFld(t2_fld_no);
-				}catch (FieldNumberOutOfBoundException e){
-					throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
-				}
-				if (t1_i == t2_i) return  0;
-				if (t1_i <  t2_i) return -1;
-				if (t1_i >  t2_i) return  1;
-
-			case AttrType.attrReal:                // Compare two floats
-				try {
-					t1_r = t1.getFloFld(t1_fld_no);
-					t2_r = t2.getFloFld(t2_fld_no);
-				}catch (FieldNumberOutOfBoundException e){
-					throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
-				}
-				if (t1_r == t2_r) return  0;
-				if (t1_r <  t2_r) return -1;
-				if (t1_r >  t2_r) return  1;
-
-			case AttrType.attrString:                // Compare two strings
-				try {
-					t1_s = t1.getStrFld(t1_fld_no);
-					t2_s = t2.getStrFld(t2_fld_no);
-				}catch (FieldNumberOutOfBoundException e){
-					throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
-				}
-
-				// Now handle the special case that is posed by the max_values for strings...
-				if(t1_s.compareTo( t2_s)>0)return 1;
-				if (t1_s.compareTo( t2_s)<0)return -1;
-				return 0;
-			default:
-
-				throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
-
-		}
+		return CompareTupleWithTuple(fldType, t1, t1_fld_no, t2, t2_fld_no, -1, null);
 	}
 
-
+	/**
+	 * This function  compares  tuple1 with another tuple2 whose
+	 * field number is same as the tuple1
+	 *
+	 *@param    fldType   the type of the field being compared.
+	 *@param    t1        one tuple
+	 *@param    value     another tuple.
+	 *@param    t1_fld_no the field numbers in the tuples to be compared.
+	 *@param	distance  metric with which to cmpre distance bw tuples and target.
+	 *@param	target    Target descriptor from which distance calculated if valid.
+	 *@return   0        if the two are equal,
+	 *          1        if the tuple is greater,
+	 *         -1        if the tuple is smaller,
+	 *@exception UnknowAttrType don't know the attribute type
+	 *@exception IOException some I/O fault
+	 *@exception TupleUtilsException exception from this class
+	 */
+	public static int CompareTupleWithValue(AttrType fldType,
+											Tuple  t1, int t1_fld_no,
+											Tuple  value, int distance, Descriptor target)
+			throws IOException,
+			UnknowAttrType,
+			TupleUtilsException
+	{
+		return CompareTupleWithTuple(fldType, t1, t1_fld_no, value, t1_fld_no, distance, target);
+	}
 
 	/**
 	 * This function  compares  tuple1 with another tuple2 whose

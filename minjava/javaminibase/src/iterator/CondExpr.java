@@ -32,7 +32,12 @@ public class CondExpr {
   /**
    * Pointer to the next element in linked list
    */    
-  public CondExpr    next;   
+  public CondExpr    next;  
+  
+  /**
+   * Distance bw 2 AttrDesc type operands. -1 if other type of operands.
+   */    
+  public double distance = -1;
   
   /**
    *constructor
@@ -45,6 +50,9 @@ public class CondExpr {
     operand1.integer = 0;
     operand2.integer = 0;
     
+    if(type1.attrType == AttrType.attrDesc && type2.attrType == AttrType.attrDesc){
+    	distance = 0;
+    }
     next = null;
   }
 }
