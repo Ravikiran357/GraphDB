@@ -1,8 +1,9 @@
 package global;
 
 public class Descriptor {
-	int value [];
-	public Descriptor(){
+	int value[];
+
+	public Descriptor() {
 
 		value = new int[5];
 		value[0] = 0;
@@ -19,22 +20,24 @@ public class Descriptor {
 		value[3] = value3;
 		value[4] = value4;
 	}
+
 	public int get(int idx) {
 		return value[idx];
 	}
 
-	public double equal (Descriptor desc) {
-		for(int i=0;i<5;i++){
-			if(this.value[i] != desc.value[i]){
+	public double equal(Descriptor desc) {
+		for (int i = 0; i < 5; i++) {
+			if (this.value[i] != desc.value[i]) {
 				return 0;
 			}
 		}
 		return 1;
 	}
-	public double distance (Descriptor desc) {
-		double sum =0;
-		for(int i=0;i<5;i++){
-			sum += (this.value[i]-desc.value[i])*(this.value[i]-desc.value[i]);
+
+	public double distance(Descriptor desc) {
+		double sum = 0;
+		for (int i = 0; i < 5; i++) {
+			sum += (this.value[i] - desc.value[i]) * (this.value[i] - desc.value[i]);
 		}
 		return Math.sqrt(sum);
 	}
