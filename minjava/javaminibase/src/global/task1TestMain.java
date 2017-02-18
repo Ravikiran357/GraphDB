@@ -5,9 +5,9 @@ package global;
  */
 public class task1TestMain {
     public static void main(String[] args){
-        Descriptortype desc1 = new Descriptortype();
+        Descriptor desc1 = new Descriptor();
         desc1.set(0,1,2,3,4);
-        Descriptortype desc2 = new Descriptortype();
+        Descriptor desc2 = new Descriptor();
         desc2.set(0,0,0,0,0);
         System.out.println("distance is "+desc1.distance(desc2));
         System.out.println("equals is "+ desc1.equal(desc2));
