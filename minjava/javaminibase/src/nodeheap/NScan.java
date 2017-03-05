@@ -454,7 +454,7 @@ public class NScan implements GlobalConst {
 			return false;
 		}
 
-		datapageNid = dirpage.nextRecord(datapageNid);
+		datapageNid = dirpage.nextNode(datapageNid);
 
 		if (datapageNid == null) {
 			nextDataPageStatus = false;
@@ -514,7 +514,7 @@ public class NScan implements GlobalConst {
 
 		// data page is not yet loaded: read its record from the directory page
 		try {
-			rectuple = dirpage.getRecord(datapageNid);
+			rectuple = dirpage.getNode(datapageNid);
 		}
 
 		catch (Exception e) {

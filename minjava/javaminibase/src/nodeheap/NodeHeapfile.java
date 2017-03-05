@@ -352,7 +352,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		int dpinfoLen = 0;
 		int recLen = recPtr.length;
 		boolean found;
-		RID currentDataPageRid = new RID();
+		NID currentDataPageNid = new NID();
 		Page pageinbuffer = new Page();
 		NHFPage currentDirPage = new NHFPage();
 		NHFPage currentDataPage = new NHFPage();
@@ -366,12 +366,13 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		found = false;
 		Node node;
 		DataPageInfo dpinfo = new DataPageInfo();
+		NID currentDataPageRid;
 		while (found == false) { // Start While01
 									// look for suitable dpinfo-struct
-			for (currentDataPageRid = currentDirPage
-					.firstNode(); currentDataPageRid != null; currentDataPageRid = currentDirPage
-							.nextNode(currentDataPageRid)) {
-				node = currentDirPage.getNode(currentDataPageRid);
+			for (currentDataPageNid = currentDirPage
+					.firstNode(); currentDataPageNid != null; currentDataPageNid = currentDirPage
+							.nextNode(currentDataPageNid)) {
+				node = currentDirPage.getNode(currentDataPageNid);
 
 				dpinfo = new DataPageInfo(node);
 
@@ -428,7 +429,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 					// currentDataPage is pinned: insert its record
 					// calling a HFPage function
 
-					node = dpinfo.convertToTuple();
+					node = dpinfo.convertToNode();
 
 					byte[] tmpData = node.getTupleByteArray();
 					currentDataPageRid = currentDirPage.insertNode(tmpData);
@@ -546,8 +547,8 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		if (currentDataPage == null)
 			throw new HFException(null, "can't find Data page");
 
-		RID rid;
-		rid = currentDataPage.insertNode(recPtr);
+		NID nid;
+		nid = currentDataPage.insertNode(recPtr);
 
 		dpinfo.recct++;
 		dpinfo.availspace = currentDataPage.available_space();
@@ -555,7 +556,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		unpinPage(dpinfo.pageId, true /* = DIRTY */);
 
 		// DataPage is now released
-		node = currentDirPage.returnNode(currentDataPageRid);
+		node = currentDirPage.returnNode(currentDataPageNid);
 		DataPageInfo dpinfo_ondirpage = new DataPageInfo(node);
 
 		dpinfo_ondirpage.availspace = dpinfo.availspace;
@@ -565,7 +566,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 		unpinPage(currentDirPageId, true /* = DIRTY */);
 
-		return rid;
+		return nid;
 
 	}
 
@@ -804,7 +805,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		if (status != true)
 			return null; // record not found
 
-		Tuple atuple = new Tuple();
+		Node atuple = new Node();
 		atuple = dataPage.getNode(nid);
 
 		/*
@@ -871,10 +872,10 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		pinPage(currentDirPageId, currentDirPage, false);
 		// currentDirPage.openHFpage(pageinbuffer);
 
-		RID rid = new RID();
+		NID nid = new NID();
 		while (currentDirPageId.pid != INVALID_PAGE) {
-			for (rid = currentDirPage.firstNode(); rid != null; rid = currentDirPage.nextNode(rid)) {
-				atuple = currentDirPage.getNode(rid);
+			for (nid = currentDirPage.firstNode(); nid != null; nid = currentDirPage.nextNode(nid)) {
+				atuple = currentDirPage.getNode(nid);
 				DataPageInfo dpinfo = new DataPageInfo(atuple);
 				// int dpinfoLen = arecord.length;
 
