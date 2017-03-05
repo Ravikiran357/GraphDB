@@ -10,6 +10,9 @@ public class DB implements GlobalConst {
 
 	private static final int bits_per_page = MAX_SPACE * 8;
 
+	//task 9
+	private PCounter pCounter;
+
 	/**
 	 * Open the database with the given name.
 	 *
@@ -26,6 +29,9 @@ public class DB implements GlobalConst {
 	 *                error caused by other layers
 	 */
 	public void openDB(String fname) throws IOException, InvalidPageNumberException, FileIOException, DiskMgrException {
+
+		//task9
+
 
 		name = fname;
 
@@ -51,6 +57,7 @@ public class DB implements GlobalConst {
 	 * default constructor.
 	 */
 	public DB() {
+		pCounter.initialize();
 	}
 
 	/**
@@ -162,6 +169,8 @@ public class DB implements GlobalConst {
 		} catch (IOException e) {
 			throw new FileIOException(e, "DB file I/O error");
 		}
+		//task 9
+		pCounter.readIncrement();
 
 	}
 
@@ -194,6 +203,8 @@ public class DB implements GlobalConst {
 		} catch (IOException e) {
 			throw new FileIOException(e, "DB file I/O error");
 		}
+		//task 9
+		pCounter.writeIncrement();
 
 	}
 
