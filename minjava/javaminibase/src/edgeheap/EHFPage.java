@@ -22,7 +22,7 @@ interface ConstSlot {
  * deletions are performed.
  */
 
-public class HFPage extends Page implements ConstSlot, GlobalConst {
+public class EHFPage extends Page implements ConstSlot, GlobalConst {
 
 	public static final int SIZE_OF_SLOT = 4;
 	public static final int DPFIXED = 4 * 2 + 3 * 4;
@@ -79,7 +79,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 * Default constructor
 	 */
 
-	public HFPage() {
+	public EHFPage() {
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 *            the given page in Page type
 	 */
 
-	public HFPage(Page page) {
+	public EHFPage(Page page) {
 		data = page.getpage();
 	}
 
@@ -286,9 +286,9 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 * @param slotno
 	 *            the slot number
 	 * @param length
-	 *            length of record the slot contains
+	 *            length of edge the slot contains
 	 * @param offset
-	 *            offset of record
+	 *            offset of edge
 	 * @exception IOException
 	 *                I/O errors
 	 */
@@ -303,7 +303,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 *            slot number
 	 * @exception IOException
 	 *                I/O errors
-	 * @return the length of record the given slot contains
+	 * @return the length of edge the given slot contains
 	 */
 	public short getSlotLength(int slotno) throws IOException {
 		int position = DPFIXED + slotno * SIZE_OF_SLOT;
@@ -325,19 +325,19 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * inserts a new record onto the page, returns RID of this record
+	 * inserts a new edge onto the page, returns EID of this edge
 	 * 
-	 * @param record
-	 *            a record to be inserted
-	 * @return RID of record, null if sufficient space does not exist
+	 * @param edge
+	 *            an edge to be inserted
+	 * @return EID of edge, null if sufficient space does not exist
 	 * @exception IOException
 	 *                I/O errors in C++ Status insertRecord(char *recPtr, int
 	 *                recLen, RID& rid)
 	 */
-	public RID insertRecord(byte[] record) throws IOException {
-		RID rid = new RID();
+	public EID insertEdge(byte[] edge) throws IOException {
+		EID eid = new EID();
 
-		int recLen = record.length;
+		int recLen = edge.length;
 		int spaceNeeded = recLen + SIZE_OF_SLOT;
 
 		// Start by checking if sufficient space exists.
@@ -383,11 +383,11 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 			setSlot(i, recLen, usedPtr);
 
 			// insert data onto the data page
-			System.arraycopy(record, 0, data, usedPtr, recLen);
+			System.arraycopy(edge, 0, data, usedPtr, recLen);
 			curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-			rid.pageNo.pid = curPage.pid;
-			rid.slotNo = i;
-			return rid;
+			eid.pageNo.pid = curPage.pid;
+			eid.slotNo = i;
+			return eid;
 		}
 	}
 
@@ -452,13 +452,13 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * @return RID of first record on page, null if page contains no records.
+	 * @return EID of first edge on page, null if page contains no edges.
 	 * @exception IOException
 	 *                I/O errors in C++ Status firstRecord(RID& firstRid)
 	 * 
 	 */
-	public RID firstRecord() throws IOException {
-		RID rid = new RID();
+	public EID firstEdge() throws IOException {
+		EID eid = new EID();
 		// find the first non-empty slot
 
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
@@ -476,27 +476,27 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 
 		// found a non-empty slot
 
-		rid.slotNo = i;
+		eid.slotNo = i;
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		rid.pageNo.pid = curPage.pid;
+		eid.pageNo.pid = curPage.pid;
 
-		return rid;
+		return eid;
 	}
 
 	/**
-	 * @return RID of next record on the page, null if no more records exist on
+	 * @return EID of next edge on the page, null if no more edges exist on
 	 *         the page
-	 * @param curRid
-	 *            current record ID
+	 * @param curEid
+	 *            current edge ID
 	 * @exception IOException
 	 *                I/O errors in C++ Status nextRecord (RID curRid, RID&
 	 *                nextRid)
 	 */
-	public RID nextRecord(RID curRid) throws IOException {
-		RID rid = new RID();
+	public EID nextEdge(EID curEid) throws IOException {
+		EID eid = new EID();
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
 
-		int i = curRid.slotNo;
+		int i = eid.slotNo;
 		short length;
 
 		// find the next non-empty slot
@@ -511,11 +511,11 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 
 		// found a non-empty slot
 
-		rid.slotNo = i;
+		eid.slotNo = i;
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		rid.pageNo.pid = curPage.pid;
+		eid.pageNo.pid = curPage.pid;
 
-		return rid;
+		return eid;
 	}
 
 	/**
@@ -524,21 +524,21 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 * 
 	 * @param rid
 	 *            the record ID
-	 * @return a tuple contains the record
+	 * @return an edge contains the record
 	 * @exception InvalidSlotNumberException
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors
 	 * @see Tuple
 	 */
-	public Tuple getRecord(RID rid) throws IOException, InvalidSlotNumberException {
+	public Edge getEdge(EID eid) throws IOException, InvalidSlotNumberException {
 		short recLen;
 		short offset;
 		byte[] record;
 		PageId pageNo = new PageId();
-		pageNo.pid = rid.pageNo.pid;
+		pageNo.pid = eid.pageNo.pid;
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		int slotNo = rid.slotNo;
+		int slotNo = eid.slotNo;
 
 		// length of record being returned
 		recLen = getSlotLength(slotNo);
@@ -547,8 +547,8 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 			offset = getSlotOffset(slotNo);
 			record = new byte[recLen];
 			System.arraycopy(data, offset, record, 0, recLen);
-			Tuple tuple = new Tuple(record, 0, recLen);
-			return tuple;
+			Edge edge = new Edge(record, 0, recLen);
+			return edge;
 		}
 
 		else {
@@ -558,7 +558,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * returns a tuple in a byte array[pageSize] with given RID rid. <br>
+	 * returns an edge in a byte array[pageSize] with given EID eid. <br>
 	 * in C++ Status returnRecord(RID rid, char*& recPtr, int& recLen)
 	 * 
 	 * @param rid
@@ -570,14 +570,14 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 *                I/O errors
 	 * @see Tuple
 	 */
-	public Tuple returnRecord(RID rid) throws IOException, InvalidSlotNumberException {
+	public Edge returnEdge(EID eid) throws IOException, InvalidSlotNumberException {
 		short recLen;
 		short offset;
 		PageId pageNo = new PageId();
-		pageNo.pid = rid.pageNo.pid;
+		pageNo.pid = eid.pageNo.pid;
 
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		int slotNo = rid.slotNo;
+		int slotNo = eid.slotNo;
 
 		// length of record being returned
 		recLen = getSlotLength(slotNo);

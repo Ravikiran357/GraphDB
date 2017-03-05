@@ -33,7 +33,7 @@ public class Scan implements GlobalConst {
 	private PageId dirpageId = new PageId();
 
 	/** pointer to in-core data of dirpageId (page is pinned) */
-	private HFPage dirpage = new HFPage();
+	private EHFPage dirpage = new EHFPage();
 
 	/**
 	 * record ID of the DataPageInfo struct (in the directory page) which
@@ -45,7 +45,7 @@ public class Scan implements GlobalConst {
 	private PageId datapageId = new PageId();
 
 	/** in-core copy (pinned) of the same */
-	private HFPage datapage = new HFPage();
+	private EHFPage datapage = new EHFPage();
 
 	/** record ID of the current record (from the current data page) */
 	private RID userrid = new RID();
@@ -247,7 +247,7 @@ public class Scan implements GlobalConst {
 
 		/** get first directory page and pin it */
 		try {
-			dirpage = new HFPage();
+			dirpage = new EHFPage();
 			pinPage(dirpageId, (Page) dirpage, false);
 		}
 
@@ -300,7 +300,7 @@ public class Scan implements GlobalConst {
 
 				try {
 
-					dirpage = new HFPage();
+					dirpage = new EHFPage();
 					pinPage(nextDirPageId, (Page) dirpage, false);
 
 				}
@@ -419,7 +419,7 @@ public class Scan implements GlobalConst {
 
 				// pin first data page
 				try {
-					datapage = new HFPage();
+					datapage = new EHFPage();
 					pinPage(datapageId, (Page) datapage, false);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -484,7 +484,7 @@ public class Scan implements GlobalConst {
 				dirpageId = nextDirPageId;
 
 				try {
-					dirpage = new HFPage();
+					dirpage = new EHFPage();
 					pinPage(dirpageId, (Page) dirpage, false);
 				}
 
@@ -528,7 +528,7 @@ public class Scan implements GlobalConst {
 		datapageId.pid = dpinfo.pageId.pid;
 
 		try {
-			datapage = new HFPage();
+			datapage = new EHFPage();
 			pinPage(dpinfo.pageId, (Page) datapage, false);
 		}
 
