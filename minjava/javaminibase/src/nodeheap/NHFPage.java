@@ -22,7 +22,7 @@ interface ConstSlot {
  * deletions are performed.
  */
 
-public class HFPage extends Page implements ConstSlot, GlobalConst {
+public class NHFPage extends Page implements ConstSlot, GlobalConst {
 
 	public static final int SIZE_OF_SLOT = 4;
 	public static final int DPFIXED = 4 * 2 + 3 * 4;
@@ -79,29 +79,29 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 * Default constructor
 	 */
 
-	public HFPage() {
+	public NHFPage() {
 	}
 
 	/**
-	 * Constructor of class HFPage open a HFPage and make this HFpage piont to
+	 * Constructor of class HFPage open a HFPage and make this NHFpage piont to
 	 * the given page
 	 * 
 	 * @param page
 	 *            the given page in Page type
 	 */
 
-	public HFPage(Page page) {
+	public NHFPage(Page page) {
 		data = page.getpage();
 	}
 
 	/**
-	 * Constructor of class HFPage open a existed hfpage
+	 * Constructor of class NHFPage open a existed nhfpage
 	 * 
 	 * @param apage
 	 *            a page in buffer pool
 	 */
 
-	public void openHFpage(Page apage) {
+	public void openNHFpage(Page apage) {
 		data = apage.getpage();
 	}
 
@@ -142,7 +142,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 * @return byte array
 	 */
 
-	public byte[] getHFpageArray() {
+	public byte[] getNHFpageArray() {
 		return data;
 	}
 
@@ -325,19 +325,19 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * inserts a new record onto the page, returns RID of this record
+	 * inserts a new node onto the page, returns nid of this node
 	 * 
-	 * @param record
-	 *            a record to be inserted
-	 * @return RID of record, null if sufficient space does not exist
+	 * @param node
+	 *            a node to be inserted
+	 * @return nid of node, null if sufficient space does not exist
 	 * @exception IOException
-	 *                I/O errors in C++ Status insertRecord(char *recPtr, int
-	 *                recLen, RID& rid)
+	 *                I/O errors in C++ Status insertNode(char *recPtr, int
+	 *                recLen, nid& nid)
 	 */
-	public RID insertRecord(byte[] record) throws IOException {
-		RID rid = new RID();
+	public NID insertNode(byte[] node) throws IOException {
+		NID nid = new NID();
 
-		int recLen = record.length;
+		int recLen = node.length;
 		int spaceNeeded = recLen + SIZE_OF_SLOT;
 
 		// Start by checking if sufficient space exists.
@@ -383,26 +383,26 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 			setSlot(i, recLen, usedPtr);
 
 			// insert data onto the data page
-			System.arraycopy(record, 0, data, usedPtr, recLen);
+			System.arraycopy(node, 0, data, usedPtr, recLen);
 			curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-			rid.pageNo.pid = curPage.pid;
-			rid.slotNo = i;
-			return rid;
+			nid.pageNo.pid = curPage.pid;
+			nid.slotNo = i;
+			return nid;
 		}
 	}
 
 	/**
-	 * delete the record with the specified rid
+	 * delete the node with the specified nid
 	 * 
-	 * @param rid
-	 *            the record ID
+	 * @param nid
+	 *            the node ID
 	 * @exception InvalidSlotNumberException
 	 *                Invalid slot number
 	 * @exception IOException
-	 *                I/O errors in C++ Status deleteRecord(const RID& rid)
+	 *                I/O errors in C++ Status deleteNode(const nid& nid)
 	 */
-	public void deleteRecord(RID rid) throws IOException, InvalidSlotNumberException {
-		int slotNo = rid.slotNo;
+	public void deleteNode(NID nid) throws IOException, InvalidSlotNumberException {
+		int slotNo = nid.slotNo;
 		short recLen = getSlotLength(slotNo);
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
 
@@ -452,13 +452,13 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * @return RID of first record on page, null if page contains no records.
+	 * @return nid of first node on page, null if page contains no nodes.
 	 * @exception IOException
-	 *                I/O errors in C++ Status firstRecord(RID& firstRid)
+	 *                I/O errors in C++ Status firstNode(nid& firstnid)
 	 * 
 	 */
-	public RID firstRecord() throws IOException {
-		RID rid = new RID();
+	public NID firstNode() throws IOException {
+		NID nid = new NID();
 		// find the first non-empty slot
 
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
@@ -476,27 +476,27 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 
 		// found a non-empty slot
 
-		rid.slotNo = i;
+		nid.slotNo = i;
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		rid.pageNo.pid = curPage.pid;
+		nid.pageNo.pid = curPage.pid;
 
-		return rid;
+		return nid;
 	}
 
 	/**
-	 * @return RID of next record on the page, null if no more records exist on
+	 * @return nid of next node on the page, null if no more nodes exist on
 	 *         the page
-	 * @param curRid
-	 *            current record ID
+	 * @param curnid
+	 *            current node ID
 	 * @exception IOException
-	 *                I/O errors in C++ Status nextRecord (RID curRid, RID&
-	 *                nextRid)
+	 *                I/O errors in C++ Status nextNode (nid curnid, nid&
+	 *                nextnid)
 	 */
-	public RID nextRecord(RID curRid) throws IOException {
-		RID rid = new RID();
+	public NID nextNode(NID curnid) throws IOException {
+		NID nid = new NID();
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
 
-		int i = curRid.slotNo;
+		int i = curnid.slotNo;
 		short length;
 
 		// find the next non-empty slot
@@ -511,44 +511,44 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 
 		// found a non-empty slot
 
-		rid.slotNo = i;
+		nid.slotNo = i;
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		rid.pageNo.pid = curPage.pid;
+		nid.pageNo.pid = curPage.pid;
 
-		return rid;
+		return nid;
 	}
 
 	/**
-	 * copies out record with RID rid into record pointer. <br>
-	 * Status getRecord(RID rid, char *recPtr, int& recLen)
+	 * copies out node with nid nid into node pointer. <br>
+	 * Status getNode(nid nid, char *recPtr, int& recLen)
 	 * 
-	 * @param rid
-	 *            the record ID
-	 * @return a tuple contains the record
+	 * @param nid
+	 *            the node ID
+	 * @return a node contains the node
 	 * @exception InvalidSlotNumberException
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors
 	 * @see Tuple
 	 */
-	public Tuple getRecord(RID rid) throws IOException, InvalidSlotNumberException {
+	public Node getNode(NID nid) throws IOException, InvalidSlotNumberException {
 		short recLen;
 		short offset;
 		byte[] record;
 		PageId pageNo = new PageId();
-		pageNo.pid = rid.pageNo.pid;
+		pageNo.pid = nid.pageNo.pid;
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		int slotNo = rid.slotNo;
+		int slotNo = nid.slotNo;
 
-		// length of record being returned
+		// length of node being returned
 		recLen = getSlotLength(slotNo);
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
 		if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0) && (pageNo.pid == curPage.pid)) {
 			offset = getSlotOffset(slotNo);
 			record = new byte[recLen];
 			System.arraycopy(data, offset, record, 0, recLen);
-			Tuple tuple = new Tuple(record, 0, recLen);
-			return tuple;
+			Node node = new Node(record, 0, recLen);
+			return node;
 		}
 
 		else {
@@ -558,10 +558,10 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * returns a tuple in a byte array[pageSize] with given RID rid. <br>
-	 * in C++ Status returnRecord(RID rid, char*& recPtr, int& recLen)
+	 * returns a node in a byte array[pageSize] with given nid nid. <br>
+	 * in C++ Status returnNode(nid nid, char*& recPtr, int& recLen)
 	 * 
-	 * @param rid
+	 * @param nid
 	 *            the record ID
 	 * @return a tuple with its length and offset in the byte array
 	 * @exception InvalidSlotNumberException
@@ -570,14 +570,14 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	 *                I/O errors
 	 * @see Tuple
 	 */
-	public Tuple returnRecord(RID rid) throws IOException, InvalidSlotNumberException {
+	public Node returnNode(NID nid) throws IOException, InvalidSlotNumberException {
 		short recLen;
 		short offset;
 		PageId pageNo = new PageId();
-		pageNo.pid = rid.pageNo.pid;
+		pageNo.pid = nid.pageNo.pid;
 
 		curPage.pid = Convert.getIntValue(CUR_PAGE, data);
-		int slotNo = rid.slotNo;
+		int slotNo = nid.slotNo;
 
 		// length of record being returned
 		recLen = getSlotLength(slotNo);
@@ -586,8 +586,8 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 		if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0) && (pageNo.pid == curPage.pid)) {
 
 			offset = getSlotOffset(slotNo);
-			Tuple tuple = new Tuple(data, offset, recLen);
-			return tuple;
+			Node node = new Node(data, offset, recLen);
+			return node;
 		}
 
 		else {
@@ -611,7 +611,7 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	/**
 	 * Determining if the page is empty
 	 * 
-	 * @return true if the HFPage is has no records in it, false otherwise
+	 * @return true if the NHFPage is has no nodes in it, false otherwise
 	 * @exception IOException
 	 *                I/O errors
 	 */
@@ -631,8 +631,8 @@ public class HFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Compacts the slot directory on an HFPage. WARNING -- this will probably
-	 * lead to a change in the RIDs of records on the page. You CAN'T DO THIS on
+	 * Compacts the slot directory on an NHFPage. WARNING -- this will probably
+	 * lead to a change in the nids of nodes on the page. You CAN'T DO THIS on
 	 * most kinds of pages.
 	 * 
 	 * @exception IOException
