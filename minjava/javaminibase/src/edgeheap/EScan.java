@@ -19,7 +19,7 @@ import diskmgr.*;
  * An object of type scan will always have pinned one directory page of the
  * heapfile.
  */
-public class Scan implements GlobalConst {
+public class EScan implements GlobalConst {
 
 	/**
 	 * Note that one record in our way-cool HeapFile implementation is specified
@@ -27,7 +27,7 @@ public class Scan implements GlobalConst {
 	 */
 
 	/** The heapfile we are using. */
-	private Heapfile _hf;
+	private EdgeHeapfile _hf;
 
 	/** PageId of current directory page (which is itself an HFPage) */
 	private PageId dirpageId = new PageId();
@@ -65,7 +65,7 @@ public class Scan implements GlobalConst {
 	 * @param hf
 	 *            A HeapFile object
 	 */
-	public Scan(Heapfile hf) throws InvalidTupleSizeException, IOException {
+	public EScan(EdgeHeapfile hf) throws InvalidTupleSizeException, IOException {
 		init(hf);
 	}
 
@@ -185,7 +185,7 @@ public class Scan implements GlobalConst {
 	 * @param hf
 	 *            A HeapFile object
 	 */
-	private void init(Heapfile hf) throws InvalidTupleSizeException, IOException {
+	private void init(EdgeHeapfile hf) throws InvalidTupleSizeException, IOException {
 		_hf = hf;
 
 		firstDataPage();

@@ -392,17 +392,17 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * delete the record with the specified rid
+	 * delete the edge with the specified eid
 	 * 
-	 * @param rid
-	 *            the record ID
+	 * @param eid
+	 *            the edge ID
 	 * @exception InvalidSlotNumberException
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors in C++ Status deleteRecord(const RID& rid)
 	 */
-	public void deleteRecord(RID rid) throws IOException, InvalidSlotNumberException {
-		int slotNo = rid.slotNo;
+	public void deleteEdge(EID eid) throws IOException, InvalidSlotNumberException {
+		int slotNo = eid.slotNo;
 		short recLen = getSlotLength(slotNo);
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
 
@@ -519,11 +519,11 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * copies out record with RID rid into record pointer. <br>
+	 * copies out edge with EID rid into edge pointer. <br>
 	 * Status getRecord(RID rid, char *recPtr, int& recLen)
 	 * 
-	 * @param rid
-	 *            the record ID
+	 * @param eid
+	 *            the edge ID
 	 * @return an edge contains the record
 	 * @exception InvalidSlotNumberException
 	 *                Invalid slot number
@@ -547,7 +547,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 			offset = getSlotOffset(slotNo);
 			record = new byte[recLen];
 			System.arraycopy(data, offset, record, 0, recLen);
-			Edge edge = new Edge(record, 0, recLen);
+			Edge edge = new Edge(record, 0);
 			return edge;
 		}
 
@@ -561,9 +561,9 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	 * returns an edge in a byte array[pageSize] with given EID eid. <br>
 	 * in C++ Status returnRecord(RID rid, char*& recPtr, int& recLen)
 	 * 
-	 * @param rid
-	 *            the record ID
-	 * @return a tuple with its length and offset in the byte array
+	 * @param EID
+	 *            the edge ID
+	 * @return an edge with its length and offset in the byte array
 	 * @exception InvalidSlotNumberException
 	 *                Invalid slot number
 	 * @exception IOException
@@ -586,8 +586,8 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 		if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0) && (pageNo.pid == curPage.pid)) {
 
 			offset = getSlotOffset(slotNo);
-			Tuple tuple = new Tuple(data, offset, recLen);
-			return tuple;
+			Edge edge = new Edge(data, offset);
+			return edge;
 		}
 
 		else {
@@ -611,7 +611,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	/**
 	 * Determining if the page is empty
 	 * 
-	 * @return true if the HFPage is has no records in it, false otherwise
+	 * @return true if the HFPage is has no edges in it, false otherwise
 	 * @exception IOException
 	 *                I/O errors
 	 */
