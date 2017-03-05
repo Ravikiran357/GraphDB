@@ -1,7 +1,7 @@
 /* File Edge.java */
 
 package edgeheap;
-
+import heap.Tuple;
 import java.io.*;
 import java.lang.*;
 import global.*;
@@ -54,7 +54,7 @@ public class Edge extends Tuple {
     /**
      * Constructor
      *
-     * @param anode
+     *  anode
      *            a byte array which contains the tuple
      * @param offset
      *            the offset of the tuple in the byte array
@@ -72,7 +72,7 @@ public class Edge extends Tuple {
     /**
      * Constructor(used as tuple copy)
      *
-     * @param fromNode
+     *  fromNode
      *            a byte array which contains the tuple
      *
      */
@@ -100,7 +100,7 @@ public class Edge extends Tuple {
      * Copy a tuple to the current tuple position you must make sure the tuple
      * lengths must be equal
      *
-     * @param fromNode
+     *  fromNode
      *            the tuple being copied
      */
     public void edgeCopy(Edge fromEdge) {
@@ -113,7 +113,7 @@ public class Edge extends Tuple {
     /**
      * This is used when you don't want to use the constructor
      *
-     * @param anode
+     *  anode
      *            a byte array which contains the tuple
      * @param offset
      *            the offset of the tuple in the byte array
@@ -197,45 +197,49 @@ public class Edge extends Tuple {
 //    }
 
 
-    public String getLabel() throws IOException, FieldNumberOutOfBoundException{
+    public String getLabel() throws IOException, heap.FieldNumberOutOfBoundException{
         return getStrFld(1);
     }
-    public int getLabel() throws IOException, FieldNumberOutOfBoundException{
+    public int getWeight() throws IOException, heap.FieldNumberOutOfBoundException{
         return getIntFld(2);
     }
-    public NID getSource() throws IOException, FieldNumberOutOfBoundException {
-        return (NID)getStrFld(3);
+    public NID getSource() throws IOException, heap.FieldNumberOutOfBoundException {
+        return (NID)getRIDFld(3);
     }
 
-    public NID getDestination() throws IOException, FieldNumberOutOfBoundException {
-        return (NID)getStrFld(4);
+    public NID getDestination() throws IOException, heap.FieldNumberOutOfBoundException {
+        return (NID)getRIDFld(4);
     }
 
 
 
 
 
-    public Edge setLabel(String val) throws IOException, FieldNumberOutOfBoundException {
+    public Edge setLabel(String val) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Edge)setStrFld(1, val);
     }
-    public Edge setWeight(int val) throws IOException, FieldNumberOutOfBoundException {
-        return (Edge)setStrFld(2, val);
+    public Edge setWeight(int val) throws IOException, heap.FieldNumberOutOfBoundException {
+        return (Edge)setIntFld(2, val);
     }
-    public Edge setSource(NID sourceID) throws IOException, FieldNumberOutOfBoundException {
-        return (Edge)setStrFld(3, val);
+    public Edge setSource(NID sourceID) throws IOException, heap.FieldNumberOutOfBoundException {
+        return (Edge)setRIDFld(3, sourceID);
     }
-    public Edge setDestination(NID destID) throws IOException, FieldNumberOutOfBoundException {
-        return (Edge)setStrFld(4, val);
+    public Edge setDestination(NID destID) throws IOException, heap.FieldNumberOutOfBoundException {
+        return (Edge)setRIDFld(4, destID);
     }
 
 
 
-    public void print() throws IOException, FieldNumberOutOfBoundException {
-        System.out.println("Edge label: "+ getLabel());
-        System.out.println("Edge Weight: ");
-        System.out.print(desc.get(i)+"  ");
+    public void print() throws IOException, heap.FieldNumberOutOfBoundException {
+            System.out.println("label is "+ getLabel());
+            System.out.println("Weight is : "+ getWeight());
+            NID source = getSource();
+            NID dest = getDestination();
+            System.out.println("Source pid: " + source.pageNo + ", slotnum "+ source.slotNo);
+            System.out.println("Dest pid: " + dest.pageNo + ", slotnum "+ dest.slotNo);
+
         }
-    }
+
 
 
 

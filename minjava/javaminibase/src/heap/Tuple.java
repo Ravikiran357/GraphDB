@@ -565,4 +565,30 @@ public class Tuple implements GlobalConst {
 	private short pad(short offset, AttrType type) {
 		return 0;
 	}
+
+
+	public Tuple setRIDFld(int fldNo, RID rid) throws IOException, FieldNumberOutOfBoundException {
+		if ((fldNo > 0) && (fldNo <= fldCnt)) {
+			Convert.setRIDValue(rid, fldOffset[fldNo - 1], data);
+			/*
+			 * for(int i = 0;i<5;i++) { int val = desc.get(i);
+			 * Convert.setIntValue(val, fldOffset[fldNo - 1+i], data); }
+			 */
+			return this;
+		} else
+			throw new FieldNumberOutOfBoundException(null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND");
+	}
+
+	public RID getRIDFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
+		RID val = new RID();
+		if ((fldNo > 0) && (fldNo <= fldCnt)) {
+			val = Convert.getRIDValue(fldOffset[fldNo - 1], data);
+			return val;
+		} else
+			throw new FieldNumberOutOfBoundException(null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND");
+
+	}
+
+
+
 }
