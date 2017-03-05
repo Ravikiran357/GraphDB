@@ -39,7 +39,7 @@ public class EScan implements GlobalConst {
 	 * record ID of the DataPageInfo struct (in the directory page) which
 	 * describes the data page where our current record lives.
 	 */
-	private RID datapageRid = new RID();
+	private EID datapageEid = new EID();
 
 	/** the actual PageId of the data page with the current record */
 	private PageId datapageId = new PageId();
@@ -47,8 +47,8 @@ public class EScan implements GlobalConst {
 	/** in-core copy (pinned) of the same */
 	private EHFPage datapage = new EHFPage();
 
-	/** record ID of the current record (from the current data page) */
-	private RID userrid = new RID();
+	/** Edge ID of the current edge (from the current data page) */
+	private EID usereid = new EID();
 
 	/** Status of next user status */
 	private boolean nextUserStatus;
@@ -77,12 +77,12 @@ public class EScan implements GlobalConst {
 	 * @exception IOException
 	 *                I/O errors
 	 *
-	 * @param rid
-	 *            Record ID of the record
-	 * @return the Tuple of the retrieved record.
+	 * @param eid
+	 *            Edge ID of the record
+	 * @return the Edge of the retrieved record.
 	 */
-	public Tuple getNext(RID rid) throws InvalidTupleSizeException, IOException {
-		Tuple recptrtuple = null;
+	public Edge getNext(EID eid) throws InvalidTupleSizeException, IOException {
+		Edge recptrEdge = null;
 
 		if (nextUserStatus != true) {
 			nextDataPage();
@@ -91,11 +91,11 @@ public class EScan implements GlobalConst {
 		if (datapage == null)
 			return null;
 
-		rid.pageNo.pid = userrid.pageNo.pid;
-		rid.slotNo = userrid.slotNo;
+		eid.pageNo.pid = usereid.pageNo.pid;
+		eid.slotNo = usereid.slotNo;
 
 		try {
-			recptrtuple = datapage.getRecord(rid);
+			recptrEdge = datapage.getEdge(eid);
 		}
 
 		catch (Exception e) {
@@ -103,38 +103,38 @@ public class EScan implements GlobalConst {
 			e.printStackTrace();
 		}
 
-		userrid = datapage.nextRecord(rid);
-		if (userrid == null)
+		usereid = datapage.nextEdge(eid);
+		if (usereid == null)
 			nextUserStatus = false;
 		else
 			nextUserStatus = true;
 
-		return recptrtuple;
+		return recptrEdge;
 	}
 
 	/**
-	 * Position the scan cursor to the record with the given rid.
+	 * Position the scan cursor to the record with the given eid.
 	 * 
 	 * @exception InvalidTupleSizeException
 	 *                Invalid tuple size
 	 * @exception IOException
 	 *                I/O errors
-	 * @param rid
-	 *            Record ID of the given record
+	 * @param eid
+	 *            Edge ID of the given record
 	 * @return true if successful, false otherwise.
 	 */
-	public boolean position(RID rid) throws InvalidTupleSizeException, IOException {
-		RID nxtrid = new RID();
+	public boolean position(EID eid) throws InvalidTupleSizeException, IOException {
+		EID nxteid = new EID();
 		boolean bst;
 
-		bst = peekNext(nxtrid);
+		bst = peekNext(nxteid);
 
-		if (nxtrid.equals(rid) == true)
+		if (nxteid.equals(eid) == true)
 			return true;
 
 		// This is kind lame, but otherwise it will take all day.
 		PageId pgid = new PageId();
-		pgid.pid = rid.pageNo.pid;
+		pgid.pid = eid.pageNo.pid;
 
 		if (!datapageId.equals(pgid)) {
 
@@ -156,20 +156,20 @@ public class EScan implements GlobalConst {
 		// Now we are on the correct page.
 
 		try {
-			userrid = datapage.firstRecord();
+			usereid = datapage.firstEdge();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		if (userrid == null) {
+		if (usereid == null) {
 			bst = false;
 			return bst;
 		}
 
-		bst = peekNext(nxtrid);
+		bst = peekNext(nxteid);
 
-		while ((bst == true) && (nxtrid != rid))
-			bst = mvNext(nxtrid);
+		while ((bst == true) && (nxteid != eid))
+			bst = mvNext(nxteid);
 
 		return bst;
 	}
@@ -237,7 +237,7 @@ public class EScan implements GlobalConst {
 	 */
 	private boolean firstDataPage() throws InvalidTupleSizeException, IOException {
 		DataPageInfo dpinfo;
-		Tuple rectuple = null;
+		Edge recedge = null;
 		Boolean bst;
 
 		/** copy data about first directory page */
@@ -257,13 +257,13 @@ public class EScan implements GlobalConst {
 		}
 
 		/** now try to get a pointer to the first datapage */
-		datapageRid = dirpage.firstRecord();
+		datapageEid = dirpage.firstEdge();
 
-		if (datapageRid != null) {
+		if (datapageEid != null) {
 			/** there is a datapage record on the first directory page: */
 
 			try {
-				rectuple = dirpage.getRecord(datapageRid);
+				recedge = dirpage.getEdge(datapageEid);
 			}
 
 			catch (Exception e) {
@@ -271,7 +271,7 @@ public class EScan implements GlobalConst {
 				e.printStackTrace();
 			}
 
-			dpinfo = new DataPageInfo(rectuple);
+			dpinfo = new DataPageInfo(recedge);
 			datapageId.pid = dpinfo.pageId.pid;
 
 		} else {
@@ -313,7 +313,7 @@ public class EScan implements GlobalConst {
 				/** now try again to read a data record: */
 
 				try {
-					datapageRid = dirpage.firstRecord();
+					datapageEid = dirpage.firstEdge();
 				}
 
 				catch (Exception e) {
@@ -322,11 +322,11 @@ public class EScan implements GlobalConst {
 					datapageId.pid = INVALID_PAGE;
 				}
 
-				if (datapageRid != null) {
+				if (datapageEid != null) {
 
 					try {
 
-						rectuple = dirpage.getRecord(datapageRid);
+						recedge = dirpage.getEdge(datapageEid);
 					}
 
 					catch (Exception e) {
@@ -334,10 +334,10 @@ public class EScan implements GlobalConst {
 						e.printStackTrace();
 					}
 
-					if (rectuple.getLength() != DataPageInfo.size)
+					if (recedge.getLength() != DataPageInfo.size)
 						return false;
 
-					dpinfo = new DataPageInfo(rectuple);
+					dpinfo = new DataPageInfo(recedge);
 					datapageId.pid = dpinfo.pageId.pid;
 
 				} else {
@@ -426,7 +426,7 @@ public class EScan implements GlobalConst {
 				}
 
 				try {
-					userrid = datapage.firstRecord();
+					usereid = datapage.firstEdge();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -454,9 +454,9 @@ public class EScan implements GlobalConst {
 			return false;
 		}
 
-		datapageRid = dirpage.nextRecord(datapageRid);
+		datapageEid = dirpage.nextRecord(datapageEid);
 
-		if (datapageRid == null) {
+		if (datapageEid == null) {
 			nextDataPageStatus = false;
 			// we have read all datapage records on the current directory page
 
@@ -496,7 +496,7 @@ public class EScan implements GlobalConst {
 					return false;
 
 				try {
-					datapageRid = dirpage.firstRecord();
+					datapageEid = dirpage.firstRecord();
 					nextDataPageStatus = true;
 				} catch (Exception e) {
 					nextDataPageStatus = false;
@@ -514,7 +514,7 @@ public class EScan implements GlobalConst {
 
 		// data page is not yet loaded: read its record from the directory page
 		try {
-			rectuple = dirpage.getRecord(datapageRid);
+			rectuple = dirpage.getRecord(datapageEid);
 		}
 
 		catch (Exception e) {
@@ -541,9 +541,9 @@ public class EScan implements GlobalConst {
 		// - this->dirpageId, this->dirpage correct
 		// - this->datapageId, this->datapage, this->datapageRid correct
 
-		userrid = datapage.firstRecord();
+		usereid = datapage.firstRecord();
 
-		if (userrid == null) {
+		if (usereid == null) {
 			nextUserStatus = false;
 			return false;
 		}
@@ -553,8 +553,8 @@ public class EScan implements GlobalConst {
 
 	private boolean peekNext(RID rid) {
 
-		rid.pageNo.pid = userrid.pageNo.pid;
-		rid.slotNo = userrid.slotNo;
+		rid.pageNo.pid = usereid.pageNo.pid;
+		rid.slotNo = usereid.slotNo;
 		return true;
 
 	}
@@ -573,16 +573,16 @@ public class EScan implements GlobalConst {
 		nextrid = datapage.nextRecord(rid);
 
 		if (nextrid != null) {
-			userrid.pageNo.pid = nextrid.pageNo.pid;
-			userrid.slotNo = nextrid.slotNo;
+			usereid.pageNo.pid = nextrid.pageNo.pid;
+			usereid.slotNo = nextrid.slotNo;
 			return true;
 		} else {
 
 			status = nextDataPage();
 
 			if (status == true) {
-				rid.pageNo.pid = userrid.pageNo.pid;
-				rid.slotNo = userrid.slotNo;
+				rid.pageNo.pid = usereid.pageNo.pid;
+				rid.slotNo = usereid.slotNo;
 			}
 
 		}

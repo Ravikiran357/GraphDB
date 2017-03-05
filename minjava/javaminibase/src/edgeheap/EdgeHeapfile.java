@@ -8,27 +8,27 @@ import global.*;
 /**  This heapfile implementation is directory-based. We maintain a
  *  directory of info about the data pages (which are of type HFPage
  *  when loaded into memory).  The directory itself is also composed
- *  of HFPages, with each record being of type DataPageInfo
+ *  of HFPages, with each edge being of type DataPageInfo
  *  as defined below.
  *
  *  The first directory page is a header page for the entire database
  *  (it is the one to which our filename is mapped by the DB).
  *  All directory pages are in a doubly-linked list of pages, each
  *  directory entry points to a single data page, which contains
- *  the actual records.
+ *  the actual edges.
  *
  *  The heapfile data pages are implemented as slotted pages, with
- *  the slots at the front and the records in the back, both growing
+ *  the slots at the front and the edges in the back, both growing
  *  into the free space in the middle of the page.
  *
- *  We can store roughly pagesize/sizeof(DataPageInfo) records per
+ *  We can store roughly pagesize/sizeof(DataPageInfo) edges per
  *  directory page; for any given HeapFile insertion, it is likely
  *  that at least one of those referenced data pages will have
  *  enough free space to satisfy the request.
  */
 
 /**
- * DataPageInfo class : the type of records stored on a directory page.
+ * DataPageInfo class : the type of edges stored on a directory page.
  *
  * April 9, 1998
  */
@@ -75,25 +75,25 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	} // end of _newDatapage
 
 	/*
-	 * Internal HeapFile function (used in getRecord and updateRecord): returns
+	 * Internal HeapFile function (used in getEdge and updateEdge): returns
 	 * pinned directory page and pinned data page of the specified user
-	 * record(rid) and true if record is found. If the user record cannot be
+	 * edge(eid) and true if edge is found. If the user edge cannot be
 	 * found, return false.
 	 */
-	private boolean _findDataPage(RID rid, PageId dirPageId, EHFPage dirpage, PageId dataPageId, EHFPage datapage,
+	private boolean _findDataPage(EID eid, PageId dirPageId, EHFPage dirpage, PageId dataPageId, EHFPage datapage,
 			RID rpDataPageRid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFBufMgrException, HFDiskMgrException, Exception {
 		PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 
 		EHFPage currentDirPage = new EHFPage();
 		EHFPage currentDataPage = new EHFPage();
-		RID currentDataPageRid = new RID();
+		EID currentDataPageEid = new EID();
 		PageId nextDirPageId = new PageId();
 		// datapageId is stored in dpinfo.pageId
 
 		pinPage(currentDirPageId, currentDirPage, false/* read disk */);
 
-		Tuple atuple = new Tuple();
+		Edge anEdge = new Edge();
 
 		while (currentDirPageId.pid != INVALID_PAGE) {// Start While01
 														// ASSERTIONS:
@@ -102,18 +102,18 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 														// valid and pinned and
 														// Locked.
 
-			for (currentDataPageRid = currentDirPage
-					.firstRecord(); currentDataPageRid != null; currentDataPageRid = currentDirPage
-							.nextRecord(currentDataPageRid)) {
+			for (currentDataPageEid = currentDirPage
+					.firstEdge(); currentDataPageEid != null; currentDataPageEid = currentDirPage
+							.nextEdge(currentDataPageEid)) {
 				try {
-					atuple = currentDirPage.getRecord(currentDataPageRid);
+					anEdge = currentDirPage.getEdge(currentDataPageEid);
 				} catch (InvalidSlotNumberException e)// check error! return
 														// false(done)
 				{
 					return false;
 				}
 
-				DataPageInfo dpinfo = new DataPageInfo(atuple);
+				DataPageInfo dpinfo = new DataPageInfo(anEdge);
 				try {
 					pinPage(dpinfo.pageId, currentDataPage, false/* Rddisk */);
 
@@ -129,9 +129,9 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 				// - currentDataPage, currentDataPageRid, dpinfo valid
 				// - currentDataPage pinned
 
-				if (dpinfo.pageId.pid == rid.pageNo.pid) {
-					atuple = currentDataPage.returnRecord(rid);
-					// found user's record on the current datapage which itself
+				if (dpinfo.pageId.pid == eid.pageNo.pid) {
+					anEdge = currentDataPage.returnEdge(eid);
+					// found user's edge on the current datapage which itself
 					// is indexed on the current dirpage. Return both of these.
 
 					dirpage.setpage(currentDirPage.getpage());
@@ -140,11 +140,11 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 					datapage.setpage(currentDataPage.getpage());
 					dataPageId.pid = dpinfo.pageId.pid;
 
-					rpDataPageRid.pageNo.pid = currentDataPageRid.pageNo.pid;
-					rpDataPageRid.slotNo = currentDataPageRid.slotNo;
+					rpDataPageRid.pageNo.pid = currentDataPageEid.pageNo.pid;
+					rpDataPageRid.slotNo = currentDataPageEid.slotNo;
 					return true;
 				} else {
-					// user record not found on this datapage; unpin it
+					// user edge not found on this datapage; unpin it
 					// and try the next one
 					unpinPage(dpinfo.pageId, false /* undirty */);
 
@@ -172,7 +172,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 			}
 
 		} // end of While01
-			// checked all dir pages and all data pages; user record not found:(
+			// checked all dir pages and all data pages; user edge not found:(
 
 		dirPageId.pid = dataPageId.pid = INVALID_PAGE;
 
@@ -264,12 +264,12 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	} // end of constructor
 
 	/**
-	 * Return number of records in file.
+	 * Return number of edges in file.
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidTupleSizeException
-	 *                invalid tuple size
+	 *                invalid edge size
 	 * @exception HFBufMgrException
 	 *                exception thrown from bufmgr layer
 	 * @exception HFDiskMgrException
@@ -293,20 +293,20 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 			pinPage(currentDirPageId, currentDirPage, false);
 
 			EID eid = new EID();
-			Tuple atuple;
-			for (eid = currentDirPage.firstEdge(); eid != null; // rid==NULL
+			Edge enEdge;
+			for (eid = currentDirPage.firstEdge(); eid != null; // eid==NULL
 																	// means no
 																	// more
-																	// record
+																	// edge
 					eid = currentDirPage.nextEdge(eid)) {
-				atuple = currentDirPage.getEdge(eid);
-				DataPageInfo dpinfo = new DataPageInfo(atuple);
+				enEdge = currentDirPage.getEdge(eid);
+				DataPageInfo dpinfo = new DataPageInfo(enEdge);
 
 				answer += dpinfo.recct;
 			}
 
-			// ASSERTIONS: no more record
-			// - we have read all datapage records on
+			// ASSERTIONS: no more edge
+			// - we have read all datapage edges on
 			// the current directory page.
 
 			nextDirPageId = currentDirPage.getNextPage();
@@ -323,17 +323,17 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	} // end of getRecCnt
 
 	/**
-	 * Insert record into file, return its Rid.
+	 * Insert edge into file, return its Rid.
 	 *
 	 * @param recPtr
-	 *            pointer of the record
+	 *            pointer of the edge
 	 * @param recLen
-	 *            the length of the record
+	 *            the length of the edge
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidTupleSizeException
-	 *                invalid tuple size
+	 *                invalid edge size
 	 * @exception SpaceNotAvailableException
 	 *                no space left
 	 * @exception HFException
@@ -345,7 +345,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 * @exception IOException
 	 *                I/O errors
 	 *
-	 * @return the rid of the record
+	 * @return the eid of the edge
 	 */
 	public EID insertEdge(byte[] recPtr) throws InvalidSlotNumberException, InvalidTupleSizeException,
 			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -364,18 +364,18 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		pinPage(currentDirPageId, currentDirPage, false/* Rdisk */);
 
 		found = false;
-		Tuple atuple;
+		Edge anEdge;
 		DataPageInfo dpinfo = new DataPageInfo();
 		while (found == false) { // Start While01
 									// look for suitable dpinfo-struct
 			for (currentDataPageEid = currentDirPage
 					.firstEdge(); currentDataPageEid != null; currentDataPageEid = currentDirPage
 							.nextEdge(currentDataPageEid)) {
-				atuple = currentDirPage.getEdge(currentDataPageEid);
+				anEdge = currentDirPage.getEdge(currentDataPageEid);
 
-				dpinfo = new DataPageInfo(atuple);
+				dpinfo = new DataPageInfo(anEdge);
 
-				// need check the record length == DataPageInfo'slength
+				// need check the edge length == DataPageInfo'slength
 
 				if (recLen <= dpinfo.availspace) {
 					found = true;
@@ -416,7 +416,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 				if (currentDirPage.available_space() >= dpinfo.size) {
 					// Start IF02
-					// case (2.1) : add a new data page record into the
+					// case (2.1) : add a new data page edge into the
 					// current directory page
 					currentDataPage = _newDatapage(dpinfo);
 					// currentDataPage is pinned! and dpinfo->pageId is also
@@ -425,25 +425,25 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 					// didn't check if currentDataPage==NULL, auto exception
 
-					// currentDataPage is pinned: insert its record
+					// currentDataPage is pinned: insert its edge
 					// calling a HFPage function
 
-					atuple = dpinfo.convertToTuple();
+					anEdge = dpinfo.convertToEdge();
 
-					byte[] tmpData = atuple.getTupleByteArray();
+					byte[] tmpData = anEdge.getTupleByteArray();
 					currentDataPageEid = currentDirPage.insertEdge(tmpData);
 
-					RID tmprid = currentDirPage.firstEdge();
+					EID tmpeid = currentDirPage.firstEdge();
 
 					// need catch error here!
 					if (currentDataPageEid == null)
 						throw new HFException(null, "no space to insert rec.");
 
-					// end the loop, because a new datapage with its record
+					// end the loop, because a new datapage with its edge
 					// in the current directorypage was created and inserted
 					// into
 					// the heapfile; the new datapage has enough space for the
-					// record which the user wants to insert
+					// edge which the user wants to insert
 
 					found = true;
 
@@ -546,7 +546,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		if (currentDataPage == null)
 			throw new HFException(null, "can't find Data page");
 
-		RID eid;
+		EID eid;
 		eid = currentDataPage.insertEdge(recPtr);
 
 		dpinfo.recct++;
@@ -555,8 +555,8 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		unpinPage(dpinfo.pageId, true /* = DIRTY */);
 
 		// DataPage is now released
-		atuple = currentDirPage.returnEdge(currentDataPageEid);
-		DataPageInfo dpinfo_ondirpage = new DataPageInfo(atuple);
+		anEdge = currentDirPage.returnEdge(currentDataPageEid);
+		DataPageInfo dpinfo_ondirpage = new DataPageInfo(anEdge);
 
 		dpinfo_ondirpage.availspace = dpinfo.availspace;
 		dpinfo_ondirpage.recct = dpinfo.recct;
@@ -570,12 +570,12 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	}
 
 	/**
-	 * Delete record from file with given rid.
+	 * Delete edge from file with given eid.
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidTupleSizeException
-	 *                invalid tuple size
+	 *                invalid edge size
 	 * @exception HFException
 	 *                heapfile exception
 	 * @exception HFBufMgrException
@@ -585,7 +585,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 * @exception Exception
 	 *                other exception
 	 *
-	 * @return true record deleted false:record not found
+	 * @return true edge deleted false:edge not found
 	 */
 	public boolean deleteEdge(EID eid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFBufMgrException, HFDiskMgrException, Exception
@@ -602,7 +602,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 				currentDataPageEid);
 
 		if (status != true)
-			return status; // record not found
+			return status; // edge not found
 
 		// ASSERTIONS:
 		// - currentDirPage, currentDirPageId valid and pinned
@@ -614,13 +614,13 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		anEdge = currentDirPage.returnEdge(currentDataPageEid);
 		DataPageInfo pdpinfo = new DataPageInfo(anEdge);
 
-		// delete the record on the datapage
+		// delete the edge on the datapage
 		currentDataPage.deleteEdge(eid);
 
 		pdpinfo.recct--;
 		pdpinfo.flushToTuple(); // Write to the buffer pool
 		if (pdpinfo.recct >= 1) {
-			// more records remain on datapage so it still hangs around.
+			// more edges remain on datapage so it still hangs around.
 			// we just need to modify its directory entry
 
 			pdpinfo.availspace = currentDataPage.available_space();
@@ -630,11 +630,11 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 			unpinPage(currentDirPageId, true /* = DIRTY */);
 
 		} else {
-			// the record is already deleted:
-			// we're removing the last record on datapage so free datapage
+			// the edge is already deleted:
+			// we're removing the last edge on datapage so free datapage
 			// also, free the directory page if
 			// a) it's not the first directory page, and
-			// b) we've removed the last DataPageInfo record on it.
+			// b) we've removed the last DataPageInfo edge on it.
 
 			// delete empty datapage: (does it get unpinned automatically? -NO,
 			// Ranjani)
@@ -655,7 +655,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 			currentDataPageEid = currentDirPage.firstEdge();
 
-			// st == OK: we still found a datapageinfo record on this directory
+			// st == OK: we still found a datapageinfo edge on this directory
 			// page
 			PageId pageId;
 			pageId = currentDirPage.getPrevPage();
@@ -708,19 +708,19 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	}
 
 	/**
-	 * Updates the specified record in the heapfile.
+	 * Updates the specified edge in the heapfile.
 	 * 
-	 * @param rid:
-	 *            the record which needs update
-	 * @param newtuple:
-	 *            the new content of the record
+	 * @param eid:
+	 *            the edge which needs update
+	 * @param newedge:
+	 *            the new content of the edge
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidUpdateException
-	 *                invalid update on record
+	 *                invalid update on edge
 	 * @exception InvalidTupleSizeException
-	 *                invalid tuple size
+	 *                invalid edge size
 	 * @exception HFException
 	 *                heapfile exception
 	 * @exception HFBufMgrException
@@ -729,7 +729,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception Exception
 	 *                other exception
-	 * @return ture:update success false: can't find the record
+	 * @return ture:update success false: can't find the edge
 	 */
 	public boolean updateEdge(EID eid, Edge newEdge) throws InvalidSlotNumberException, InvalidUpdateException,
 			InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
@@ -743,22 +743,22 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		status = _findDataPage(eid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageEid);
 
 		if (status != true)
-			return status; // record not found
+			return status; // edge not found
 		Edge anEdge = new Edge();
 		anEdge = dataPage.returnEdge(eid);
 
-		// Assume update a record with a record whose length is equal to
-		// the original record
+		// Assume update a edge with a edge whose length is equal to
+		// the original edge
 
 		if (newEdge.getLength() != anEdge.getLength()) {
 			unpinPage(currentDataPageId, false /* undirty */);
 			unpinPage(currentDirPageId, false /* undirty */);
 
-			throw new InvalidUpdateException(null, "invalid record update");
+			throw new InvalidUpdateException(null, "invalid edge update");
 
 		}
 
-		// new copy of this record fits in old space;
+		// new copy of this edge fits in old space;
 		anEdge.tupleCopy(newEdge);
 		unpinPage(currentDataPageId, true /* = DIRTY */);
 
@@ -768,15 +768,15 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	}
 
 	/**
-	 * Read record from file, returning pointer and length.
+	 * Read edge from file, returning pointer and length.
 	 * 
 	 * @param eid
-	 *            Record ID
+	 *            Edge ID
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidTupleSizeException
-	 *                invalid tuple size
+	 *                invalid edge size
 	 * @exception SpaceNotAvailableException
 	 *                no space left
 	 * @exception HFException
@@ -788,7 +788,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 * @exception Exception
 	 *                other exception
 	 *
-	 * @return a Tuple. if Tuple==null, no more tuple
+	 * @return an Edge. if Edge==null, no more edge
 	 */
 	public Edge getEdge(EID eid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFDiskMgrException, HFBufMgrException, Exception {
@@ -802,13 +802,13 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		status = _findDataPage(eid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageRid);
 
 		if (status != true)
-			return null; // record not found
+			return null; // edge not found
 
 		Edge anEdge = new Edge();
 		anEdge = dataPage.getEdge(eid);
 
 		/*
-		 * getRecord has copied the contents of rid into recPtr and fixed up
+		 * getEdge has copied the contents of eid into recPtr and fixed up
 		 * recLen also. We simply have to unpin dirpage and datapage which were
 		 * originally pinned by _findDataPage.
 		 */
@@ -817,7 +817,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 		unpinPage(currentDirPageId, false /* undirty */);
 
-		return anEdge; // (true?)OK, but the caller need check if atuple==NULL
+		return anEdge; // (true?)OK, but the caller need check if aedge==NULL
 
 	}
 
@@ -825,7 +825,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 * Initiate a sequential scan.
 	 * 
 	 * @exception InvalidTupleSizeException
-	 *                Invalid tuple size
+	 *                Invalid edge size
 	 * @exception IOException
 	 *                I/O errors
 	 *
@@ -841,7 +841,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidTupleSizeException
-	 *                invalid tuple size
+	 *                invalid edge size
 	 * @exception FileAlreadyDeletedException
 	 *                file is deleted already
 	 * @exception HFBufMgrException
@@ -866,7 +866,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		nextDirPageId.pid = 0;
 		Page pageinbuffer = new Page();
 		EHFPage currentDirPage = new EHFPage();
-		Tuple atuple;
+		Edge anEdge;
 
 		pinPage(currentDirPageId, currentDirPage, false);
 		// currentDirPage.openHFpage(pageinbuffer);
@@ -874,9 +874,9 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 		EID eid = new EID();
 		while (currentDirPageId.pid != INVALID_PAGE) {
 			for (eid = currentDirPage.firstEdge(); eid != null; eid = currentDirPage.nextEdge(eid)) {
-				atuple = currentDirPage.getEdge(eid);
-				DataPageInfo dpinfo = new DataPageInfo(atuple);
-				// int dpinfoLen = arecord.length;
+				anEdge = currentDirPage.getEdge(eid);
+				DataPageInfo dpinfo = new DataPageInfo(anEdge);
+				// int dpinfoLen = aedge.length;
 
 				freePage(dpinfo.pageId);
 

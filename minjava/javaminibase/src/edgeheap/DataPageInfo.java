@@ -107,6 +107,26 @@ class DataPageInfo implements GlobalConst {
 		return atuple;
 
 	}
+	
+	/**
+	 * convert this class objcet to a tuple(like cast a DataPageInfo to Tuple)
+	 * 
+	 *
+	 */
+	public Edge convertToEdge() throws IOException {
+
+		// 1) write availspace, recct, pageId into data []
+		Convert.setIntValue(availspace, offset, data);
+		Convert.setIntValue(recct, offset + 4, data);
+		Convert.setIntValue(pageId.pid, offset + 8, data);
+
+		// 2) creat a Tuple object using this array
+		Edge anEdge = new Edge(data, offset);
+
+		// 3) return tuple object
+		return anEdge;
+
+	}
 
 	/**
 	 * write this object's useful fields(availspace, recct, pageId) to the
