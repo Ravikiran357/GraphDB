@@ -8,70 +8,10 @@ import global.*;
 
 public class Tuple implements GlobalConst {
 
-	/**
-	 * Maximum size of any tuple
-	 */
-	public static final int max_size = MINIBASE_PAGESIZE;
-
-	/**
-	 * a byte array to hold data
-	 */
-	private byte[] data;
-
-	/**
-	 * start position of this tuple in data[]
-	 */
-	private int tuple_offset;
-
-	/**
-	 * length of this tuple
-	 */
-	private int tuple_length;
-
-	/**
-	 * private field Number of fields in this tuple
-	 */
-	private short fldCnt;
-
-	/**
-	 * private field Array of offsets of the fields
-	 */
-
-	private short[] fldOffset;
-
-	/**
-	 * Class constructor Creat a new tuple with length = max_size,tuple offset =
-	 * 0.
-	 */
-
-	public Tuple() {
-		// Creat a new tuple
-		data = new byte[max_size];
-		tuple_offset = 0;
-		tuple_length = max_size;
-	}
-
-	/**
-	 * Constructor
-	 * 
-	 * @param atuple
-	 *            a byte array which contains the tuple
-	 * @param offset
-	 *            the offset of the tuple in the byte array
-	 * @param length
-	 *            the length of the tuple
-	 */
-
-	public Tuple(byte[] atuple, int offset, int length) {
-		data = atuple;
-		tuple_offset = offset;
-		tuple_length = length;
-		// fldCnt = getShortValue(offset, data);
-	}
 
 	/**
 	 * Constructor(used as tuple copy)
-	 * 
+	 *
 	 * @param fromTuple
 	 *            a byte array which contains the tuple
 	 *
@@ -96,39 +36,8 @@ public class Tuple implements GlobalConst {
 	}
 
 	/**
-	 * Copy a tuple to the current tuple position you must make sure the tuple
-	 * lengths must be equal
-	 * 
-	 * @param fromTuple
-	 *            the tuple being copied
-	 */
-	public void tupleCopy(Tuple fromTuple) {
-		byte[] temparray = fromTuple.getTupleByteArray();
-		System.arraycopy(temparray, 0, data, tuple_offset, tuple_length);
-		// fldCnt = fromTuple.noOfFlds();
-		// fldOffset = fromTuple.copyFldOffset();
-	}
-
-	/**
-	 * This is used when you don't want to use the constructor
-	 * 
-	 * @param atuple
-	 *            a byte array which contains the tuple
-	 * @param offset
-	 *            the offset of the tuple in the byte array
-	 * @param length
-	 *            the length of the tuple
-	 */
-
-	public void tupleInit(byte[] atuple, int offset, int length) {
-		data = atuple;
-		tuple_offset = offset;
-		tuple_length = length;
-	}
-
-	/**
 	 * Set a tuple with the given tuple length and offset
-	 * 
+	 *
 	 * @param record
 	 *            a byte array contains the tuple
 	 * @param offset
@@ -136,7 +45,7 @@ public class Tuple implements GlobalConst {
 	 * @param length
 	 *            the length of the tuple
 	 */
-	public void tupleSet(byte[] record, int offset, int length) {
+	public void nodeSet(byte[] record, int offset, int length) {
 		System.arraycopy(record, offset, data, 0, length);
 		tuple_offset = 0;
 		tuple_length = length;
@@ -145,7 +54,7 @@ public class Tuple implements GlobalConst {
 	/**
 	 * get the length of a tuple, call this method if you did not call setHdr ()
 	 * before
-	 * 
+	 *
 	 * @return length of this tuple in bytes
 	 */
 	public int getLength() {
@@ -155,7 +64,7 @@ public class Tuple implements GlobalConst {
 	/**
 	 * get the length of a tuple, call this method if you did call setHdr ()
 	 * before
-	 * 
+	 *
 	 * @return size of this tuple in bytes
 	 */
 	public short size() {
@@ -164,7 +73,7 @@ public class Tuple implements GlobalConst {
 
 	/**
 	 * get the offset of a tuple
-	 * 
+	 *
 	 * @return offset of the tuple in byte array
 	 */
 	public int getOffset() {
@@ -173,7 +82,7 @@ public class Tuple implements GlobalConst {
 
 	/**
 	 * Copy the tuple byte array out
-	 * 
+	 *
 	 * @return byte[], a byte array contains the tuple the length of byte[] =
 	 *         length of the tuple
 	 */
@@ -186,7 +95,7 @@ public class Tuple implements GlobalConst {
 
 	/**
 	 * return the data byte array
-	 * 
+	 *
 	 * @return data byte array
 	 */
 
@@ -305,6 +214,97 @@ public class Tuple implements GlobalConst {
 		} else
 			throw new FieldNumberOutOfBoundException(null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND");
 
+	}
+
+	/**
+	 * Maximum size of any tuple
+	 */
+	public static final int max_size = MINIBASE_PAGESIZE;
+
+	/**
+	 * a byte array to hold data
+	 */
+	private byte[] data;
+
+	/**
+	 * start position of this tuple in data[]
+	 */
+	private int tuple_offset;
+
+	/**
+	 * length of this tuple
+	 */
+	private int tuple_length;
+
+	/**
+	 * private field Number of fields in this tuple
+	 */
+	private short fldCnt;
+
+	/**
+	 * private field Array of offsets of the fields
+	 */
+
+	private short[] fldOffset;
+
+	/**
+	 * Class constructor Creat a new tuple with length = max_size,tuple offset =
+	 * 0.
+	 */
+
+	public Tuple() {
+		// Creat a new tuple
+		data = new byte[max_size];
+		tuple_offset = 0;
+		tuple_length = max_size;
+	}
+
+	/**
+	 * Constructor
+	 *
+	 * @param atuple
+	 *            a byte array which contains the tuple
+	 * @param offset
+	 *            the offset of the tuple in the byte array
+	 * @param length
+	 *            the length of the tuple
+	 */
+	public Tuple(byte[] atuple, int offset, int length) {
+		data = atuple;
+		tuple_offset = offset;
+		tuple_length = length;
+		// fldCnt = getShortValue(offset, data);
+	}
+
+	/**
+	 * Copy a tuple to the current tuple position you must make sure the tuple
+	 * lengths must be equal
+	 *
+	 * @param fromTuple
+	 *            the tuple being copied
+	 */
+	public void tupleCopy(Tuple fromTuple) {
+		byte[] temparray = fromTuple.getTupleByteArray();
+		System.arraycopy(temparray, 0, data, tuple_offset, tuple_length);
+		// fldCnt = fromTuple.noOfFlds();
+		// fldOffset = fromTuple.copyFldOffset();
+	}
+
+	/**
+	 * This is used when you don't want to use the constructor
+	 *
+	 * @param atuple
+	 *            a byte array which contains the tuple
+	 * @param offset
+	 *            the offset of the tuple in the byte array
+	 * @param length
+	 *            the length of the tuple
+	 */
+
+	public void tupleInit(byte[] atuple, int offset, int length) {
+		data = atuple;
+		tuple_offset = offset;
+		tuple_length = length;
 	}
 
 	/**
