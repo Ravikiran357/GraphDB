@@ -39,7 +39,7 @@ interface Filetype {
 
 } // end of Filetype
 
-public class Heapfile implements Filetype, GlobalConst {
+public class NodeHeapfile implements Filetype, GlobalConst {
 
 	PageId _firstDirPageId; // page number of header page
 	int _ftype;
@@ -52,7 +52,7 @@ public class Heapfile implements Filetype, GlobalConst {
 	 * 
 	 * @param dpinfop the information in the new HFPage
 	 */
-	private HFPage _newDatapage(DataPageInfo dpinfop)
+	private NHFPage _newDatapage(DataPageInfo dpinfop)
 			throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
 		Page apage = new Page();
 		PageId pageId = new PageId();
@@ -63,7 +63,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
 		// initialize internal values of the new page:
 
-		HFPage hfpage = new HFPage();
+		NHFPage hfpage = new NHFPage();
 		hfpage.init(pageId, apage);
 
 		dpinfop.pageId.pid = pageId.pid;
@@ -80,20 +80,20 @@ public class Heapfile implements Filetype, GlobalConst {
 	 * record(rid) and true if record is found. If the user record cannot be
 	 * found, return false.
 	 */
-	private boolean _findDataPage(RID rid, PageId dirPageId, HFPage dirpage, PageId dataPageId, HFPage datapage,
+	private boolean _findDataPage(NID nid, PageId dirPageId, NHFPage dirpage, PageId dataPageId, NHFPage datapage,
 			RID rpDataPageRid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFBufMgrException, HFDiskMgrException, Exception {
 		PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 
-		HFPage currentDirPage = new HFPage();
-		HFPage currentDataPage = new HFPage();
-		RID currentDataPageRid = new RID();
+		NHFPage currentDirPage = new NHFPage();
+		NHFPage currentDataPage = new NHFPage();
+		NID currentDataPageNid = new NID();
 		PageId nextDirPageId = new PageId();
 		// datapageId is stored in dpinfo.pageId
 
 		pinPage(currentDirPageId, currentDirPage, false/* read disk */);
 
-		Tuple atuple = new Tuple();
+		Node atuple = new Node();
 
 		while (currentDirPageId.pid != INVALID_PAGE) {// Start While01
 														// ASSERTIONS:
@@ -102,11 +102,11 @@ public class Heapfile implements Filetype, GlobalConst {
 														// valid and pinned and
 														// Locked.
 
-			for (currentDataPageRid = currentDirPage
-					.firstRecord(); currentDataPageRid != null; currentDataPageRid = currentDirPage
-							.nextRecord(currentDataPageRid)) {
+			for (currentDataPageNid = currentDirPage
+					.firstNode(); currentDataPageNid != null; currentDataPageNid = currentDirPage
+							.nextNode(currentDataPageNid)) {
 				try {
-					atuple = currentDirPage.getRecord(currentDataPageRid);
+					atuple = currentDirPage.getNode(currentDataPageNid);
 				} catch (InvalidSlotNumberException e)// check error! return
 														// false(done)
 				{
@@ -129,8 +129,8 @@ public class Heapfile implements Filetype, GlobalConst {
 				// - currentDataPage, currentDataPageRid, dpinfo valid
 				// - currentDataPage pinned
 
-				if (dpinfo.pageId.pid == rid.pageNo.pid) {
-					atuple = currentDataPage.returnRecord(rid);
+				if (dpinfo.pageId.pid == nid.pageNo.pid) {
+					atuple = currentDataPage.returnNode(nid);
 					// found user's record on the current datapage which itself
 					// is indexed on the current dirpage. Return both of these.
 
@@ -140,8 +140,8 @@ public class Heapfile implements Filetype, GlobalConst {
 					datapage.setpage(currentDataPage.getpage());
 					dataPageId.pid = dpinfo.pageId.pid;
 
-					rpDataPageRid.pageNo.pid = currentDataPageRid.pageNo.pid;
-					rpDataPageRid.slotNo = currentDataPageRid.slotNo;
+					rpDataPageRid.pageNo.pid = currentDataPageNid.pageNo.pid;
+					rpDataPageRid.slotNo = currentDataPageNid.slotNo;
 					return true;
 				} else {
 					// user record not found on this datapage; unpin it
@@ -194,7 +194,7 @@ public class Heapfile implements Filetype, GlobalConst {
 	 * @exception IOException
 	 *                I/O errors
 	 */
-	public Heapfile(String name) throws HFException, HFBufMgrException, HFDiskMgrException, IOException
+	public NodeHeapfile(String name) throws HFException, HFBufMgrException, HFDiskMgrException, IOException
 
 	{
 		// Give us a prayer of destructing cleanly if construction fails.
@@ -244,7 +244,7 @@ public class Heapfile implements Filetype, GlobalConst {
 			add_file_entry(_fileName, _firstDirPageId);
 			// check error(new exception: Could not add file entry
 
-			HFPage firstDirPage = new HFPage();
+			NHFPage firstDirPage = new NHFPage();
 			firstDirPage.init(_firstDirPageId, apage);
 			PageId pageId = new PageId(INVALID_PAGE);
 
@@ -286,20 +286,20 @@ public class Heapfile implements Filetype, GlobalConst {
 
 		PageId nextDirPageId = new PageId(0);
 
-		HFPage currentDirPage = new HFPage();
+		NHFPage currentDirPage = new NHFPage();
 		Page pageinbuffer = new Page();
 
 		while (currentDirPageId.pid != INVALID_PAGE) {
 			pinPage(currentDirPageId, currentDirPage, false);
 
-			RID rid = new RID();
+			NID nid = new NID();
 			Tuple atuple;
-			for (rid = currentDirPage.firstRecord(); rid != null; // rid==NULL
+			for (nid = currentDirPage.firstNode(); nid != null; // rid==NULL
 																	// means no
 																	// more
 																	// record
-					rid = currentDirPage.nextRecord(rid)) {
-				atuple = currentDirPage.getRecord(rid);
+					nid = currentDirPage.nextNode(nid)) {
+				atuple = currentDirPage.getNode(nid);
 				DataPageInfo dpinfo = new DataPageInfo(atuple);
 
 				answer += dpinfo.recct;
@@ -347,33 +347,33 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *
 	 * @return the rid of the record
 	 */
-	public RID insertRecord(byte[] recPtr) throws InvalidSlotNumberException, InvalidTupleSizeException,
+	public NID insertNode(byte[] recPtr) throws InvalidSlotNumberException, InvalidTupleSizeException,
 			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException {
 		int dpinfoLen = 0;
 		int recLen = recPtr.length;
 		boolean found;
 		RID currentDataPageRid = new RID();
 		Page pageinbuffer = new Page();
-		HFPage currentDirPage = new HFPage();
-		HFPage currentDataPage = new HFPage();
+		NHFPage currentDirPage = new NHFPage();
+		NHFPage currentDataPage = new NHFPage();
 
-		HFPage nextDirPage = new HFPage();
+		NHFPage nextDirPage = new NHFPage();
 		PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 		PageId nextDirPageId = new PageId(); // OK
 
 		pinPage(currentDirPageId, currentDirPage, false/* Rdisk */);
 
 		found = false;
-		Tuple atuple;
+		Node node;
 		DataPageInfo dpinfo = new DataPageInfo();
 		while (found == false) { // Start While01
 									// look for suitable dpinfo-struct
 			for (currentDataPageRid = currentDirPage
-					.firstRecord(); currentDataPageRid != null; currentDataPageRid = currentDirPage
-							.nextRecord(currentDataPageRid)) {
-				atuple = currentDirPage.getRecord(currentDataPageRid);
+					.firstNode(); currentDataPageRid != null; currentDataPageRid = currentDirPage
+							.nextNode(currentDataPageRid)) {
+				node = currentDirPage.getNode(currentDataPageRid);
 
-				dpinfo = new DataPageInfo(atuple);
+				dpinfo = new DataPageInfo(node);
 
 				// need check the record length == DataPageInfo'slength
 
@@ -428,12 +428,12 @@ public class Heapfile implements Filetype, GlobalConst {
 					// currentDataPage is pinned: insert its record
 					// calling a HFPage function
 
-					atuple = dpinfo.convertToTuple();
+					node = dpinfo.convertToTuple();
 
-					byte[] tmpData = atuple.getTupleByteArray();
-					currentDataPageRid = currentDirPage.insertRecord(tmpData);
+					byte[] tmpData = node.getTupleByteArray();
+					currentDataPageRid = currentDirPage.insertNode(tmpData);
 
-					RID tmprid = currentDirPage.firstRecord();
+					RID tmprid = currentDirPage.firstNode();
 
 					// need catch error here!
 					if (currentDataPageRid == null)
@@ -499,7 +499,7 @@ public class Heapfile implements Filetype, GlobalConst {
 						unpinPage(currentDirPageId, true/* dirty */);
 
 						currentDirPageId.pid = nextDirPageId.pid;
-						currentDirPage = new HFPage(nextDirPage);
+						currentDirPage = new NHFPage(nextDirPage);
 
 						// remark that MINIBASE_BM->newPage already
 						// pinned the new directory page!
@@ -547,7 +547,7 @@ public class Heapfile implements Filetype, GlobalConst {
 			throw new HFException(null, "can't find Data page");
 
 		RID rid;
-		rid = currentDataPage.insertRecord(recPtr);
+		rid = currentDataPage.insertNode(recPtr);
 
 		dpinfo.recct++;
 		dpinfo.availspace = currentDataPage.available_space();
@@ -555,8 +555,8 @@ public class Heapfile implements Filetype, GlobalConst {
 		unpinPage(dpinfo.pageId, true /* = DIRTY */);
 
 		// DataPage is now released
-		atuple = currentDirPage.returnRecord(currentDataPageRid);
-		DataPageInfo dpinfo_ondirpage = new DataPageInfo(atuple);
+		node = currentDirPage.returnNode(currentDataPageRid);
+		DataPageInfo dpinfo_ondirpage = new DataPageInfo(node);
 
 		dpinfo_ondirpage.availspace = dpinfo.availspace;
 		dpinfo_ondirpage.recct = dpinfo.recct;
@@ -587,19 +587,19 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *
 	 * @return true record deleted false:record not found
 	 */
-	public boolean deleteRecord(RID rid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
+	public boolean deleteNode(NID nid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFBufMgrException, HFDiskMgrException, Exception
 
 	{
 		boolean status;
-		HFPage currentDirPage = new HFPage();
+		NHFPage currentDirPage = new NHFPage();
 		PageId currentDirPageId = new PageId();
-		HFPage currentDataPage = new HFPage();
+		NHFPage currentDataPage = new NHFPage();
 		PageId currentDataPageId = new PageId();
-		RID currentDataPageRid = new RID();
+		NID currentDataPageNid = new NID();
 
-		status = _findDataPage(rid, currentDirPageId, currentDirPage, currentDataPageId, currentDataPage,
-				currentDataPageRid);
+		status = _findDataPage(nid, currentDirPageId, currentDirPage, currentDataPageId, currentDataPage,
+				currentDataPageNid);
 
 		if (status != true)
 			return status; // record not found
@@ -611,11 +611,11 @@ public class Heapfile implements Filetype, GlobalConst {
 		// get datapageinfo from the current directory page:
 		Tuple atuple;
 
-		atuple = currentDirPage.returnRecord(currentDataPageRid);
+		atuple = currentDirPage.returnNode(currentDataPageNid);
 		DataPageInfo pdpinfo = new DataPageInfo(atuple);
 
 		// delete the record on the datapage
-		currentDataPage.deleteRecord(rid);
+		currentDataPage.deleteNode(nid);
 
 		pdpinfo.recct--;
 		pdpinfo.flushToTuple(); // Write to the buffer pool
@@ -645,7 +645,7 @@ public class Heapfile implements Filetype, GlobalConst {
 			// delete corresponding DataPageInfo-entry on the directory page:
 			// currentDataPageRid points to datapage (from for loop above)
 
-			currentDirPage.deleteRecord(currentDataPageRid);
+			currentDirPage.deleteNode(currentDataPageNid);
 
 			// ASSERTIONS:
 			// - currentDataPage, currentDataPageId invalid
@@ -653,20 +653,20 @@ public class Heapfile implements Filetype, GlobalConst {
 
 			// now check whether the directory page is empty:
 
-			currentDataPageRid = currentDirPage.firstRecord();
+			currentDataPageNid = currentDirPage.firstNode();
 
 			// st == OK: we still found a datapageinfo record on this directory
 			// page
 			PageId pageId;
 			pageId = currentDirPage.getPrevPage();
-			if ((currentDataPageRid == null) && (pageId.pid != INVALID_PAGE)) {
+			if ((currentDataPageNid == null) && (pageId.pid != INVALID_PAGE)) {
 				// the directory-page is not the first directory page and it is
 				// empty:
 				// delete it
 
 				// point previous page around deleted page:
 
-				HFPage prevDirPage = new HFPage();
+				NHFPage prevDirPage = new NHFPage();
 				pinPage(pageId, prevDirPage, false);
 
 				pageId = currentDirPage.getNextPage();
@@ -677,7 +677,7 @@ public class Heapfile implements Filetype, GlobalConst {
 				// set prevPage-pointer of next Page
 				pageId = currentDirPage.getNextPage();
 				if (pageId.pid != INVALID_PAGE) {
-					HFPage nextDirPage = new HFPage();
+					NHFPage nextDirPage = new NHFPage();
 					pageId = currentDirPage.getNextPage();
 					pinPage(pageId, nextDirPage, false);
 
@@ -731,21 +731,21 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *                other exception
 	 * @return ture:update success false: can't find the record
 	 */
-	public boolean updateRecord(RID rid, Tuple newtuple) throws InvalidSlotNumberException, InvalidUpdateException,
+	public boolean updateNode(NID nid, Tuple newtuple) throws InvalidSlotNumberException, InvalidUpdateException,
 			InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
 		boolean status;
-		HFPage dirPage = new HFPage();
+		NHFPage dirPage = new NHFPage();
 		PageId currentDirPageId = new PageId();
-		HFPage dataPage = new HFPage();
+		NHFPage dataPage = new NHFPage();
 		PageId currentDataPageId = new PageId();
-		RID currentDataPageRid = new RID();
+		NID currentDataPageNid = new NID();
 
-		status = _findDataPage(rid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageRid);
+		status = _findDataPage(nid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageNid);
 
 		if (status != true)
 			return status; // record not found
 		Tuple atuple = new Tuple();
-		atuple = dataPage.returnRecord(rid);
+		atuple = dataPage.returnNode(nid);
 
 		// Assume update a record with a record whose length is equal to
 		// the original record
@@ -790,22 +790,22 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *
 	 * @return a Tuple. if Tuple==null, no more tuple
 	 */
-	public Tuple getRecord(RID rid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
+	public Node getNode(NID nid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFDiskMgrException, HFBufMgrException, Exception {
 		boolean status;
-		HFPage dirPage = new HFPage();
+		NHFPage dirPage = new NHFPage();
 		PageId currentDirPageId = new PageId();
-		HFPage dataPage = new HFPage();
+		NHFPage dataPage = new NHFPage();
 		PageId currentDataPageId = new PageId();
-		RID currentDataPageRid = new RID();
+		NID currentDataPageNid = new NID();
 
-		status = _findDataPage(rid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageRid);
+		status = _findDataPage(nid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageNid);
 
 		if (status != true)
 			return null; // record not found
 
 		Tuple atuple = new Tuple();
-		atuple = dataPage.getRecord(rid);
+		atuple = dataPage.getNode(nid);
 
 		/*
 		 * getRecord has copied the contents of rid into recPtr and fixed up
@@ -830,8 +830,8 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *                I/O errors
 	 *
 	 */
-	public Scan openScan() throws InvalidTupleSizeException, IOException {
-		Scan newscan = new Scan(this);
+	public NScan openScan() throws InvalidTupleSizeException, IOException {
+		NScan newscan = new NScan(this);
 		return newscan;
 	}
 
@@ -865,7 +865,7 @@ public class Heapfile implements Filetype, GlobalConst {
 		PageId nextDirPageId = new PageId();
 		nextDirPageId.pid = 0;
 		Page pageinbuffer = new Page();
-		HFPage currentDirPage = new HFPage();
+		NHFPage currentDirPage = new NHFPage();
 		Tuple atuple;
 
 		pinPage(currentDirPageId, currentDirPage, false);
@@ -873,8 +873,8 @@ public class Heapfile implements Filetype, GlobalConst {
 
 		RID rid = new RID();
 		while (currentDirPageId.pid != INVALID_PAGE) {
-			for (rid = currentDirPage.firstRecord(); rid != null; rid = currentDirPage.nextRecord(rid)) {
-				atuple = currentDirPage.getRecord(rid);
+			for (rid = currentDirPage.firstNode(); rid != null; rid = currentDirPage.nextNode(rid)) {
+				atuple = currentDirPage.getNode(rid);
 				DataPageInfo dpinfo = new DataPageInfo(atuple);
 				// int dpinfoLen = arecord.length;
 
