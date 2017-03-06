@@ -25,6 +25,9 @@ public class DuplElim extends Iterator {
 	private Tuple Jtuple;
 
 	private Tuple TempTuple1, TempTuple2;
+	
+	private double distance;
+	private Descriptor target;
 
 	/**
 	 * Constructor to set up some information.
@@ -44,8 +47,12 @@ public class DuplElim extends Iterator {
 	 * @exception DuplElimException
 	 *                the exception from DuplElim.java
 	 */
-	public DuplElim(AttrType in[], short len_in, short s_sizes[], Iterator am, int amt_of_mem, boolean inp_sorted)
+	public DuplElim(AttrType in[], short len_in, short s_sizes[], Iterator am, int amt_of_mem, boolean inp_sorted, double distance, Descriptor target)
 			throws IOException, DuplElimException {
+		
+		this.distance = distance;
+		this.target = target;
+		
 		_in = new AttrType[in.length];
 		System.arraycopy(in, 0, _in, 0, in.length);
 		in_len = len_in;
@@ -77,7 +84,7 @@ public class DuplElim extends Iterator {
 		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
 		if (!inp_sorted) {
 			try {
-				_am = new Sort(in, len_in, s_sizes, am, 1, order, sortFldLen, amt_of_mem);
+				_am = new Sort(in, len_in, s_sizes, am, 1, order, sortFldLen, amt_of_mem, distance, target);
 			} catch (SortException e) {
 				e.printStackTrace();
 				throw new DuplElimException(e, "SortException is caught by DuplElim.java");
@@ -142,7 +149,7 @@ public class DuplElim extends Iterator {
 				return null;
 			}
 			TempTuple2.tupleCopy(t);
-		} while (TupleUtils.Equal(TempTuple1, TempTuple2, _in, in_len));
+		} while (TupleUtils.Equal(TempTuple1, TempTuple2, _in, in_len, distance, target));
 
 		// Now copy the the TempTuple2 (new o/p tuple) into TempTuple1.
 		TempTuple1.tupleCopy(TempTuple2);

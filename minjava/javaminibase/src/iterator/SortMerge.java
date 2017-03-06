@@ -38,6 +38,8 @@ public class SortMerge extends Iterator implements GlobalConst {
 	private Tuple Jtuple;
 	private FldSpec perm_mat[];
 	private int nOutFlds;
+	private double distance;
+	private Descriptor target;
 
 	/**
 	 * constructor,initialization
@@ -99,10 +101,12 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 			boolean in1_sorted, boolean in2_sorted, TupleOrder order,
 
-			CondExpr outFilter[], FldSpec proj_list[], int n_out_flds)
+			CondExpr outFilter[], FldSpec proj_list[], int n_out_flds, double distance, Descriptor target)
 			throws JoinNewFailed, JoinLowMemory, SortException, TupleUtilsException, IOException
 
 	{
+		this.distance = distance;
+		this.target = target;
 		_in1 = new AttrType[in1.length];
 		_in2 = new AttrType[in2.length];
 		System.arraycopy(in1, 0, _in1, 0, in1.length);
@@ -137,7 +141,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		if (!in1_sorted) {
 			try {
-				p_i1 = new Sort(in1, (short) len_in1, s1_sizes, am1, join_col_in1, order, sortFld1Len, amt_of_mem / 2);
+				p_i1 = new Sort(in1, (short) len_in1, s1_sizes, am1, join_col_in1, order, sortFld1Len, amt_of_mem / 2, distance, target);
 			} catch (Exception e) {
 				throw new SortException(e, "Sort failed");
 			}
@@ -145,7 +149,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		if (!in2_sorted) {
 			try {
-				p_i2 = new Sort(in2, (short) len_in2, s2_sizes, am2, join_col_in2, order, sortFld2Len, amt_of_mem / 2);
+				p_i2 = new Sort(in2, (short) len_in2, s2_sizes, am2, join_col_in2, order, sortFld2Len, amt_of_mem / 2, distance, target);
 			} catch (Exception e) {
 				throw new SortException(e, "Sort failed");
 			}
@@ -274,7 +278,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 				// Note that depending on whether the sort order
 				// is ascending or descending,
 				// this loop will be modified.
-				comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2);
+				comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
 				while ((comp_res < 0 && _order.tupleOrder == TupleOrder.Ascending)
 						|| (comp_res > 0 && _order.tupleOrder == TupleOrder.Descending)) {
 					if ((tuple1 = p_i1.get_next()) == null) {
@@ -282,10 +286,10 @@ public class SortMerge extends Iterator implements GlobalConst {
 						return null;
 					}
 
-					comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2);
+					comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
 				}
 
-				comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2);
+				comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
 				while ((comp_res > 0 && _order.tupleOrder == TupleOrder.Ascending)
 						|| (comp_res < 0 && _order.tupleOrder == TupleOrder.Descending)) {
 					if ((tuple2 = p_i2.get_next()) == null) {
@@ -293,7 +297,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 						return null;
 					}
 
-					comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2);
+					comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
 				}
 
 				if (comp_res != 0) {
@@ -307,7 +311,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 				io_buf1.init(_bufs1, 1, t1_size, temp_file_fd1);
 				io_buf2.init(_bufs2, 1, t2_size, temp_file_fd2);
 
-				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, TempTuple1, jc_in1) == 0) {
+				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, TempTuple1, jc_in1, distance, target) == 0) {
 					// Insert tuple1 into io_buf1
 					try {
 						io_buf1.Put(tuple1);
@@ -320,7 +324,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 					}
 				}
 
-				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2, jc_in2, TempTuple2, jc_in2) == 0) {
+				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2, jc_in2, TempTuple2, jc_in2, distance, target) == 0) {
 					// Insert tuple2 into io_buf2
 
 					try {

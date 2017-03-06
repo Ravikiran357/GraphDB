@@ -30,6 +30,8 @@ public class Sort extends Iterator implements GlobalConst {
 	private int max_elems_in_heap;
 	private int sortFldLen;
 	private int tuple_size;
+	private double distance; 
+	private Descriptor target;
 
 	private pnodeSplayPQ Q;
 	private Heapfile[] temp_files;
@@ -141,8 +143,8 @@ public class Sort extends Iterator implements GlobalConst {
 			throws IOException, SortException, UnknowAttrType, TupleUtilsException, JoinsException, Exception {
 		Tuple tuple;
 		pnode cur_node;
-		pnodeSplayPQ Q1 = new pnodeSplayPQ(_sort_fld, sortFldType, order);
-		pnodeSplayPQ Q2 = new pnodeSplayPQ(_sort_fld, sortFldType, order);
+		pnodeSplayPQ Q1 = new pnodeSplayPQ(_sort_fld, sortFldType, order, distance, target);
+		pnodeSplayPQ Q2 = new pnodeSplayPQ(_sort_fld, sortFldType, order, distance, target);
 		pnodeSplayPQ pcurr_Q = Q1;
 		pnodeSplayPQ pother_Q = Q2;
 		Tuple lastElem = new Tuple(tuple_size); // need tuple.java
@@ -210,7 +212,7 @@ public class Sort extends Iterator implements GlobalConst {
 				break;
 			p_elems_curr_Q--;
 
-			comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem); // need
+			comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem, distance, target); // need
 																											// tuple_utils.java
 
 			if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending)
@@ -569,7 +571,10 @@ public class Sort extends Iterator implements GlobalConst {
 	 *                something went wrong in the lower layer.
 	 */
 	public Sort(AttrType[] in, short len_in, short[] str_sizes, Iterator am, int sort_fld, TupleOrder sort_order,
-			int sort_fld_len, int n_pages) throws IOException, SortException {
+			int sort_fld_len, int n_pages, double distance, Descriptor target) throws IOException, SortException {
+		this.distance = distance;
+		this.target = target;
+		
 		_in = new AttrType[len_in];
 		n_cols = len_in;
 		int n_strs = 0;
@@ -643,7 +648,7 @@ public class Sort extends Iterator implements GlobalConst {
 		max_elems_in_heap = 200;
 		sortFldLen = sort_fld_len;
 
-		Q = new pnodeSplayPQ(sort_fld, in[sort_fld - 1], order);
+		Q = new pnodeSplayPQ(sort_fld, in[sort_fld - 1], order, distance, target);
 
 		op_buf = new Tuple(tuple_size); // need Tuple.java
 		try {

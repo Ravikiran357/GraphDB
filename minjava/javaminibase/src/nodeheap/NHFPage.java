@@ -547,7 +547,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 			offset = getSlotOffset(slotNo);
 			record = new byte[recLen];
 			System.arraycopy(data, offset, record, 0, recLen);
-			Node node = new Node(record, 0, recLen);
+			Node node = new Node(record, 0);
 			return node;
 		}
 
@@ -586,7 +586,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 		if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0) && (pageNo.pid == curPage.pid)) {
 
 			offset = getSlotOffset(slotNo);
-			Node node = new Node(data, offset, recLen);
+			Node node = new Node(data, offset);
 			return node;
 		}
 

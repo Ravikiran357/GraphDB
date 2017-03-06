@@ -27,6 +27,9 @@ public class pnodeSplayPQ extends pnodePQ {
 		fld_no = 0;
 		fld_type = new AttrType(AttrType.attrInteger);
 		sort_order = new TupleOrder(TupleOrder.Ascending);
+		this.distance = -1;
+		target = new Descriptor();
+		target.set(-1, -1, -1, -1, -1);
 	}
 
 	/**
@@ -39,12 +42,14 @@ public class pnodeSplayPQ extends pnodePQ {
 	 * @param order
 	 *            the order of sorting (Ascending or Descending)
 	 */
-	public pnodeSplayPQ(int fldNo, AttrType fldType, TupleOrder order) {
+	public pnodeSplayPQ(int fldNo, AttrType fldType, TupleOrder order, double distance, Descriptor target) {
 		root = null;
 		count = 0;
 		fld_no = fldNo;
 		fld_type = fldType;
 		sort_order = order;
+		this.distance = distance;
+		this.target = target;
 	}
 
 	/**

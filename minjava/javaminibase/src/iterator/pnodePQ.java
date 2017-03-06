@@ -23,6 +23,10 @@ public abstract class pnodePQ {
 
 	/** the sorting order (Ascending or Descending) */
 	protected TupleOrder sort_order;
+	
+	protected double distance;
+	
+	protected Descriptor target;
 
 	/**
 	 * class constructor, set <code>count</code> to <code>0</code>.
@@ -91,7 +95,7 @@ public abstract class pnodePQ {
 	 *                error in tuple compare routines
 	 */
 	public int pnodeCMP(pnode a, pnode b) throws IOException, UnknowAttrType, TupleUtilsException {
-		int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no);
+		int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no, distance, target);
 		return ans;
 	}
 
