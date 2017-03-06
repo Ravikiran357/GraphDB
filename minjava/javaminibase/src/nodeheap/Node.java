@@ -2,6 +2,8 @@
 
 package nodeheap;
 
+import heap.Tuple;
+
 import java.io.*;
 import java.lang.*;
 import global.*;
@@ -198,12 +200,11 @@ public class Node extends Tuple {
 
 
 
-    public String getLabel() throws IOException, FieldNumberOutOfBoundException {
-        return getStrFld(1);
-
+    public String getLabel() throws IOException, heap.FieldNumberOutOfBoundException {
+            return getStrFld(1);
     }
 
-    public Descriptor getDesc() throws IOException, FieldNumberOutOfBoundException {
+    public Descriptor getDesc() throws IOException, heap.FieldNumberOutOfBoundException {
         return getDescFld(2);
     }
 
@@ -211,16 +212,16 @@ public class Node extends Tuple {
 
 
 
-    public Node setLabel(String val) throws IOException, FieldNumberOutOfBoundException {
+    public Node setLabel(String val) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Node)setStrFld(1, val);
     }
 
-    public Node setDesc(Descriptor desc) throws IOException, FieldNumberOutOfBoundException {
+    public Node setDesc(Descriptor desc) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Node)setDescFld(2, desc);
     }
 
 
-    public void print() throws IOException, FieldNumberOutOfBoundException {
+    public void print() throws IOException, heap.FieldNumberOutOfBoundException {
         System.out.println("Node label"+ getLabel());
         System.out.println("Node descriptor values are");
         Descriptor desc = getDesc();
