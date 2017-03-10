@@ -6,12 +6,21 @@
 
 package catalog;
 
-import java.io.*;
-import bufmgr.*;
-import global.*;
-import heap.*;
-import diskmgr.*;
-import btree.*;
+import java.io.IOException;
+
+import btree.BTreeFile;
+import btree.IntegerKey;
+import btree.KeyClass;
+import btree.StringKey;
+import global.AttrType;
+import global.Catalogglobal;
+import global.Descriptor;
+import global.ExtendedSystemDefs;
+import global.IndexType;
+import global.RID;
+import heap.Heapfile;
+import heap.Tuple;
+import zIndex.DescriptorKey;
 
 public class Utility implements Catalogglobal {
 
@@ -67,6 +76,7 @@ public class Utility implements Catalogglobal {
 		int intVal = 0;
 		float floatVal = (float) 0.0;
 		String strVal = null;
+		Descriptor descVal = null;
 
 		// DELETE FOLLOWING ON RETURN
 		AttrDesc[] attrRecs = null;
@@ -208,6 +218,11 @@ public class Utility implements Catalogglobal {
 				strVal = tuple.getStrFld(attrPos);
 				StringKey k3 = new StringKey(strVal);
 				key = k3;
+				break;
+			case AttrType.attrDesc:
+				descVal = tuple.getDescFld(attrPos);
+				DescriptorKey k4 = new DescriptorKey(descVal);
+				key = k4;
 				break;
 			default:
 				System.out.println("Error in insertRecUT");

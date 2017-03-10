@@ -5,7 +5,9 @@
  */
 package btree;
 
-import global.*;
+import global.PageId;
+import global.RID;
+import zIndex.DescriptorKey;
 
 /**
  * KeyDataEntry: define (key, data) pair.
@@ -38,6 +40,8 @@ public class KeyDataEntry {
 			this.key = new IntegerKey(((IntegerKey) key).getKey());
 		else if (key instanceof StringKey)
 			this.key = new StringKey(((StringKey) key).getKey());
+		else if (key instanceof DescriptorKey)
+			this.key = new DescriptorKey(((DescriptorKey) key).getKey());
 	};
 
 	/**
@@ -65,6 +69,9 @@ public class KeyDataEntry {
 			this.key = new IntegerKey(((IntegerKey) key).getKey());
 		else if (key instanceof StringKey)
 			this.key = new StringKey(((StringKey) key).getKey());
+		else if (key instanceof DescriptorKey)
+			this.key = new DescriptorKey(((DescriptorKey) key).getKey());
+		
 	};
 
 	/**
@@ -83,6 +90,8 @@ public class KeyDataEntry {
 			this.key = new IntegerKey(((IntegerKey) key).getKey());
 		else if (key instanceof StringKey)
 			this.key = new StringKey(((StringKey) key).getKey());
+		else if (key instanceof DescriptorKey)
+			this.key = new DescriptorKey(((DescriptorKey) key).getKey());
 
 		if (data instanceof IndexData)
 			this.data = new IndexData(((IndexData) data).getData());

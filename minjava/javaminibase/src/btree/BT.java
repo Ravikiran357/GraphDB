@@ -6,12 +6,23 @@
  */
 package btree;
 
-import java.io.*;
-import java.lang.*;
-import global.*;
-import diskmgr.*;
-import bufmgr.*;
-import heap.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import diskmgr.Page;
+import global.AttrType;
+import global.Convert;
+import global.GlobalConst;
+import global.PageId;
+import global.RID;
+import global.SystemDefs;
+import zIndex.DescriptorKey;
 
 /**
  * This file contains, among some debug utilities, the interface to our key and
@@ -55,6 +66,9 @@ public class BT implements GlobalConst {
 			return (((IntegerKey) key1).getKey()).intValue() - (((IntegerKey) key2).getKey()).intValue();
 		} else if ((key1 instanceof StringKey) && (key2 instanceof StringKey)) {
 			return ((StringKey) key1).getKey().compareTo(((StringKey) key2).getKey());
+		}
+		else if ((key1 instanceof StringKey) && (key2 instanceof DescriptorKey)) {
+			return ((DescriptorKey) key1).getDescString().compareTo(((DescriptorKey) key2).getDescString());
 		}
 
 		else {
@@ -176,6 +190,8 @@ public class BT implements GlobalConst {
 				// System.out.println(" offset "+ offset + " " + length + "
 				// "+n);
 				key = new StringKey(Convert.getStrValue(offset, from, length - n));
+			} else if (keyType == AttrType.attrDesc) {
+				key = new DescriptorKey(Convert.getDescValue(offset, from));
 			} else
 				throw new KeyNotMatchException(null, "key types do not match");
 

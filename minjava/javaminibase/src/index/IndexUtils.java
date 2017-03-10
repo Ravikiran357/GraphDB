@@ -1,9 +1,24 @@
 package index;
 
-import global.*;
-import btree.*;
-import iterator.*;
-import java.io.*;
+import java.io.IOException;
+
+import btree.BTreeFile;
+import btree.ConstructPageException;
+import btree.IndexFile;
+import btree.IndexFileScan;
+import btree.IntegerKey;
+import btree.IteratorException;
+import btree.KeyClass;
+import btree.KeyNotMatchException;
+import btree.PinPageException;
+import btree.StringKey;
+import btree.UnpinPageException;
+import global.AttrOperator;
+import global.AttrType;
+import global.Descriptor;
+import iterator.CondExpr;
+import iterator.UnknownKeyTypeException;
+import zIndex.DescriptorKey;
 
 /**
  * IndexUtils class opens an index scan based on selection conditions. Currently
@@ -183,6 +198,11 @@ public class IndexUtils {
 				return new IntegerKey(new Integer(cd.operand1.integer));
 			else
 				return new IntegerKey(new Integer(cd.operand2.integer));
+		case AttrType.attrDesc:
+			if(choice == 1)
+				return new DescriptorKey(cd.operand1.desc);
+			else
+				return new DescriptorKey(cd.operand2.desc);
 		case AttrType.attrReal:
 			/*
 			 * // need FloatKey class in bt.java if (choice == 1) return new
