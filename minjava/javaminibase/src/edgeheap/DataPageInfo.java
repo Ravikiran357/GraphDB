@@ -3,6 +3,8 @@ package edgeheap;
 /** File DataPageInfo.java */
 
 import global.*;
+import heap.Tuple;
+
 import java.io.*;
 
 /**

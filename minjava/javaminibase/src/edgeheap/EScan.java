@@ -5,11 +5,14 @@ package edgeheap;
  * Scan.java-  class Scan
  *
  */
+import java.io.IOException;
 
-import java.io.*;
-import global.*;
-import bufmgr.*;
-import diskmgr.*;
+import diskmgr.Page;
+import global.EID;
+import global.GlobalConst;
+import global.PageId;
+import global.RID;
+import global.SystemDefs;
 
 /**
  * A Scan object is created ONLY through the function openScan of a HeapFile. It

@@ -1,34 +1,37 @@
 package nodeheap;
 
 import java.io.*;
+import java.util.HashSet;
+
 import diskmgr.*;
 import bufmgr.*;
 import global.*;
+import heap.FieldNumberOutOfBoundException;
 
 /**  This heapfile implementation is directory-based. We maintain a
  *  directory of info about the data pages (which are of type HFPage
  *  when loaded into memory).  The directory itself is also composed
- *  of HFPages, with each record being of type DataPageInfo
+ *  of HFPages, with each node being of type DataPageInfo
  *  as defined below.
  *
  *  The first directory page is a header page for the entire database
  *  (it is the one to which our filename is mapped by the DB).
  *  All directory pages are in a doubly-linked list of pages, each
  *  directory entry points to a single data page, which contains
- *  the actual records.
+ *  the actual nodes.
  *
  *  The heapfile data pages are implemented as slotted pages, with
- *  the slots at the front and the records in the back, both growing
+ *  the slots at the front and the nodes in the back, both growing
  *  into the free space in the middle of the page.
  *
- *  We can store roughly pagesize/sizeof(DataPageInfo) records per
+ *  We can store roughly pagesize/sizeof(DataPageInfo) nodes per
  *  directory page; for any given HeapFile insertion, it is likely
  *  that at least one of those referenced data pages will have
  *  enough free space to satisfy the request.
  */
 
 /**
- * DataPageInfo class : the type of records stored on a directory page.
+ * DataPageInfo class : the type of nodes stored on a directory page.
  *
  * April 9, 1998
  */
@@ -67,7 +70,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		hfpage.init(pageId, apage);
 
 		dpinfop.pageId.pid = pageId.pid;
-		dpinfop.recct = 0;
+		dpinfop.nodect = 0;
 		dpinfop.availspace = hfpage.available_space();
 
 		return hfpage;
@@ -75,9 +78,9 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	} // end of _newDatapage
 
 	/*
-	 * Internal HeapFile function (used in getRecord and updateRecord): returns
+	 * Internal HeapFile function (used in getNode and updateNode): returns
 	 * pinned directory page and pinned data page of the specified user
-	 * record(rid) and true if record is found. If the user record cannot be
+	 * node(nid) and true if node is found. If the user node cannot be
 	 * found, return false.
 	 */
 	private boolean _findDataPage(NID nid, PageId dirPageId, NHFPage dirpage, PageId dataPageId, NHFPage datapage,
@@ -131,7 +134,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 				if (dpinfo.pageId.pid == nid.pageNo.pid) {
 					atuple = currentDataPage.returnNode(nid);
-					// found user's record on the current datapage which itself
+					// found user's node on the current datapage which itself
 					// is indexed on the current dirpage. Return both of these.
 
 					dirpage.setpage(currentDirPage.getpage());
@@ -144,7 +147,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 					rpDataPageRid.slotNo = currentDataPageNid.slotNo;
 					return true;
 				} else {
-					// user record not found on this datapage; unpin it
+					// user node not found on this datapage; unpin it
 					// and try the next one
 					unpinPage(dpinfo.pageId, false /* undirty */);
 
@@ -172,7 +175,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 			}
 
 		} // end of While01
-			// checked all dir pages and all data pages; user record not found:(
+			// checked all dir pages and all data pages; user node not found:(
 
 		dirPageId.pid = dataPageId.pid = INVALID_PAGE;
 
@@ -264,7 +267,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	} // end of constructor
 
 	/**
-	 * Return number of records in file.
+	 * Return number of nodes in file.
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
@@ -277,7 +280,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 * @exception IOException
 	 *                I/O errors
 	 */
-	public int getRecCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException,
+	public int getNodeCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException,
 			HFBufMgrException, IOException
 
 	{
@@ -293,20 +296,20 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 			pinPage(currentDirPageId, currentDirPage, false);
 
 			NID nid = new NID();
-			Tuple atuple;
-			for (nid = currentDirPage.firstNode(); nid != null; // rid==NULL
+			Node atuple;
+			for (nid = currentDirPage.firstNode(); nid != null; // nid==NULL
 																	// means no
 																	// more
-																	// record
+																	// nodes
 					nid = currentDirPage.nextNode(nid)) {
 				atuple = currentDirPage.getNode(nid);
 				DataPageInfo dpinfo = new DataPageInfo(atuple);
 
-				answer += dpinfo.recct;
+				answer += dpinfo.nodect;
 			}
-
-			// ASSERTIONS: no more record
-			// - we have read all datapage records on
+			
+			// ASSERTIONS: no more node
+			// - we have read all datapage nodes on
 			// the current directory page.
 
 			nextDirPageId = currentDirPage.getNextPage();
@@ -320,15 +323,15 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		// - if not yet end of heapfile: currentDirPageId valid
 
 		return answer;
-	} // end of getRecCnt
+	} // end of getNodeCnt
 
 	/**
-	 * Insert record into file, return its Rid.
+	 * Insert node into file, return its Rid.
 	 *
 	 * @param recPtr
-	 *            pointer of the record
+	 *            pointer of the node
 	 * @param recLen
-	 *            the length of the record
+	 *            the length of the node
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
@@ -345,7 +348,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 * @exception IOException
 	 *                I/O errors
 	 *
-	 * @return the rid of the record
+	 * @return the nid of the node
 	 */
 	public NID insertNode(byte[] recPtr) throws InvalidSlotNumberException, InvalidTupleSizeException,
 			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -376,7 +379,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 				dpinfo = new DataPageInfo(node);
 
-				// need check the record length == DataPageInfo'slength
+				// need check the node length == DataPageInfo'slength
 
 				if (recLen <= dpinfo.availspace) {
 					found = true;
@@ -386,21 +389,21 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 			// two cases:
 			// (1) found == true:
-			// currentDirPage has a datapagerecord which can accomodate
-			// the record which we have to insert
+			// currentDirPage has a datapagenode which can accomodate
+			// the node which we have to insert
 			// (2) found == false:
-			// there is no datapagerecord on the current directory page
+			// there is no datapagenode on the current directory page
 			// whose corresponding datapage has enough space free
 			// several subcases: see below
 			if (found == false) { // Start IF01
 									// case (2)
 
-				// System.out.println("no datapagerecord on the current
+				// System.out.println("no datapagenode on the current
 				// directory is OK");
 				// System.out.println("dirpage availspace
 				// "+currentDirPage.available_space());
 
-				// on the current directory page is no datapagerecord which has
+				// on the current directory page is no datapagenode which has
 				// enough free space
 				//
 				// two cases:
@@ -408,7 +411,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 				// - (2.1) (currentDirPage->available_space() >=
 				// sizeof(DataPageInfo):
 				// if there is enough space on the current directory page
-				// to accomodate a new datapagerecord (type DataPageInfo),
+				// to accomodate a new datapagenode (type DataPageInfo),
 				// then insert a new DataPageInfo on the current directory
 				// page
 				// - (2.2) (currentDirPage->available_space() <=
@@ -417,7 +420,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 				if (currentDirPage.available_space() >= dpinfo.size) {
 					// Start IF02
-					// case (2.1) : add a new data page record into the
+					// case (2.1) : add a new data page node into the
 					// current directory page
 					currentDataPage = _newDatapage(dpinfo);
 					// currentDataPage is pinned! and dpinfo->pageId is also
@@ -426,7 +429,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 					// didn't check if currentDataPage==NULL, auto exception
 
-					// currentDataPage is pinned: insert its record
+					// currentDataPage is pinned: insert its node
 					// calling a HFPage function
 
 					node = dpinfo.convertToNode();
@@ -434,17 +437,17 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 					byte[] tmpData = node.getTupleByteArray();
 					currentDataPageRid = currentDirPage.insertNode(tmpData);
 
-					RID tmprid = currentDirPage.firstNode();
+					RID tmpnid = currentDirPage.firstNode();
 
 					// need catch error here!
 					if (currentDataPageRid == null)
 						throw new HFException(null, "no space to insert rec.");
 
-					// end the loop, because a new datapage with its record
+					// end the loop, because a new datapage with its node
 					// in the current directorypage was created and inserted
 					// into
 					// the heapfile; the new datapage has enough space for the
-					// record which the user wants to insert
+					// node which the user wants to insert
 
 					found = true;
 
@@ -525,7 +528,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 				// ASSERTIONS:
 				// - dpinfo valid
 
-				// System.out.println("find the dirpagerecord on current page");
+				// System.out.println("find the dirpagenode on current page");
 
 				pinPage(dpinfo.pageId, currentDataPage, false);
 				// currentDataPage.openHFpage(pageinbuffer);
@@ -550,7 +553,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		NID nid;
 		nid = currentDataPage.insertNode(recPtr);
 
-		dpinfo.recct++;
+		dpinfo.nodect++;
 		dpinfo.availspace = currentDataPage.available_space();
 
 		unpinPage(dpinfo.pageId, true /* = DIRTY */);
@@ -560,7 +563,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		DataPageInfo dpinfo_ondirpage = new DataPageInfo(node);
 
 		dpinfo_ondirpage.availspace = dpinfo.availspace;
-		dpinfo_ondirpage.recct = dpinfo.recct;
+		dpinfo_ondirpage.nodect = dpinfo.nodect;
 		dpinfo_ondirpage.pageId.pid = dpinfo.pageId.pid;
 		dpinfo_ondirpage.flushToTuple();
 
@@ -571,7 +574,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	}
 
 	/**
-	 * Delete record from file with given rid.
+	 * Delete node from file with given nid.
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
@@ -586,7 +589,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 * @exception Exception
 	 *                other exception
 	 *
-	 * @return true record deleted false:record not found
+	 * @return true node deleted false:node not found
 	 */
 	public boolean deleteNode(NID nid) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
 			HFBufMgrException, HFDiskMgrException, Exception
@@ -603,25 +606,25 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 				currentDataPageNid);
 
 		if (status != true)
-			return status; // record not found
+			return status; // node not found
 
 		// ASSERTIONS:
 		// - currentDirPage, currentDirPageId valid and pinned
 		// - currentDataPage, currentDataPageid valid and pinned
 
 		// get datapageinfo from the current directory page:
-		Tuple atuple;
+		Node atuple;
 
 		atuple = currentDirPage.returnNode(currentDataPageNid);
 		DataPageInfo pdpinfo = new DataPageInfo(atuple);
 
-		// delete the record on the datapage
+		// delete the node on the datapage
 		currentDataPage.deleteNode(nid);
 
-		pdpinfo.recct--;
+		pdpinfo.nodect--;
 		pdpinfo.flushToTuple(); // Write to the buffer pool
-		if (pdpinfo.recct >= 1) {
-			// more records remain on datapage so it still hangs around.
+		if (pdpinfo.nodect >= 1) {
+			// more nodes remain on datapage so it still hangs around.
 			// we just need to modify its directory entry
 
 			pdpinfo.availspace = currentDataPage.available_space();
@@ -631,11 +634,11 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 			unpinPage(currentDirPageId, true /* = DIRTY */);
 
 		} else {
-			// the record is already deleted:
-			// we're removing the last record on datapage so free datapage
+			// the node is already deleted:
+			// we're removing the last node on datapage so free datapage
 			// also, free the directory page if
 			// a) it's not the first directory page, and
-			// b) we've removed the last DataPageInfo record on it.
+			// b) we've removed the last DataPageInfo node on it.
 
 			// delete empty datapage: (does it get unpinned automatically? -NO,
 			// Ranjani)
@@ -656,7 +659,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 			currentDataPageNid = currentDirPage.firstNode();
 
-			// st == OK: we still found a datapageinfo record on this directory
+			// st == OK: we still found a datapageinfo node on this directory
 			// page
 			PageId pageId;
 			pageId = currentDirPage.getPrevPage();
@@ -697,7 +700,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 			} else {
 				// either (the directory page has at least one more
-				// datapagerecord
+				// datapagenode
 				// entry) or (it is the first directory page):
 				// in both cases we do not delete it, but we have to unpin it:
 
@@ -709,17 +712,17 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	}
 
 	/**
-	 * Updates the specified record in the heapfile.
+	 * Updates the specified node in the heapfile.
 	 * 
-	 * @param rid:
-	 *            the record which needs update
+	 * @param nid:
+	 *            the node which needs update
 	 * @param newtuple:
-	 *            the new content of the record
+	 *            the new content of the node
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
 	 * @exception InvalidUpdateException
-	 *                invalid update on record
+	 *                invalid update on node
 	 * @exception InvalidTupleSizeException
 	 *                invalid tuple size
 	 * @exception HFException
@@ -730,9 +733,9 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception Exception
 	 *                other exception
-	 * @return ture:update success false: can't find the record
+	 * @return ture:update success false: can't find the node
 	 */
-	public boolean updateNode(NID nid, Tuple newtuple) throws InvalidSlotNumberException, InvalidUpdateException,
+	public boolean updateNode(NID nid, Node newtuple) throws InvalidSlotNumberException, InvalidUpdateException,
 			InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
 		boolean status;
 		NHFPage dirPage = new NHFPage();
@@ -744,22 +747,22 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		status = _findDataPage(nid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageNid);
 
 		if (status != true)
-			return status; // record not found
-		Tuple atuple = new Tuple();
+			return status; // node not found
+		Node atuple = new Node();
 		atuple = dataPage.returnNode(nid);
 
-		// Assume update a record with a record whose length is equal to
-		// the original record
+		// Assume update a node with a node whose length is equal to
+		// the original node
 
 		if (newtuple.getLength() != atuple.getLength()) {
 			unpinPage(currentDataPageId, false /* undirty */);
 			unpinPage(currentDirPageId, false /* undirty */);
 
-			throw new InvalidUpdateException(null, "invalid record update");
+			throw new InvalidUpdateException(null, "invalid node update");
 
 		}
 
-		// new copy of this record fits in old space;
+		// new copy of this node fits in old space;
 		atuple.tupleCopy(newtuple);
 		unpinPage(currentDataPageId, true /* = DIRTY */);
 
@@ -769,10 +772,10 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	}
 
 	/**
-	 * Read record from file, returning pointer and length.
+	 * Read node from file, returning pointer and length.
 	 * 
-	 * @param rid
-	 *            Record ID
+	 * @param nid
+	 *            Node ID
 	 *
 	 * @exception InvalidSlotNumberException
 	 *                invalid slot number
@@ -803,13 +806,13 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		status = _findDataPage(nid, currentDirPageId, dirPage, currentDataPageId, dataPage, currentDataPageNid);
 
 		if (status != true)
-			return null; // record not found
+			return null; // node not found
 
 		Node atuple = new Node();
 		atuple = dataPage.getNode(nid);
 
 		/*
-		 * getRecord has copied the contents of rid into recPtr and fixed up
+		 * getNode has copied the contents of nid into recPtr and fixed up
 		 * recLen also. We simply have to unpin dirpage and datapage which were
 		 * originally pinned by _findDataPage.
 		 */
@@ -867,7 +870,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		nextDirPageId.pid = 0;
 		Page pageinbuffer = new Page();
 		NHFPage currentDirPage = new NHFPage();
-		Tuple atuple;
+		Node atuple;
 
 		pinPage(currentDirPageId, currentDirPage, false);
 		// currentDirPage.openHFpage(pageinbuffer);
@@ -877,7 +880,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 			for (nid = currentDirPage.firstNode(); nid != null; nid = currentDirPage.nextNode(nid)) {
 				atuple = currentDirPage.getNode(nid);
 				DataPageInfo dpinfo = new DataPageInfo(atuple);
-				// int dpinfoLen = arecord.length;
+				// int dpinfoLen = anode.length;
 
 				freePage(dpinfo.pageId);
 
@@ -986,5 +989,69 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		}
 
 	} // end of delete_file_entry
+	
+	/**
+	 * Return number of unique Labels in file.
+	 *
+	 * @exception InvalidSlotNumberException
+	 *                invalid slot number
+	 * @exception InvalidTupleSizeException
+	 *                invalid tuple size
+	 * @exception HFBufMgrException
+	 *                exception thrown from bufmgr layer
+	 * @exception HFDiskMgrException
+	 *                exception thrown from diskmgr layer
+	 * @exception IOException
+	 *                I/O errors
+	 * @throws FieldNumberOutOfBoundException 
+	 */
+	public int getLabelCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException,
+			HFBufMgrException, IOException, FieldNumberOutOfBoundException
 
+	{
+		HashSet<String> LabelSet = new HashSet<String>();
+		int answer = 0;
+		PageId currentDirPageId = new PageId(_firstDirPageId.pid);
+
+		PageId nextDirPageId = new PageId(0);
+
+		NHFPage currentDirPage = new NHFPage();
+		Page pageinbuffer = new Page();
+
+		while (currentDirPageId.pid != INVALID_PAGE) {
+			pinPage(currentDirPageId, currentDirPage, false);
+
+			NID nid = new NID();
+			Node atuple;
+			for (nid = currentDirPage.firstNode(); nid != null; // nid==NULL
+																	// means no
+																	// more
+																	// nodes
+					nid = currentDirPage.nextNode(nid)) {
+				atuple = currentDirPage.getNode(nid);
+				LabelSet.add(atuple.getLabel());
+//				DataPageInfo dpinfo = new DataPageInfo(atuple);
+//
+//				answer += dpinfo.nodect;
+			}
+			
+			// ASSERTIONS: no more node
+			// - we have read all datapage nodes on
+			// the current directory page.
+
+			nextDirPageId = currentDirPage.getNextPage();
+			unpinPage(currentDirPageId, false /* undirty */);
+			currentDirPageId.pid = nextDirPageId.pid;
+		}
+
+		// ASSERTIONS:
+		// - if error, exceptions
+		// - if end of heapfile reached: currentDirPageId == INVALID_PAGE
+		// - if not yet end of heapfile: currentDirPageId valid
+		answer = LabelSet.size();
+		return answer;
+	} // end of getNodeCnt
+
+	
+	
 }// End of HeapFile

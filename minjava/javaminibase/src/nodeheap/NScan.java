@@ -383,7 +383,7 @@ public class NScan implements GlobalConst {
 
 		boolean nextDataPageStatus;
 		PageId nextDirPageId = new PageId();
-		Tuple rectuple = null;
+		Node rectuple = null;
 
 		// ASSERTIONS:
 		// - this->dirpageId has Id of current directory page

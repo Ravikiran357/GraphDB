@@ -3,6 +3,8 @@ package nodeheap;
 /** File DataPageInfo.java */
 
 import global.*;
+import heap.Tuple;
+
 import java.io.*;
 
 /**
@@ -17,7 +19,7 @@ class DataPageInfo implements GlobalConst {
 	int availspace;
 
 	/** for efficient implementation of getRecCnt() */
-	int recct;
+	int nodect;
 
 	/** obvious: id of this particular data page (a HFPage) */
 	PageId pageId = new PageId();
@@ -43,7 +45,7 @@ class DataPageInfo implements GlobalConst {
 	public DataPageInfo() {
 		data = new byte[12]; // size of datapageinfo
 		int availspace = 0;
-		recct = 0;
+		nodect = 0;
 		pageId.pid = INVALID_PAGE;
 		offset = 0;
 	}
@@ -81,7 +83,7 @@ class DataPageInfo implements GlobalConst {
 			offset = _atuple.getOffset();
 
 			availspace = Convert.getIntValue(offset, data);
-			recct = Convert.getIntValue(offset + 4, data);
+			nodect = Convert.getIntValue(offset + 4, data);
 			pageId = new PageId();
 			pageId.pid = Convert.getIntValue(offset + 8, data);
 
@@ -95,9 +97,9 @@ class DataPageInfo implements GlobalConst {
 	 */
 	public Tuple convertToTuple() throws IOException {
 
-		// 1) write availspace, recct, pageId into data []
+		// 1) write availspace, nodect, pageId into data []
 		Convert.setIntValue(availspace, offset, data);
-		Convert.setIntValue(recct, offset + 4, data);
+		Convert.setIntValue(nodect, offset + 4, data);
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
 		// 2) creat a Tuple object using this array
@@ -115,9 +117,9 @@ class DataPageInfo implements GlobalConst {
 	 */
 	public Node convertToNode() throws IOException {
 
-		// 1) write availspace, recct, pageId into data []
+		// 1) write availspace, nodect, pageId into data []
 		Convert.setIntValue(availspace, offset, data);
-		Convert.setIntValue(recct, offset + 4, data);
+		Convert.setIntValue(nodect, offset + 4, data);
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
 		// 2) creat a Tuple object using this array
@@ -129,14 +131,14 @@ class DataPageInfo implements GlobalConst {
 	}
 
 	/**
-	 * write this object's useful fields(availspace, recct, pageId) to the
+	 * write this object's useful fields(availspace, nodect, pageId) to the
 	 * data[](may be in buffer pool)
 	 * 
 	 */
 	public void flushToTuple() throws IOException {
-		// write availspace, recct, pageId into "data[]"
+		// write availspace, nodect, pageId into "data[]"
 		Convert.setIntValue(availspace, offset, data);
-		Convert.setIntValue(recct, offset + 4, data);
+		Convert.setIntValue(nodect, offset + 4, data);
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
 		// here we assume data[] already points to buffer pool
