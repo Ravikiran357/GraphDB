@@ -6,13 +6,26 @@
 
 package catalog;
 
-import java.io.*;
+import java.io.IOException;
 
-import global.*;
-import heap.*;
-import bufmgr.*;
-import diskmgr.*;
-import btree.*;
+import btree.BTreeFile;
+import btree.IntegerKey;
+import btree.KeyClass;
+import btree.StringKey;
+import bufmgr.BufMgrException;
+import diskmgr.DiskMgrException;
+import global.AttrType;
+import global.Catalogglobal;
+import global.Descriptor;
+import global.ExtendedSystemDefs;
+import global.GlobalConst;
+import global.IndexType;
+import global.RID;
+import global.TupleOrder;
+import heap.Heapfile;
+import heap.Scan;
+import heap.Tuple;
+import zIndex.DescriptorKey;
 
 public class IndexCatalog extends Heapfile implements GlobalConst, Catalogglobal {
 
@@ -338,6 +351,7 @@ public class IndexCatalog extends Heapfile implements GlobalConst, Catalogglobal
 		int intKey = 0;
 		float floatKey = (float) 0.0;
 		String charKey = null;
+		Descriptor descKey = null;
 		int attrCnt = 0;
 		KeyClass key = null;
 		int recSize = 0;
@@ -486,6 +500,10 @@ public class IndexCatalog extends Heapfile implements GlobalConst, Catalogglobal
 			} else if (attrRec.attrType.attrType == AttrType.attrString) {
 				charKey = new String(tuple.getStrFld(attrRec.attrPos));
 				key = new StringKey(charKey);
+			}
+			else if (attrRec.attrType.attrType == AttrType.attrDesc) {
+				descKey = tuple.getDescFld(attrRec.attrPos);
+				key = new DescriptorKey(descKey);
 			}
 
 			// NOW INSERT RECORD INTO INDEX
