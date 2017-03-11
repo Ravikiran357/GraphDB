@@ -17,9 +17,7 @@ import java.io.IOException;
  * Created by revu on 3/10/17.
  */
 public class BatchEdgeDelete {
-    private String sourceLabel;
-    private String destLabel;
-    private String edgeLabel;
+
 
     BatchEdgeDelete(){
 
@@ -44,9 +42,7 @@ public class BatchEdgeDelete {
 
 
     public void doSingleBatchEdgeDelete  (String sourceLabel, String destLabel, String edgeLabel) throws Exception {
-        this.sourceLabel = sourceLabel;
-        this.destLabel = destLabel;
-        this.edgeLabel = edgeLabel;
+
 
         EID eid = getEdge(edgeLabel);
         Edge edge = SystemDefs.JavabaseDB.edgeHeapfile.getEdge(eid);
