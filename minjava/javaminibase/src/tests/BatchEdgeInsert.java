@@ -54,7 +54,7 @@ public class BatchEdgeInsert {
     }
 
 
-    public void doSingleBatchEdgeDelete  (String sourceLabel, String destLabel, String edgeLabel, Integer edgeWeight) throws Exception {
+    public void doSingleBatchEdgInsert  (String sourceLabel, String destLabel, String edgeLabel, Integer edgeWeight) throws Exception {
 
 
         EID eid = getEdge(edgeLabel);
