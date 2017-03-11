@@ -6,7 +6,7 @@ import catalog.*;
 
 public class SystemDefs {
 	public static BufMgr JavabaseBM;
-	public static DB JavabaseDB;
+	public static GraphDB JavabaseDB;
 	public static Catalog JavabaseCatalog;
 
 	public static String JavabaseDBName;
@@ -48,7 +48,7 @@ public class SystemDefs {
 
 		try {
 			JavabaseBM = new BufMgr(bufpoolsize, replacement_policy);
-			JavabaseDB = new DB();
+			JavabaseDB = new GraphDB(0);
 			/*
 			 * JavabaseCatalog = new Catalog();
 			 */
