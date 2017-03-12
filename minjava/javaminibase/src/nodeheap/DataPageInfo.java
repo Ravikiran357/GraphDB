@@ -27,7 +27,7 @@ class DataPageInfo implements GlobalConst {
 
 	/** auxiliary fields of DataPageInfo */
 
-	public static final int size = 64;// size of DataPageInfo object in bytes
+	public static final int size = 12;// size of DataPageInfo object in bytes
 
 	private byte[] data; // a data buffer
 
@@ -44,7 +44,7 @@ class DataPageInfo implements GlobalConst {
 	 * Default constructor
 	 */
 	public DataPageInfo() {
-		data = new byte[64]; // size of datapageinfo
+		data = new byte[size]; // size of datapageinfo
 		int availspace = 0;
 		nodect = 0;
 		pageId.pid = INVALID_PAGE;

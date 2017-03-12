@@ -101,23 +101,34 @@ class BatchDriver implements GlobalConst{
 			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
 			
 			BatchNodeInsert batchNodeInsert = new BatchNodeInsert();
-			
+			int k = 0;
+			try{
+
 			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+				System.out.println("record number is "+k);
 				batchNodeInsert.doSingleBatchNodeInsert(line, nhf, db);
+				if(k == 12){
+					System.out.println("record number is "+k);
+				}
+				k++;
+			}
+			}
+			catch (Exception e){
+				System.exit(1);
 			}
 			System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
+			break;
 		
 		case 1:
 			
 			BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
-			
 			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
 				batchNodeDelete.doSingleBatchNodeDelete(line.trim());
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			
+			break;
 		case 2:
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
 			String[] edgeVals = new String[4];
@@ -129,6 +140,7 @@ class BatchDriver implements GlobalConst{
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
+			break;
 		
 		case 3:	
 			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
