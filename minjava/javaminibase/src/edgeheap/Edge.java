@@ -49,6 +49,7 @@ public class Edge extends Tuple {
         data = new byte[max_size];
         edge_offset = 0;
         edge_length = max_size;
+        this.fldCnt = 4;
     }
 
     /**

@@ -5,6 +5,7 @@ import java.io.IOException;
 import edgeheap.EdgeHeapfile;
 import global.GlobalConst;
 import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTypeException;
 import nodeheap.HFBufMgrException;
 import nodeheap.HFDiskMgrException;
 import nodeheap.HFException;
@@ -22,14 +23,14 @@ public class GraphDB extends DB implements GlobalConst{
 	public GraphDB(int type) throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException, HFBufMgrException, IOException, HFException, edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException{
 		//TODO
 		super();
-		this.nodeHeapfile = new NodeHeapfile(NODEFILENAME);
-		this.edgeHeapfile = new EdgeHeapfile(EDGEFILENAME);
-
-
 	}
 	
+	public void createNewFiles() throws HFException, HFBufMgrException, HFDiskMgrException, IOException, edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException{
+		this.nodeHeapfile = new NodeHeapfile(NODEFILENAME);
+		this.edgeHeapfile = new EdgeHeapfile(EDGEFILENAME);
+	}
 	
-	public int getNodeCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException, HFBufMgrException, IOException, HFException{
+	public int getNodeCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException, HFBufMgrException, IOException, HFException, InvalidTypeException, heap.InvalidTupleSizeException{
 		int iNodeCnt = 0;
 		
 		//NodeHeapfile nodeheapfile = new NodeHeapfile(NODEFILENAME);
@@ -64,7 +65,7 @@ public class GraphDB extends DB implements GlobalConst{
 	}
 	
 	
-	public int getLabelCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException, HFBufMgrException, FieldNumberOutOfBoundException, edgeheap.HFBufMgrException, edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, IOException, edgeheap.HFException, edgeheap.HFDiskMgrException, HFException{
+	public int getLabelCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException, HFBufMgrException, FieldNumberOutOfBoundException, edgeheap.HFBufMgrException, edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, IOException, edgeheap.HFException, edgeheap.HFDiskMgrException, HFException, InvalidTypeException, heap.InvalidTupleSizeException{
 		int iLabelCnt =0;
 		
 		//EdgeHeapfile edgeheapfile = new EdgeHeapfile(EDGEFILENAME);

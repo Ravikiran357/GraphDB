@@ -449,7 +449,9 @@ public class Tuple implements GlobalConst {
 			incr = (short) (strSizes[strCount] + 2); // strlen in bytes = strlen
 														// +2
 			break;
-
+		case AttrType.attrDesc:
+			incr = 20;
+			break;
 		default:
 			throw new InvalidTypeException(null, "TUPLE: TUPLE_TYPE_ERROR");
 		}

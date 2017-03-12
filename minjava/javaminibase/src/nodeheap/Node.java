@@ -2,6 +2,8 @@
 
 package nodeheap;
 
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import heap.Tuple;
 
 import java.io.*;
@@ -44,13 +46,24 @@ public class Node extends Tuple {
     /**
      * Class constructor Creat a new tuple with length = max_size,tuple offset =
      * 0.
+     * @throws IOException 
+     * @throws InvalidTupleSizeException 
+     * @throws InvalidTypeException 
      */
 
-    public Node() {
+    public Node() throws InvalidTypeException, InvalidTupleSizeException, IOException {
         // Creat a new tuple
+    	super(max_size);
         data = new byte[max_size];
+        System.out.println("data length"+data.length);
         node_offset = 0;
         node_length = max_size;
+        AttrType[] attrs = new AttrType[2];
+        short[] str_sizes = new short[1];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrDesc);
+        str_sizes[0] = (short) 44;
+        this.setHdr((short)2, attrs, str_sizes);
     }
 
     /**
@@ -62,6 +75,9 @@ public class Node extends Tuple {
      *            the offset of the tuple in the byte array
      *
      *            the length of the tuple
+     * @throws IOException 
+     * @throws InvalidTupleSizeException 
+     * @throws InvalidTypeException 
      */
 
     public Node(byte[] anode, int offset) {
@@ -69,6 +85,23 @@ public class Node extends Tuple {
         node_offset = offset;
         node_length = max_size;
         // fldCnt = getShortValue(offset, data);
+        AttrType[] attrs = new AttrType[2];
+        short[] str_sizes = new short[1];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrDesc);
+        str_sizes[0] = (short) 44;
+        try {
+			this.setHdr((short)2, attrs, str_sizes);
+		} catch (InvalidTypeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidTupleSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /**
@@ -128,6 +161,18 @@ public class Node extends Tuple {
         node_offset = offset;
         node_length = max_size;
     }
+    
+    
+	/**
+	 * return the data byte array
+	 * 
+	 * @return data byte array
+	 */
+
+	public byte[] returnNodeByteArray() {
+		return data;
+	}
+
 
     /**
      * Set a tuple with the given tuple length and offset
@@ -184,6 +229,8 @@ public class Node extends Tuple {
 
     public byte[] getNodeByteArray() {
         byte[] nodecopy = new byte[node_length];
+        System.out.println("data"+data.length);
+        System.out.println("nodecopy"+nodecopy.length);
         System.arraycopy(data, node_offset, nodecopy, 0, node_length);
         return nodecopy;
     }

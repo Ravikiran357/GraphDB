@@ -6,6 +6,8 @@ import java.io.*;
 import java.lang.*;
 
 import global.*;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import diskmgr.*;
 
 /**
@@ -460,9 +462,9 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	public NID firstNode() throws IOException {
 		NID nid = new NID();
 		// find the first non-empty slot
-
+		System.out.println(data.length);
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
-
+		System.out.println(data.length);
 		int i;
 		short length;
 		for (i = 0; i < slotCnt; i++) {
@@ -529,9 +531,11 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 * @see Tuple
 	 */
-	public Node getNode(NID nid) throws IOException, InvalidSlotNumberException {
+	public Node getNode(NID nid) throws IOException, InvalidSlotNumberException, InvalidTypeException, InvalidTupleSizeException {
 		short recLen;
 		short offset;
 		byte[] record;
@@ -568,9 +572,11 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 * @see Tuple
 	 */
-	public Node returnNode(NID nid) throws IOException, InvalidSlotNumberException {
+	public Node returnNode(NID nid) throws IOException, InvalidSlotNumberException, InvalidTypeException, InvalidTupleSizeException {
 		short recLen;
 		short offset;
 		PageId pageNo = new PageId();

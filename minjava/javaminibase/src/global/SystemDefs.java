@@ -1,7 +1,14 @@
 package global;
 
+import java.io.IOException;
+
 import bufmgr.*;
 import diskmgr.*;
+import nodeheap.HFBufMgrException;
+import nodeheap.HFDiskMgrException;
+import nodeheap.HFException;
+import nodeheap.InvalidSlotNumberException;
+import nodeheap.InvalidTupleSizeException;
 import catalog.*;
 
 public class SystemDefs {
@@ -68,6 +75,7 @@ public class SystemDefs {
 														// database
 			try {
 				JavabaseDB.openDB(dbname);
+				//JavabaseDB.createNewFiles();
 			} catch (Exception e) {
 				System.err.println("" + e);
 				e.printStackTrace();
@@ -76,6 +84,7 @@ public class SystemDefs {
 		} else {
 			try {
 				JavabaseDB.openDB(dbname, num_pgs);
+				JavabaseDB.createNewFiles();
 				JavabaseBM.flushAllPages();
 			} catch (Exception e) {
 				System.err.println("" + e);
@@ -83,5 +92,6 @@ public class SystemDefs {
 				Runtime.getRuntime().exit(1);
 			}
 		}
+		
 	}
 }
