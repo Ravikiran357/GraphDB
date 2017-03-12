@@ -231,18 +231,12 @@ public class Edge extends Tuple {
 
 
     public void print() throws IOException, heap.FieldNumberOutOfBoundException {
-            System.out.println("label is "+ getLabel());
-            System.out.println("Weight is : "+ getWeight());
-            NID source = getSource();
-            NID dest = getDestination();
-            System.out.println("Source pid: " + source.pageNo + ", slotnum "+ source.slotNo);
-            System.out.println("Dest pid: " + dest.pageNo + ", slotnum "+ dest.slotNo);
-
-        }
-
-
-
-
-
-
+        System.out.println("label is "+ getLabel());
+        System.out.println("Weight is : "+ getWeight());
+        NID source = getSource();
+        NID dest = getDestination();
+        System.out.println("Source pid: " + source.pageNo + ", slotnum "+ source.slotNo);
+        System.out.println("Dest pid: " + dest.pageNo + ", slotnum "+ dest.slotNo);
+        System.out.println("\n");
+    }
 }
