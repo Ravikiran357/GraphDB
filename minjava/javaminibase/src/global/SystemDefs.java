@@ -64,8 +64,8 @@ public class SystemDefs {
 
 		// create or open the DB
 
-		if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {// open an existing
-														// database
+		if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {
+			// open an existing database
 			try {
 				JavabaseDB.openDB(dbname);
 			} catch (Exception e) {
@@ -76,6 +76,7 @@ public class SystemDefs {
 		} else {
 			try {
 				JavabaseDB.openDB(dbname, num_pgs);
+				JavabaseDB.createFiles();
 				JavabaseBM.flushAllPages();
 			} catch (Exception e) {
 				System.err.println("" + e);
