@@ -157,7 +157,7 @@ public class Node extends Tuple {
      */
 
     public void nodeInit(byte[] anode, int offset) {
-        node_length = max_size;
+        tupleInit(anode, offset, max_size);node_length = max_size;
     }
     
     
