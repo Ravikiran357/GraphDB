@@ -126,7 +126,7 @@ class DataPageInfo implements GlobalConst {
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
 		// 2) creat a Tuple object using this array
-		Node atuple = new Node(data, offset);
+		Node atuple = new Node(data, offset, size);
 
 		// 3) return tuple object
 		return atuple;
