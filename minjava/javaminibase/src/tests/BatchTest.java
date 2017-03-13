@@ -95,7 +95,7 @@ class BatchDriver implements GlobalConst{
 }
 	
 	public void runAlltests(int choice, String filename, String graphDBName) throws Exception {
-		switch(0){
+		switch(choice){
 		case 0:
 			GraphDB db = SystemDefs.JavabaseDB;//new GraphDB(0);
 			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;

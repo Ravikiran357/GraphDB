@@ -34,11 +34,14 @@ public class BatchNodeDelete implements GlobalConst{
         return null;
     }
     
-    public void doSingleBatchNodeDelete(String nodeLabel) throws InvalidSlotNumberException, HFException, HFBufMgrException, HFDiskMgrException, Exception{
-    	this.nodeLabel = nodeLabel;
-    	
+    public void doSingleBatchNodeDelete(String line) throws InvalidSlotNumberException, HFException, HFBufMgrException, HFDiskMgrException, Exception{
+        line = line.trim();
+        String [] vals = new String[5];
+
+        vals = line.split(" ");
+        this.nodeLabel = vals[0];
     	NID nid = getNode(nodeLabel);
-    	
+
     	EScan eScan = new EScan(SystemDefs.JavabaseDB.edgeHeapfile);
     	EID eid = new EID();
         boolean done = true;
@@ -47,9 +50,10 @@ public class BatchNodeDelete implements GlobalConst{
             if(e == null){
                 done = false;
             }
-            if(e.getSource().equals(nid) || e.getDestination().equals(nid)){
-            	SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
-            }
+
+//            if(e.getSource().equals(nid) || e.getDestination().equals(nid)){
+//            	SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
+//            }
         }
         SystemDefs.JavabaseDB.nodeHeapfile.deleteNode(nid);
     }

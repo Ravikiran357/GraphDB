@@ -462,9 +462,9 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	public NID firstNode() throws IOException {
 		NID nid = new NID();
 		// find the first non-empty slot
-		System.out.println(data.length);
+		//System.out.println(data.length);
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
-		System.out.println(data.length);
+		//System.out.println(data.length);
 		int i;
 		short length;
 		for (i = 0; i < slotCnt; i++) {
@@ -551,7 +551,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 			offset = getSlotOffset(slotNo);
 			record = new byte[recLen];
 			System.arraycopy(data, offset, record, 0, recLen);
-			Node node = new Node(record, 0);
+			Node node = new Node(record, 0, recLen);
 			return node;
 		}
 
@@ -592,7 +592,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 		if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0) && (pageNo.pid == curPage.pid)) {
 
 			offset = getSlotOffset(slotNo);
-			Node node = new Node(data, offset);
+			Node node = new Node(data, offset, recLen);
 			return node;
 		}
 

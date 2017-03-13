@@ -42,6 +42,8 @@ public class Node extends Tuple {
         this.setHdr((short)2, attrs, str_sizes);
     }
 
+
+
     /**
      * Constructor
      *
@@ -78,6 +80,36 @@ public class Node extends Tuple {
 			e.printStackTrace();
 		}
     }
+
+
+
+    public Node(byte[] anode, int offset, int size) {
+        super(anode,offset,size);
+        node_length = size;
+        // fldCnt = getShortValue(offset, data);
+        if (size==74){
+            AttrType[] attrs = new AttrType[2];
+            short[] str_sizes = new short[1];
+            attrs[0] = new AttrType(AttrType.attrString);
+            attrs[1] = new AttrType(AttrType.attrDesc);
+            str_sizes[0] = (short) 44;
+            try {
+                this.setHdr((short)2, attrs, str_sizes);
+            } catch (InvalidTypeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InvalidTupleSizeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
 
     /**
      * Constructor(used as tuple copy)

@@ -373,6 +373,8 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 		found = false;
 		Node node;
+		Tuple atuple;
+
 		DataPageInfo dpinfo = new DataPageInfo();
 		while (found == false) { // Start While01
 									// look for suitable dpinfo-struct
