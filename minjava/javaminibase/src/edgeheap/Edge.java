@@ -1,6 +1,9 @@
 /* File Edge.java */
 
 package edgeheap;
+import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import heap.Tuple;
 import java.io.*;
 import java.lang.*;
@@ -11,45 +14,20 @@ public class Edge extends Tuple {
     /**
      * Maximum size of any tuple
      */
-    public static final int max_size = 64;
-
-    /**
-     * a byte array to hold data
-     */
-    private byte[] data;
-
-    /**
-     * start position of this tuple in data[]
-     */
-    private int edge_offset;
-
-    /**
-     * length of this tuple
-     */
-    private int edge_length;
-
-    /**
-     * private field Number of fields in this tuple
-     */
-    private short fldCnt;
-
-    /**
-     * private field Array of offsets of the fields
-     */
-
-    private short[] fldOffset;
+    public static final int max_size = 82;
 
     /**
      * Class constructor Creat a new tuple with length = max_size,tuple offset =
      * 0.
+     * @throws IOException 
+     * @throws InvalidTupleSizeException 
+     * @throws InvalidTypeException 
      */
 
-    public Edge() {
+    public Edge() throws InvalidTypeException, InvalidTupleSizeException, IOException {
         // Creat a new tuple
-        data = new byte[max_size];
-        edge_offset = 0;
-        edge_length = max_size;
-        this.fldCnt = 4;
+    	super(max_size);
+        setEdgeHdr();
     }
 
     /**
@@ -61,13 +39,34 @@ public class Edge extends Tuple {
      *            the offset of the tuple in the byte array
      *
      *            the length of the tuple
+     * @throws IOException 
+     * @throws InvalidTupleSizeException 
+     * @throws InvalidTypeException 
      */
 
-    public Edge(byte[] aedge, int offset) {
-        data = aedge;
-        edge_offset = offset;
-        edge_length = max_size;
+    public Edge(byte[] aedge, int offset) throws InvalidTypeException, InvalidTupleSizeException, IOException {
+    	super(aedge, offset, max_size);
+        setEdgeHdr();
         // fldCnt = getShortValue(offset, data);
+    }
+    
+    public Edge(byte[] aedge, int offset, int size) throws InvalidTypeException, InvalidTupleSizeException, IOException {
+    	super(aedge, offset, size);
+        if(size == 82) setEdgeHdr();
+        // fldCnt = getShortValue(offset, data);
+    }
+    
+    private void setEdgeHdr() throws InvalidTypeException, InvalidTupleSizeException, IOException{
+        AttrType[] attrs = new AttrType[6];
+        short[] str_sizes = new short[1];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrInteger);
+        attrs[2] = new AttrType(AttrType.attrInteger);
+        attrs[3] = new AttrType(AttrType.attrInteger);
+        attrs[4] = new AttrType(AttrType.attrInteger);
+        attrs[5] = new AttrType(AttrType.attrInteger);
+        str_sizes[0] = (short)44;
+        this.setHdr((short)6, attrs, str_sizes);
     }
 
     /**
@@ -78,12 +77,7 @@ public class Edge extends Tuple {
      *
      */
     public Edge(Edge fromEdge) {
-        data = fromEdge.getEdgeByteArray();
-        edge_length = fromEdge.getLength();
-        //edge_length = max_size;
-        edge_offset = 0;
-        fldCnt = fromEdge.noOfFlds();
-        fldOffset = fromEdge.copyFldOffset();
+    	super(fromEdge);
     }
 
     /**
@@ -105,10 +99,7 @@ public class Edge extends Tuple {
      *            the tuple being copied
      */
     public void edgeCopy(Edge fromEdge) {
-        byte[] temparray = fromEdge.getEdgeByteArray();
-        System.arraycopy(temparray, 0, data, edge_offset, edge_length);
-        // fldCnt = fromTuple.noOfFlds();
-        // fldOffset = fromTuple.copyFldOffset();
+    	tupleCopy(fromEdge);
     }
 
     /**
@@ -123,9 +114,7 @@ public class Edge extends Tuple {
      */
 
     public void edgeInit(byte[] aedge, int offset) {
-        data = aedge;
-        edge_offset = offset;
-        edge_length = max_size;
+    	tupleInit(aedge, offset, max_size);
     }
 
     /**
@@ -139,40 +128,9 @@ public class Edge extends Tuple {
      *            the length of the edge
      */
     public void edgeSet(byte[] fromEdge, int offset) {
-        int length = max_size;
-        System.arraycopy(fromEdge, offset, data, 0, length);
-        edge_offset = 0;
-        edge_length = length;
+        tupleSet(fromEdge, offset, max_size);
     }
 
-    /**
-     * get the length of a edge, call this method if you did not call setHdr ()
-     * before
-     *
-     * @return length of this edge in bytes
-     */
-    public int getLength() {
-        return edge_length;
-    }
-
-    /**
-     * get the length of a edge, call this method if you did call setHdr ()
-     * before
-     *
-     * @return size of this edge in bytes
-     */
-    public short size() {
-        return ((short) (fldOffset[fldCnt] - edge_offset));
-    }
-
-    /**
-     * get the offset of a edge
-     *
-     * @return offset of the edge in byte array
-     */
-    public int getOffset() {
-        return edge_offset;
-    }
 
     /**
      * Copy the edge byte array out
@@ -182,9 +140,7 @@ public class Edge extends Tuple {
      */
 
     public byte[] getEdgeByteArray() {
-        byte[] edgecopy = new byte[edge_length];
-        System.arraycopy(data, edge_offset, edgecopy, 0, edge_length);
-        return edgecopy;
+        return getTupleByteArray();
     }
 
     /**
@@ -201,32 +157,41 @@ public class Edge extends Tuple {
     public String getLabel() throws IOException, heap.FieldNumberOutOfBoundException{
         return getStrFld(1);
     }
-    public int getWeight() throws IOException, heap.FieldNumberOutOfBoundException{
-        return getIntFld(2);
-    }
+    
     public NID getSource() throws IOException, heap.FieldNumberOutOfBoundException {
-        return (NID)getRIDFld(3);
+        return getNIDFld(2);
     }
 
     public NID getDestination() throws IOException, heap.FieldNumberOutOfBoundException {
-        return (NID)getRIDFld(4);
+        return getNIDFld(4);
+    }
+    
+    public int getWeight() throws IOException, heap.FieldNumberOutOfBoundException{
+        return getIntFld(6);
     }
 
 
 
+	private NID getNIDFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
+		NID val = new NID();
+		RID rid = getRIDFld(fldNo);
+		val.pageNo = rid.pageNo;
+		val.slotNo = rid.slotNo;
+		return val;
+	}
 
 
     public Edge setLabel(String val) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Edge)setStrFld(1, val);
     }
-    public Edge setWeight(int val) throws IOException, heap.FieldNumberOutOfBoundException {
-        return (Edge)setIntFld(2, val);
-    }
     public Edge setSource(NID sourceID) throws IOException, heap.FieldNumberOutOfBoundException {
-        return (Edge)setRIDFld(3, sourceID);
+        return (Edge)setRIDFld(2, sourceID);
     }
     public Edge setDestination(NID destID) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Edge)setRIDFld(4, destID);
+    }
+    public Edge setWeight(int val) throws IOException, heap.FieldNumberOutOfBoundException {
+        return (Edge)setIntFld(6, val);
     }
 
 
