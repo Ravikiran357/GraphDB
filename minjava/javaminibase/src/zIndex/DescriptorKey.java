@@ -37,7 +37,7 @@ public class DescriptorKey extends KeyClass{
 	}
 
 	
-	private static  String getZVal(Descriptor desc){
+	private  String getZVal(Descriptor desc){
 		StringBuilder result = new StringBuilder();
 		
 		int val0 = desc.get(0);
