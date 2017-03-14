@@ -66,7 +66,7 @@ public class BatchEdgeInsert {
     public void doSingleBatchEdgInsert  (String sourceLabel, String destLabel, String edgeLabel, String edgeWeight) throws Exception {
 
 
-        EID eid = getEdge(edgeLabel);
+        EID eid ;//= getEdge(edgeLabel);
         Edge edge = new Edge();
         edge.setLabel(edgeLabel);
         NID sourceNID = getNode(sourceLabel);
