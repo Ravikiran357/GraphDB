@@ -21,6 +21,7 @@ import btree.IteratorException;
 import btree.KeyClass;
 import btree.KeyDataEntry;
 import btree.KeyNotMatchException;
+import btree.LeafData;
 import btree.PinPageException;
 import btree.ScanIteratorException;
 import btree.UnpinPageException;
@@ -43,7 +44,8 @@ public class EdgeQuery {
 	private final static boolean FAIL = false;
 	private GraphDB db;
 	
-	private void printEdgesInHeap() throws InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException {	
+	private void printEdgesInHeap() throws InvalidTupleSizeException, IOException, 
+		FieldNumberOutOfBoundException {	
 		//TODO: need to use nodeheapfile not edgeheapfile
 		EScan eScan = new EScan(db.edgeHeapfile);
         EID eid = new EID();
@@ -54,137 +56,237 @@ public class EdgeQuery {
         	edge.print();
         	edge = eScan.getNext(eid);
         }
+        eScan.closescan();
 	}
 	
 	private void printEdgeSourceLabels(int index) throws InvalidSlotNumberException, nodeheap.InvalidTupleSizeException,
-		HFException, HFDiskMgrException, HFBufMgrException, Exception {	
+		HFException, HFDiskMgrException, HFBufMgrException, Exception {
+		List<Edge> edgeList = new ArrayList<Edge>();
 		if (index == 1) {
-			//TODO: with index
-			System.out.println("Printing source node labels in alphabetical order using index file");
+			// TODO: Not using the right index for this query
+			System.out.println("Printing edge data in alphanumerical order of source node labels using index file");
 			BTreeFile edgeIndexFile = db.edgeLabelIndexFile;
 			BTFileScan scan = edgeIndexFile.new_scan(null,null);
 			KeyDataEntry entry = scan.get_next();
 			while (entry != null) {
-				System.out.println(entry.data);
+				// Collect edge data
+				LeafData leafData = (LeafData) entry.data;
+				Edge edge = db.edgeHeapfile.getEdge((EID) leafData.getData());
+				edgeList.add(edge);
 			}
+			scan.DestroyBTreeFileScan();
 		} else {
-			System.out.println("Printing edge-source labels in alphabetical order using edge and node heap file");
+			System.out.println("Printing edge data in alphanumerical order of source node labels using edge and node heap file");
 			EScan eScan = new EScan(db.edgeHeapfile);
 	        EID eid = new EID();
-	        boolean done = true;
-	        Set<String> sourceNodeLabels = new TreeSet<String>();
-	        while(done){
-	            Edge edge = eScan.getNext(eid);
-	            if(edge == null){
-	                done = false;
-	            } else {
-	            	// Print Source node label
-	            	NID nid = edge.getSource();
-	    	        Node node = db.nodeHeapfile.getNode(nid);
-	    	        if (node == null) {
-	    	        	sourceNodeLabels.add("DEBUG: NODE NOT FOUND");
-	    	        } else {
-	    	        	sourceNodeLabels.add(node.getLabel());
-	    	        }
-	            }
+	        Edge edge = eScan.getNext(eid);
+	        while(edge != null){
+            	// Collect edge data
+	        	edgeList.add(edge);
+	        	edge = eScan.getNext(eid);
 	        }
-	        for (String label : sourceNodeLabels) {
-				System.out.println(label);
-			}
+	        eScan.closescan();
+	        Collections.sort(edgeList, new Comparator<Edge>() {
+	            public int compare(Edge e1,Edge e2) {
+	            	try {
+	            		NID nid1 = new NID();
+	            		nid1 = e1.getSource();
+	            		Node node1 = db.nodeHeapfile.getNode(nid1);
+	            		NID nid2 = new NID();
+	            		nid2 = e2.getSource();
+	            		Node node2 = db.nodeHeapfile.getNode(nid2);
+						return node1.getLabel().compareTo(node2.getLabel());
+					} catch (FieldNumberOutOfBoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (InvalidSlotNumberException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (nodeheap.InvalidTupleSizeException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (HFException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (HFDiskMgrException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (HFBufMgrException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return 0;
+	            }
+	        });
+		}
+	    for (Edge edge : edgeList) {
+			edge.print();
 		}
 	}
 
 	private void printEdgeDestLabels(int index) throws InvalidSlotNumberException, nodeheap.InvalidTupleSizeException,
-	HFException, HFDiskMgrException, HFBufMgrException, Exception {	
+	HFException, HFDiskMgrException, HFBufMgrException, Exception {
+		List<Edge> edgeList = new ArrayList<Edge>();
 		if (index == 1) {
-			//TODO: with index
-			System.out.println("Printing destination node labels in alphabetical order using index file");
-			BTreeFile indexFile = db.edgeLabelIndexFile;
-			BTFileScan scan = indexFile.new_scan(null,null);
+			// TODO: Not using the right index for this query
+			System.out.println("Printing edge data in alphanumerical order of destination node labels using index file");
+			BTreeFile edgeIndexFile = db.edgeLabelIndexFile;
+			BTFileScan scan = edgeIndexFile.new_scan(null,null);
 			KeyDataEntry entry = scan.get_next();
 			while (entry != null) {
-				System.out.println(entry.data);
+				// Collect edge data
+				LeafData leafData = (LeafData) entry.data;
+				Edge edge = db.edgeHeapfile.getEdge((EID) leafData.getData());
+				edgeList.add(edge);
 			}
+			scan.DestroyBTreeFileScan();
 		} else {
-			System.out.println("Printing edge-dest labels in alphabetical order using edge and node heap file");
+			System.out.println("Printing edge data in alphanumerical order of destination node labels using edge and node heap file");
 			EScan eScan = new EScan(db.edgeHeapfile);
 	        EID eid = new EID();
-	        boolean done = true;
-	        Set<String> destNodeLabels = new TreeSet<String>();
-	        while(done){
-	            Edge edge = eScan.getNext(eid);
-	            if(edge == null){
-	                done = false;
-	            } else {
-	            	// Print Destination node label
-	            	NID nid = edge.getDestination();
-	    	        Node node = db.nodeHeapfile.getNode(nid);
-	    	        if (node == null) {
-	    	        	destNodeLabels.add("DEBUG: NODE NOT FOUND");
-	    	        } else {
-	    	        	destNodeLabels.add(node.getLabel());
-	    	        }
-	            }
-	        }
-	        for (String label : destNodeLabels) {
-				System.out.println(label);
-			}
-		}
-	}	
-	
-	private void printEdgeLabels(int index) throws InvalidSlotNumberException, nodeheap.InvalidTupleSizeException,
-	HFException, HFDiskMgrException, HFBufMgrException, Exception {	
-		if (index == 1) {
-			System.out.println("Printing edge labels in alphabetical order using index file");
-			BTreeFile indexFile = db.edgeLabelIndexFile;
-			BTFileScan scan = indexFile.new_scan(null,null);
-			KeyDataEntry entry = scan.get_next();
-			while (entry != null) {
-				System.out.println(entry.data);
-			}
-		} else {
-			System.out.println("Printing edge labels in alphabetical order using edge heap file");
-			EScan eScan = new EScan(db.edgeHeapfile);
-	        EID eid = new EID();
-	        List<String> edgeLabels = new ArrayList<String>();
 	        Edge edge = eScan.getNext(eid);
 	        while(edge != null){
-            	// Print edge label
-            	edgeLabels.add(edge.getLabel());
-            	edge = eScan.getNext(eid);
+	        	// Collect edge data
+	        	edgeList.add(edge);
+	        	edge = eScan.getNext(eid);
 	        }
-	        Collections.sort(edgeLabels);
-	        for (String label : edgeLabels) {
-				System.out.println(label);
+	        eScan.closescan();
+	        // Sorting the data by destination labels
+	        Collections.sort(edgeList, new Comparator<Edge>() {
+	            public int compare(Edge e1,Edge e2) {
+	            	try {
+	            		NID nid1 = new NID();
+	            		nid1 = e1.getSource();
+	            		Node node1 = db.nodeHeapfile.getNode(nid1);
+	            		NID nid2 = new NID();
+	            		nid2 = e2.getSource();
+	            		Node node2 = db.nodeHeapfile.getNode(nid2);
+						return node1.getLabel().compareTo(node2.getLabel());
+					} catch (FieldNumberOutOfBoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (InvalidSlotNumberException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (nodeheap.InvalidTupleSizeException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (HFException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (HFDiskMgrException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (HFBufMgrException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return 0;
+	            }
+	        });
+		}
+	    for (Edge edge : edgeList) {
+			edge.print();
+		}
+	}
+
+	private void printEdgeLabels(int index) throws InvalidSlotNumberException, 
+		nodeheap.InvalidTupleSizeException, HFException, HFDiskMgrException, 
+		HFBufMgrException, Exception {
+		List<Edge> edgeList = new ArrayList<Edge>();
+		if (index == 1) {
+			System.out.println("Printing edge data in alphanumerical order of edge labels using index file");
+			BTreeFile edgeIndexFile = db.edgeLabelIndexFile;
+			BTFileScan scan = edgeIndexFile.new_scan(null,null);
+			KeyDataEntry entry = scan.get_next();
+			while (entry != null) {
+				// Collect edge data
+				LeafData leafData = (LeafData) entry.data;
+				Edge edge = db.edgeHeapfile.getEdge((EID) leafData.getData());
+				edgeList.add(edge);
 			}
+			scan.DestroyBTreeFileScan();
+		} else {
+			System.out.println("Printing edge data in alphanumerical order of edge labels using edge and node heap file");
+			EScan eScan = new EScan(db.edgeHeapfile);
+	        EID eid = new EID();
+	        Edge edge = eScan.getNext(eid);
+	        while(edge != null){
+	        	// Collect edge data
+	        	edgeList.add(edge);
+	        	edge = eScan.getNext(eid);
+	        }
+	        eScan.closescan();
+	        // Sorting the data by edge labels
+	        Collections.sort(edgeList, new Comparator<Edge>() {
+	            public int compare(Edge e1,Edge e2) {
+	            	try {
+						return e1.getLabel().compareTo(e2.getLabel());
+					} catch (FieldNumberOutOfBoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return 0;
+	            }
+	        });
+		}
+	    for (Edge edge : edgeList) {
+			edge.print();
 		}
 	}
 	
-	private void printEdgeWeights(int index, KeyClass low, KeyClass high) throws InvalidSlotNumberException, 
-		nodeheap.InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
+	private void printEdgeWeights(int index, KeyClass low, KeyClass high) throws 
+		InvalidSlotNumberException,	nodeheap.InvalidTupleSizeException, HFException, 
+		HFDiskMgrException, HFBufMgrException, Exception {
+		List<Edge> edgeList = new ArrayList<Edge>();
 		if (index == 1) {
-			System.out.println("Printing edge weights in order using index file");
-			BTreeFile indexFile = db.edgeWeightIndexFile;
-			BTFileScan scan = indexFile.new_scan(low,high);
+			System.out.println("Printing edge data in order of weights using index file");
+			BTreeFile edgeIndexFile = db.edgeWeightIndexFile;
+			BTFileScan scan = edgeIndexFile.new_scan(low,high);
 			KeyDataEntry entry = scan.get_next();
 			while (entry != null) {
-				System.out.println(entry.data);
+				// Collect edge data
+				LeafData leafData = (LeafData) entry.data;
+				Edge edge = db.edgeHeapfile.getEdge((EID) leafData.getData());
+				edgeList.add(edge);
 			}
+			scan.DestroyBTreeFileScan();
 		} else {
-			System.out.println("Printing edge weights in order using edge heap file");
+			System.out.println("Printing edge data in order of weights using edge and node heap file");
 			EScan eScan = new EScan(db.edgeHeapfile);
 	        EID eid = new EID();
-	        List<Integer> edgeWeights = new ArrayList<Integer>();
 	        Edge edge = eScan.getNext(eid);
 	        while(edge != null){
-            	// Print edge weight
-	        	edgeWeights.add(edge.getWeight());
-            	edge = eScan.getNext(eid);
+	        	// Collect edge data
+	        	edgeList.add(edge);
+	        	edge = eScan.getNext(eid);
 	        }
-	        Collections.sort(edgeWeights);
-	        for (int label : edgeWeights) {
-				System.out.println(label);
-			}
+	        eScan.closescan();
+	        // Sorting the data by edge weights
+	        Collections.sort(edgeList, new Comparator<Edge>() {
+	            public int compare(Edge e1,Edge e2) {
+	            	try {
+						return e1.getWeight() - e2.getWeight();
+					} catch (FieldNumberOutOfBoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return 0;
+	            }
+	        });
+		}
+	    for (Edge edge : edgeList) {
+			edge.print();
 		}
 	}
 	
@@ -225,9 +327,7 @@ public class EdgeQuery {
 				String numBuf = args[1];
 				int qType = Integer.parseInt(args[2]);
 				int index = Integer.parseInt(args[3]);
-				String queryOptions = args[4];
 				this.db = SystemDefs.JavabaseDB;
-				String [] vals = new String[reclen];
 				
 				switch(qType) {
 					case 0: this.printEdgesInHeap();

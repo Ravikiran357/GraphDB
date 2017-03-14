@@ -94,7 +94,17 @@ class BatchDriver implements GlobalConst{
 
 }
 	
-	public void runAlltests(int choice, String filename, String graphDBName, String edgeFile) throws Exception {
+	public void runQueryTests(int choice, String []args) {
+		if (choice == 4) {
+			NodeQuery nq = new NodeQuery();
+			nq.evaluate(args);
+		} else {
+			EdgeQuery eq = new EdgeQuery();
+			eq.evaluate(args);
+		}
+	}
+	
+	public void runAllTests(int choice, String filename, String graphDBName, String edgeFile) throws Exception {
 		switch(choice){
 		case 0:
 			GraphDB db = SystemDefs.JavabaseDB;//new GraphDB(0);
@@ -201,7 +211,10 @@ public class BatchTest implements GlobalConst{
 					bttest.menu();
 					try {
 						choice = GetStuff.getChoice();
-						bttest.runAlltests(choice, file, graphDB,edgeF);
+						if (choice > 3)
+							bttest.runQueryTests(choice, args);
+						else
+							bttest.runAllTests(choice, file, graphDB,edgeF);
 					}catch (Exception e) {
 						e.printStackTrace();
 						System.out.println("       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
