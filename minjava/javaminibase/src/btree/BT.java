@@ -67,7 +67,7 @@ public class BT implements GlobalConst {
 		} else if ((key1 instanceof StringKey) && (key2 instanceof StringKey)) {
 			return ((StringKey) key1).getKey().compareTo(((StringKey) key2).getKey());
 		}
-		else if ((key1 instanceof StringKey) && (key2 instanceof DescriptorKey)) {
+		else if ((key1 instanceof DescriptorKey) && (key2 instanceof DescriptorKey)) {
 			return ((DescriptorKey) key1).getDescString().compareTo(((DescriptorKey) key2).getDescString());
 		}
 
@@ -95,8 +95,10 @@ public class BT implements GlobalConst {
 			DataOutputStream outstr = new DataOutputStream(out);
 			outstr.writeUTF(((StringKey) key).getKey());
 			return outstr.size();
-		} else if (key instanceof IntegerKey)
+		} else if (key instanceof IntegerKey) {
 			return 4;
+		} else if (key instanceof DescriptorKey)
+			return 20;
 		else
 			throw new KeyNotMatchException(null, "key types do not match");
 	}
@@ -233,8 +235,11 @@ public class BT implements GlobalConst {
 				Convert.setIntValue(((IntegerKey) entry.key).getKey().intValue(), 0, data);
 			} else if (entry.key instanceof StringKey) {
 				Convert.setStrValue(((StringKey) entry.key).getKey(), 0, data);
-			} else
-				throw new KeyNotMatchException(null, "key types do not match");
+			} else if (entry.key instanceof DescriptorKey) {
+				Convert.setDescValue(((DescriptorKey) entry.key).getKey(), 0, data);
+			}else
+				throw new KeyNotMatchException(null, "key types do not match"); 
+			
 
 			if (entry.data instanceof IndexData) {
 				Convert.setIntValue(((IndexData) entry.data).getData().pid, m, data);

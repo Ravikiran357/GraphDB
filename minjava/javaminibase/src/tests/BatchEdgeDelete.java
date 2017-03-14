@@ -13,11 +13,13 @@ import nodeheap.*;
 
 import java.io.IOException;
 
+import btree.IntegerKey;
+import btree.StringKey;
+
 /**
  * Created by revu on 3/10/17.
  */
 public class BatchEdgeDelete {
-
 
     BatchEdgeDelete(){
 
@@ -31,8 +33,10 @@ public class BatchEdgeDelete {
             Edge e  = escan.getNext(eid);
             if(e == null){
                 done = false;
+                break;
             }
             if(e.getLabel().equals(edgeLabel)){
+            	escan.closescan();
                 return eid;
             }
 
@@ -59,6 +63,8 @@ public class BatchEdgeDelete {
         //SystemDefs.JavabaseDB.edgeHeapfile.getEdge();
         if(edgeSource.equals(sourceLabel) && edgeDest.equals(destLabel)){
             SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
+            SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(edge.getLabel()), eid);
+            SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new IntegerKey(edge.getWeight()), eid);
         }
 
     }

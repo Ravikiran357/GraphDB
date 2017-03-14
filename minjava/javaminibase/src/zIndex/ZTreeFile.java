@@ -1,6 +1,7 @@
 package zIndex;
 
 import btree.*;
+import global.AttrType;
 import global.Descriptor;
 
 import java.io.IOException;
@@ -9,11 +10,17 @@ import java.util.Collections;
 
 public class ZTreeFile extends BTreeFile{
 
-	public ZTreeFile(String filename) throws GetFileEntryException, PinPageException, ConstructPageException {
-		super(filename);
+	public ZTreeFile(String filename, int keytype, int keysize, int delete_fashion ) throws GetFileEntryException, PinPageException, ConstructPageException, AddFileEntryException, IOException {
+		super(filename, keytype,keysize,delete_fashion);
+		
 		// TODO Auto-generated constructor stub
 	}
-
+	
+	public ZTreeFile(String filename) throws GetFileEntryException, PinPageException, ConstructPageException, AddFileEntryException, IOException {
+		super(filename);
+		
+		// TODO Auto-generated constructor stub
+	}
 
 	public ArrayList<DescriptorKey> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException, ScanIteratorException {
 		BTFileScan scan = this.new_scan(null, null);
