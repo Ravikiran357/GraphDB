@@ -1,11 +1,14 @@
 package nodeheap;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.HashSet;
 
-import diskmgr.*;
-import bufmgr.*;
-import global.*;
+import diskmgr.Page;
+import global.GlobalConst;
+import global.NID;
+import global.PageId;
+import global.RID;
+import global.SystemDefs;
 import heap.FieldNumberOutOfBoundException;
 import heap.InvalidTypeException;
 import heap.Tuple;
@@ -374,7 +377,6 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 		found = false;
 		Node node;
-		Tuple atuple;
 
 		DataPageInfo dpinfo = new DataPageInfo();
 		while (found == false) { // Start While01

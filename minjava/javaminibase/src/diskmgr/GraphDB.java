@@ -38,7 +38,7 @@ public class GraphDB extends DB implements GlobalConst{
 		return iNodeCnt;
 	}
 	
-	public int getEdgeCnt() throws edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException{
+	public int getEdgeCnt() throws edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, InvalidTypeException, heap.InvalidTupleSizeException{
 		int iEdgeCnt = 0;
 		
 		//EdgeHeapfile edgeheapfile = new EdgeHeapfile(EDGEFILENAME);
@@ -47,7 +47,7 @@ public class GraphDB extends DB implements GlobalConst{
 		
 	}
 	
-	public int getSourceCnt() throws edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, FieldNumberOutOfBoundException, edgeheap.InvalidTupleSizeException {
+	public int getSourceCnt() throws edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, FieldNumberOutOfBoundException, edgeheap.InvalidTupleSizeException, InvalidTypeException, heap.InvalidTupleSizeException {
 		int iSourceCnt = 0;
 		
 		//EdgeHeapfile edgeheapfile = new EdgeHeapfile(EDGEFILENAME);
@@ -56,7 +56,7 @@ public class GraphDB extends DB implements GlobalConst{
 	}
 	
 
-	public int getDestinationCnt() throws edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, FieldNumberOutOfBoundException, edgeheap.InvalidTupleSizeException{
+	public int getDestinationCnt() throws edgeheap.HFException, edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, IOException, edgeheap.InvalidSlotNumberException, FieldNumberOutOfBoundException, edgeheap.InvalidTupleSizeException, InvalidTypeException, heap.InvalidTupleSizeException{
 		int iDestCnt = 0;
 		
 		//EdgeHeapfile edgeheapfile = new EdgeHeapfile(EDGEFILENAME);

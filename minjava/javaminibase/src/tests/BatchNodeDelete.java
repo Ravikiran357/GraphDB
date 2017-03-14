@@ -28,6 +28,7 @@ public class BatchNodeDelete implements GlobalConst{
                 done = false;
             }
             if(n.getLabel().equals(nodeLabel)){
+                nScan.closescan();
                 return nid;
             }
         }

@@ -67,7 +67,9 @@ public class BatchEdgeInsert {
         edge.setSource(sourceNID);
         edge.setDestination(destNID);
         edge.setWeight(Integer.parseInt(edgeWeight));
-        SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
+        EID eid = SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
+		edge = SystemDefs.JavabaseDB.edgeHeapfile.getEdge(eid);
+		edge.print();
 
     }
 

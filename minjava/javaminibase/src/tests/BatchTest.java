@@ -94,23 +94,17 @@ class BatchDriver implements GlobalConst{
 
 }
 	
-	public void runAlltests(int choice, String filename, String graphDBName) throws Exception {
+	public void runAlltests(int choice, String filename, String graphDBName, String edgeFile) throws Exception {
 		switch(choice){
 		case 0:
 			GraphDB db = SystemDefs.JavabaseDB;//new GraphDB(0);
 			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
 			
 			BatchNodeInsert batchNodeInsert = new BatchNodeInsert();
-			int k = 0;
 			try{
 
 			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
-				System.out.println("record number is "+k);
 				batchNodeInsert.doSingleBatchNodeInsert(line, nhf, db);
-				if(k == 12){
-					System.out.println("record number is "+k);
-				}
-				k++;
 			}
 			}
 			catch (Exception e){
@@ -132,11 +126,12 @@ class BatchDriver implements GlobalConst{
 		case 2:
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
 			String[] edgeVals = new String[4];
-			
-			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+			int i = 0;
+			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
 				line = line.trim();
 				edgeVals = line.split(" ");
 				batchEdgeInsert.doSingleBatchEdgInsert(edgeVals[0], edgeVals[1], edgeVals[2], edgeVals[3]);
+				System.out.println("Edges inserted : " + i++);
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
@@ -146,7 +141,7 @@ class BatchDriver implements GlobalConst{
 			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
 			String[] edgeValsDel = new String[4];
 			
-			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
 				line = line.trim();
 				edgeValsDel = line.split(" ");
 				batchEdgeDelete.doSingleBatchEdgeDelete(edgeValsDel[0], edgeValsDel[1], edgeValsDel[2]);
@@ -195,11 +190,12 @@ public class BatchTest implements GlobalConst{
 				boolean status = OK;
 				String file = args[0];
 				String graphDB = args[1];
+				String edgeF = args[2];
 				while (choice != 6) {
 					bttest.menu();
 					try {
 						choice = GetStuff.getChoice();
-						bttest.runAlltests(choice, file, graphDB);
+						bttest.runAlltests(choice, file, graphDB,edgeF);
 					}catch (Exception e) {
 						e.printStackTrace();
 						System.out.println("       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

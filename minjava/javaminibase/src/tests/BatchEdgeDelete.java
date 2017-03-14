@@ -37,6 +37,7 @@ public class BatchEdgeDelete {
             }
 
         }
+        escan.closescan();
         return null;
     }
 
@@ -53,9 +54,9 @@ public class BatchEdgeDelete {
         NID sourceNID = edge.getSource();
         String edgeSource = SystemDefs.JavabaseDB.nodeHeapfile.getNode(sourceNID).getLabel();
         NID destNID = edge.getDestination();
-        String edgeDest = SystemDefs.JavabaseDB.nodeHeapfile.getNode(sourceNID).getLabel();
+        String edgeDest = SystemDefs.JavabaseDB.nodeHeapfile.getNode(destNID).getLabel();
 
-        //SystemDefs.JavabaseDB.edgeHeapfile.getEdge()
+        //SystemDefs.JavabaseDB.edgeHeapfile.getEdge();
         if(edgeSource.equals(sourceLabel) && edgeDest.equals(destLabel)){
             SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
         }

@@ -157,7 +157,7 @@ public class Node extends Tuple {
      */
 
     public void nodeInit(byte[] anode, int offset) {
-        node_length = max_size;
+        tupleInit(anode, offset, max_size);node_length = max_size;
     }
     
     
@@ -246,8 +246,8 @@ public class Node extends Tuple {
 
 
     public void print() throws IOException, heap.FieldNumberOutOfBoundException {
-        System.out.println("Node label"+ getLabel());
-        System.out.println("Node descriptor values are");
+        System.out.println("Node label: "+ getLabel());
+        System.out.println("Node descriptor values are: ");
         Descriptor desc = getDesc();
         for(int i= 0; i<5;i++){
             System.out.print(desc.get(i)+"  ");
