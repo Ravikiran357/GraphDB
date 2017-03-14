@@ -101,16 +101,10 @@ class BatchDriver implements GlobalConst{
 			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
 			
 			BatchNodeInsert batchNodeInsert = new BatchNodeInsert();
-			int k = 0;
 			try{
 
 			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
-				System.out.println("record number is "+k);
 				batchNodeInsert.doSingleBatchNodeInsert(line, nhf, db);
-				if(k == 12){
-					System.out.println("record number is "+k);
-				}
-				k++;
 			}
 			}
 			catch (Exception e){
@@ -147,7 +141,7 @@ class BatchDriver implements GlobalConst{
 			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
 			String[] edgeValsDel = new String[4];
 			
-			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
 				line = line.trim();
 				edgeValsDel = line.split(" ");
 				batchEdgeDelete.doSingleBatchEdgeDelete(edgeValsDel[0], edgeValsDel[1], edgeValsDel[2]);

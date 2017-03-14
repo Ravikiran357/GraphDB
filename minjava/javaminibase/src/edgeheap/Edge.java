@@ -60,10 +60,10 @@ public class Edge extends Tuple {
         AttrType[] attrs = new AttrType[6];
         short[] str_sizes = new short[1];
         attrs[0] = new AttrType(AttrType.attrString);
-        attrs[1] = new AttrType(AttrType.attrInteger);
-        attrs[2] = new AttrType(AttrType.attrInteger);
-        attrs[3] = new AttrType(AttrType.attrInteger);
-        attrs[4] = new AttrType(AttrType.attrInteger);
+        attrs[1] = new AttrType(AttrType.attrInteger); //source pg no.
+        attrs[2] = new AttrType(AttrType.attrInteger);//source slot no.
+        attrs[3] = new AttrType(AttrType.attrInteger);//dest pg no.
+        attrs[4] = new AttrType(AttrType.attrInteger);//dest slot no.
         attrs[5] = new AttrType(AttrType.attrInteger);
         str_sizes[0] = (short)44;
         this.setHdr((short)6, attrs, str_sizes);
@@ -159,12 +159,15 @@ public class Edge extends Tuple {
     }
     
     public NID getSource() throws IOException, heap.FieldNumberOutOfBoundException {
-        return getNIDFld(2);
+         int pid = getIntFld(2);
+         int slotno = getIntFld(3);
+         return new NID(new PageId(pid), slotno);
     }
 
     public NID getDestination() throws IOException, heap.FieldNumberOutOfBoundException {
-        return getNIDFld(4);
-    }
+        int pid = getIntFld(4);
+        int slotno = getIntFld(5);
+        return new NID(new PageId(pid), slotno);    }
     
     public int getWeight() throws IOException, heap.FieldNumberOutOfBoundException{
         return getIntFld(6);
@@ -185,11 +188,12 @@ public class Edge extends Tuple {
         return (Edge)setStrFld(1, val);
     }
     public Edge setSource(NID sourceID) throws IOException, heap.FieldNumberOutOfBoundException {
-        return (Edge)setRIDFld(2, sourceID);
+    	setIntFld(2, sourceID.pageNo.pid);
+    	return (Edge)setIntFld(3,sourceID.slotNo);
     }
     public Edge setDestination(NID destID) throws IOException, heap.FieldNumberOutOfBoundException {
-        return (Edge)setRIDFld(4, destID);
-    }
+    	setIntFld(4, destID.pageNo.pid);
+    	return (Edge)setIntFld(5,destID.slotNo);    }
     public Edge setWeight(int val) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Edge)setIntFld(6, val);
     }
