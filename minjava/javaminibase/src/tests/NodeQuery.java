@@ -1,4 +1,4 @@
-
+package tests;
 import iterator.FileScan;
 import iterator.FldSpec;
 import iterator.RelSpec;
@@ -88,6 +88,12 @@ public class NodeQuery {
 	        Collections.sort(nodeList, new Comparator<Node>() {
 	            public int compare(Node n1,Node n2) {
 	            	try {
+						System.out.println("n1 is "+n1.getLabel());
+						System.out.println("n2 is "+n2.getLabel());
+						System.out.println("return type is "+ n1.getLabel().compareTo(n2.getLabel()));
+						String n1Str = n1.getLabel();
+						String n2Str = n2.getLabel();
+						System.out.println("n1star "+n1Str + " n2 star "+ n2Str + "n1 compare to "+ n1Str.compareTo(n2Str));
 						return n1.getLabel().compareTo(n2.getLabel());
 					} catch (FieldNumberOutOfBoundException e) {
 						e.printStackTrace();
@@ -99,7 +105,7 @@ public class NodeQuery {
 	        });
 		}
         for (Node node : nodeList) {
-			node.print();
+			//node.print();
 		}
 	}
 
@@ -221,6 +227,7 @@ public class NodeQuery {
 				String numBuf = args[1];
 				int qType = Integer.parseInt(args[2]);
 				int index = Integer.parseInt(args[3]);
+
 				this.db = SystemDefs.JavabaseDB;
 				String descriptor;
 	

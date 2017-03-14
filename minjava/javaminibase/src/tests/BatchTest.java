@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Random;
+import java.util.Scanner;
 
 import btree.BT;
 import diskmgr.GraphDB;
@@ -99,7 +100,21 @@ class BatchDriver implements GlobalConst{
 	public void runQueryTests(int choice, String []args) {
 		if (choice == 4) {
 			NodeQuery nq = new NodeQuery();
-			nq.evaluate(args);
+			String[] args1 = new String[6];
+			args1[0] = "a";
+			args1[1] = "a";
+			Scanner in = new Scanner(System.in);
+			System.out.println("Qtype is :");
+			args1[2] = in.next();
+			System.out.println("With(1) or Without index(0)");
+			args1[3] = in.next();
+			System.out.println("Enter descriptor in csv");
+
+			args1[4] = in.next();
+			System.out.println("Enter distance");
+			args1[5] = in.next();
+
+			nq.evaluate(args1);
 		} else {
 			EdgeQuery eq = new EdgeQuery();
 			eq.evaluate(args);
@@ -164,6 +179,7 @@ class BatchDriver implements GlobalConst{
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
 			break;
+
 			
 		case 6:
 			break;
