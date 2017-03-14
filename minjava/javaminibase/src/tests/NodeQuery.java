@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import zIndex.ZTreeFile;
+
 import btree.BT;
 import btree.BTFileScan;
 import btree.BTreeFile;
@@ -21,6 +23,10 @@ import global.NID;
 import global.SystemDefs;
 import heap.FieldNumberOutOfBoundException;
 import diskmgr.GraphDB;
+import nodeheap.HFBufMgrException;
+import nodeheap.HFDiskMgrException;
+import nodeheap.HFException;
+import nodeheap.InvalidSlotNumberException;
 import nodeheap.InvalidTupleSizeException;
 import nodeheap.NScan;
 import nodeheap.Node;
@@ -32,7 +38,7 @@ public class NodeQuery {
 	private final static boolean OK = true;
 	private final static boolean FAIL = false;
 	private GraphDB db;
-	
+
 	private void printNodesInHeap() throws InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException {	
 		NScan nScan = new NScan(db.nodeHeapfile);
         NID nid = new NID();
@@ -53,6 +59,7 @@ public class NodeQuery {
 			BTFileScan scan = indexFile.new_scan(null,null);
 			KeyDataEntry entry = scan.get_next();
 			while (entry != null) {
+				// Print Node label
 				System.out.println(entry.data);
 			}
 		} else {
@@ -72,6 +79,69 @@ public class NodeQuery {
 		}
 	}
 
+	private void printNodeDataFromTarget(int index, String desc) throws InvalidSlotNumberException, HFException, 
+		HFDiskMgrException, HFBufMgrException, Exception {
+		Descriptor descriptor = new Descriptor();
+		String [] val = desc.split(",");
+		descriptor.set(Integer.parseInt(val[0]), Integer.parseInt(val[1]), Integer.parseInt(val[2]), 
+				Integer.parseInt(val[3]), Integer.parseInt(val[4]));
+		double dist;
+		if (index == 1) {
+			System.out.println("Printing node data in order using index file");
+			ZTreeFile indexFile = db.nodeDescriptorIndexFile;
+			List<NID> nidList = new ArrayList<NID>();
+			nidList = indexFile.zTreeFileScan();
+			List<NID> tempList;
+			TreeMap<Double,List<NID>> hash = new TreeMap<Double,List<NID>>();
+        	// Make sorted list of NID
+			for (NID nid : nidList) {
+				Node node = db.nodeHeapfile.getNode(nid);
+				dist = node.getDesc().distance(descriptor);
+				if (hash.containsKey(dist)) {
+					tempList = hash.get(dist);
+				} else {
+					tempList = new ArrayList<NID>();
+				}
+				tempList.add(nid);
+				hash.put(dist, tempList);
+			}
+			
+			for (Map.Entry<Double, List<NID>> entry : hash.entrySet()) {
+				nidList = entry.getValue();
+				for (NID nid : nidList) {
+					Node node = db.nodeHeapfile.getNode(nid);
+					node.print();
+				}
+			}
+		} else {
+			System.out.println("Printing node data in order using node heap file");
+			NScan nScan = new NScan(db.nodeHeapfile);
+	        NID nid = new NID();
+	        Node node = nScan.getNext(nid);
+	        TreeMap<Double,List<Node>> hash = new TreeMap<Double,List<Node>>();
+	        List<Node> tempList;
+	        while(node != null){
+	        	// Make sorted list of Nodes
+	        	dist = node.getDesc().distance(descriptor);
+	        	if (hash.containsKey(dist)) {
+					tempList = hash.get(dist);
+				} else {
+					tempList = new ArrayList<Node>();
+				}
+	        	tempList.add(node);
+	        	node = nScan.getNext(nid);
+	        }
+	        
+	        List<Node> nidList = new ArrayList<Node>();
+	        for (Map.Entry<Double, List<Node>> entry : hash.entrySet()) {
+				nidList = entry.getValue();
+				for (Node each_node : nidList) {
+					each_node.print();
+				}
+			}
+		}
+	}
+
 	public boolean evaluate(String []args) {
 		boolean status = OK;
 		if (args.length > 0) {
@@ -80,7 +150,6 @@ public class NodeQuery {
 				String numBuf = args[1];
 				int qType = Integer.parseInt(args[2]);
 				int index = Integer.parseInt(args[3]);
-				String queryOptions = args[4];
 				this.db = SystemDefs.JavabaseDB;
 	
 				switch(qType) {
@@ -88,7 +157,9 @@ public class NodeQuery {
 							break;
 					case 1: this.printNodeLabels(index);
 							break;
-					case 2:
+					case 2: String descriptor = args[4]; // expecting descriptor as CSV values
+							this.printNodeDataFromTarget(index, descriptor);
+							break;
 					case 3:
 					case 4:
 					case 5:

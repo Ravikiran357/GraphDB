@@ -216,6 +216,7 @@ public class EdgeQuery {
 			}
 		}
 	}
+
 	public boolean evaluate(String []args) {
 		boolean status = OK;
 		if (args.length > 0) {
@@ -245,6 +246,7 @@ public class EdgeQuery {
 							this.printEdgeWeights(index, lowkey, hikey);
 							break;
 					case 6: this.printIncidentEdges(index);
+							break;
 					default:
 				}
 			} catch (Exception e) {

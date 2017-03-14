@@ -2,10 +2,12 @@ package zIndex;
 
 import btree.*;
 import global.Descriptor;
+import global.NID;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class ZTreeFile extends BTreeFile{
 
@@ -15,23 +17,23 @@ public class ZTreeFile extends BTreeFile{
 	}
 
 
-	public ArrayList<DescriptorKey> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException, ScanIteratorException {
+	public List<NID> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException, 
+		IOException, ConstructPageException, UnpinPageException, ScanIteratorException {
 		BTFileScan scan = this.new_scan(null, null);
-		ArrayList<DescriptorKey> retDescriptors = new ArrayList<DescriptorKey>();
-		while(true) {
-			KeyDataEntry entry = scan.get_next();
-			if (entry == null){
-				break;
-			}
-			DescriptorKey keyEntry = (DescriptorKey) entry.key;
-			retDescriptors.add(keyEntry);
+		List<NID> nidList = new ArrayList<NID>();
+		KeyDataEntry entry = scan.get_next();
+		while(entry != null) {
+			LeafData leafData = (LeafData) entry.data;
+			NID nid = (NID) leafData.getData();
+			nidList.add(nid);
+			entry = scan.get_next();
 		}
-		return retDescriptors;
+		return nidList;
 	}
 
-//	public ArrayList<Descriptor> zTreeRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
+//	public ArrayList<Descriptor> zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
 
-	public static void zTreeRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
+	public static void zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
 		ArrayList<Descriptor> retDescriptors = new ArrayList<Descriptor> ();
 		//First find the lowerbound for the given key.
 		int lowKeyVal[] = new int[5];
@@ -131,11 +133,12 @@ public class ZTreeFile extends BTreeFile{
 		//return retDescriptors;
 	}
 
-	public static void main(String[] args) throws KeyNotMatchException, IteratorException, IOException, PinPageException, ConstructPageException, UnpinPageException {
+	public static void main(String[] args) throws KeyNotMatchException, IteratorException, IOException, 
+		PinPageException, ConstructPageException, UnpinPageException {
 		System.out.println("haga summane");
 		Descriptor key = new Descriptor();
 		key.set(5,4,3,7,3);
-		zTreeRangeScan(key, 12);
+		zFileRangeScan(key, 12);
 
 	}
 

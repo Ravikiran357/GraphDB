@@ -77,7 +77,7 @@ public class SystemDefs {
 			try {
 				JavabaseDB.openDB(dbname, num_pgs);
 				JavabaseDB.createFiles();
-				JavabaseBM.flushAllPages();
+				//JavabaseBM.flushAllPages();
 			} catch (Exception e) {
 				System.err.println("" + e);
 				e.printStackTrace();
