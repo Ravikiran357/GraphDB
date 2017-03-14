@@ -1,4 +1,8 @@
 package tests;
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 import iterator.FileScan;
 import iterator.FldSpec;
