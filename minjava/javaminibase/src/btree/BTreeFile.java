@@ -12,6 +12,7 @@ import diskmgr.*;
 import bufmgr.*;
 import global.*;
 import heap.*;
+import zIndex.DescriptorKey;
 
 /**
  * btfile.java This is the main definition of class BTreeFile, which derives
@@ -358,8 +359,13 @@ public class BTreeFile extends IndexFile implements GlobalConst {
 			if (headerPage.get_keyType() != AttrType.attrInteger) {
 				throw new KeyNotMatchException(null, "");
 			}
+		}else if (key instanceof DescriptorKey) {
+			if (headerPage.get_keyType() != AttrType.attrDesc) {
+				throw new KeyNotMatchException(null, "");
+			}
 		} else
 			throw new KeyNotMatchException(null, "");
+		
 
 		// TWO CASES:
 		// 1. headerPage.root == INVALID_PAGE:

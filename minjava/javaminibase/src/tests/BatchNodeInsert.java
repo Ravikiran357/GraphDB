@@ -6,6 +6,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import btree.AddFileEntryException;
+import btree.BT;
+import btree.BTreeFile;
+import btree.ConstructPageException;
+import btree.GetFileEntryException;
+import btree.PinPageException;
+import btree.StringKey;
+import global.AttrType;
 import global.Convert;
 import global.Descriptor;
 import global.NID;
@@ -16,6 +24,8 @@ import heap.InvalidTypeException;
 import diskmgr.GraphDB;
 import nodeheap.Node;
 import nodeheap.NodeHeapfile;
+import zIndex.DescriptorKey;
+import zIndex.ZTreeFile;
 
 class DummyNode extends Node {
 
@@ -66,6 +76,9 @@ class DummyNode extends Node {
 
 public class BatchNodeInsert {
 	
+	public BatchNodeInsert() {
+		
+	}
 	private final static int reclen = 74;
 	private final static boolean OK = true;
 	private final static boolean FAIL = false;
@@ -85,9 +98,13 @@ public class BatchNodeInsert {
 	
 		try {
 			NID nid = nhf.insertNode(node.getNodeByteArray());
+			
 			Node node2 = new Node();
 			node2 = nhf.getNode(nid);
 			node2.print();
+			
+			SystemDefs.JavabaseDB.nodeLabelIndexFile.insert(new StringKey(node2.getLabel()), nid);
+			SystemDefs.JavabaseDB.nodeDescriptorIndexFile.insert(new DescriptorKey(node2.getDesc()), nid);
 			// TODO: No. of pages read/written
 		} catch (Exception e) {
 			status = FAIL;

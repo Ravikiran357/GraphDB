@@ -11,6 +11,7 @@ import global.RID;
 import global.SystemDefs;
 import heap.FieldNumberOutOfBoundException;
 import heap.InvalidTypeException;
+import heap.Tuple;
 
 /**  This heapfile implementation is directory-based. We maintain a
  *  directory of info about the data pages (which are of type HFPage
@@ -619,7 +620,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		// - currentDataPage, currentDataPageid valid and pinned
 
 		// get datapageinfo from the current directory page:
-		Node atuple;
+		Tuple atuple;
 
 		atuple = currentDirPage.returnNode(currentDataPageNid);
 		DataPageInfo pdpinfo = new DataPageInfo(atuple);
@@ -648,8 +649,9 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 			// delete empty datapage: (does it get unpinned automatically? -NO,
 			// Ranjani)
+			
 			unpinPage(currentDataPageId, false /* undirty */);
-
+			
 			freePage(currentDataPageId);
 
 			// delete corresponding DataPageInfo-entry on the directory page:

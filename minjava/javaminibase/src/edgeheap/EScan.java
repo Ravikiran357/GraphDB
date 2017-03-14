@@ -305,6 +305,8 @@ public class EScan implements GlobalConst {
 
 					dirpage = new EHFPage();
 					pinPage(nextDirPageId, (Page) dirpage, false);
+					//_hf._firstDirPageId = nextDirPageId;
+					dirpageId = nextDirPageId;
 
 				}
 

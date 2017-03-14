@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Random;
 
+import btree.BT;
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
 import global.AttrType;
@@ -19,6 +20,7 @@ import nodeheap.HFException;
 import nodeheap.InvalidSlotNumberException;
 import nodeheap.InvalidTupleSizeException;
 import nodeheap.NodeHeapfile;
+import zIndex.ZTreeFile;
 
 class BatchDriver implements GlobalConst{
 	protected String dbpath;
@@ -92,7 +94,7 @@ class BatchDriver implements GlobalConst{
 		System.out.print("\n" + "..." + " Finished ");
 		System.out.println(".\n\n");
 
-}
+	}
 	
 	public void runQueryTests(int choice, String []args) {
 		if (choice == 4) {
@@ -111,25 +113,17 @@ class BatchDriver implements GlobalConst{
 			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
 			
 			BatchNodeInsert batchNodeInsert = new BatchNodeInsert();
-			int k = 0;
-			try{
+
 
 			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
-				System.out.println("record number is "+k);
 				batchNodeInsert.doSingleBatchNodeInsert(line, nhf, db);
-				if(k == 12){
-					System.out.println("record number is "+k);
-				}
-				k++;
-			}
-			}
-			catch (Exception e){
-				System.exit(1);
+
 			}
 			System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
+			BT.printBTree(SystemDefs.JavabaseDB.nodeLabelIndexFile.getHeaderPage());
+			BT.printBTree(SystemDefs.JavabaseDB.nodeDescriptorIndexFile.getHeaderPage());
 			break;
-		
 		case 1:
 			
 			BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
@@ -138,7 +132,10 @@ class BatchDriver implements GlobalConst{
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
+			BT.printAllLeafPages(SystemDefs.JavabaseDB.nodeLabelIndexFile.getHeaderPage());
+			BT.printAllLeafPages(SystemDefs.JavabaseDB.nodeDescriptorIndexFile.getHeaderPage());
 			break;
+			
 		case 2:
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
 			String[] edgeVals = new String[4];
@@ -151,26 +148,31 @@ class BatchDriver implements GlobalConst{
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
+			
 			break;
 		
 		case 3:	
 			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
 			String[] edgeValsDel = new String[4];
-			
-			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+			int k = 0;
+			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
 				line = line.trim();
+				System.out.println("deleting edge "+k++);
 				edgeValsDel = line.split(" ");
 				batchEdgeDelete.doSingleBatchEdgeDelete(edgeValsDel[0], edgeValsDel[1], edgeValsDel[2]);
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-		
+			break;
+			
+		case 6:
+			break;
 		default:
 			break;
 	}
+	}
 }
-}
-	
+
 	class GetStuff {
 		GetStuff() {
 		}
@@ -191,6 +193,7 @@ class BatchDriver implements GlobalConst{
 			return choice;
 		}
 	}
+	
 	
 	
 public class BatchTest implements GlobalConst{
@@ -235,5 +238,6 @@ public class BatchTest implements GlobalConst{
 		}
 	}
 }
+
 
 

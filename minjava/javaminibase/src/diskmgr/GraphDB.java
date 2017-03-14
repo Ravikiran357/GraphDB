@@ -43,7 +43,7 @@ public class GraphDB extends DB implements GlobalConst{
 		this.nodeHeapfile = new NodeHeapfile(NODEFILENAME);
 		this.edgeHeapfile = new EdgeHeapfile(EDGEFILENAME);
 		this.nodeLabelIndexFile = new BTreeFile("NodeLabel", AttrType.attrString, 44, 1);
-		this.nodeDescriptorIndexFile = new ZTreeFile("NodeDescriptor");
+		this.nodeDescriptorIndexFile = new ZTreeFile("NodeDescriptor",AttrType.attrDesc,20,1);
 		this.edgeLabelIndexFile = new BTreeFile("EdgeLabel", AttrType.attrString, 44, 1);
 		this.edgeWeightIndexFile = new BTreeFile("EdgeWeight", AttrType.attrInteger, 4, 1);
 	}
@@ -92,4 +92,3 @@ public class GraphDB extends DB implements GlobalConst{
 		return iLabelCnt;
 	}
 }
-

@@ -498,7 +498,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 		EID eid = new EID();
 		slotCnt = Convert.getShortValue(SLOT_CNT, data);
 
-		int i = eid.slotNo;
+		int i = curEid.slotNo;
 		short length;
 
 		// find the next non-empty slot
