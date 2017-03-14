@@ -1,3 +1,5 @@
+package tests;
+
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +10,9 @@ import global.Convert;
 import global.Descriptor;
 import global.NID;
 import global.SystemDefs;
+import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import diskmgr.GraphDB;
 import nodeheap.Node;
 import nodeheap.NodeHeapfile;
@@ -26,13 +31,13 @@ class DummyNode extends Node {
 	/**
 	 * Default constructor
 	 */
-	public DummyNode() {
+	public DummyNode() throws InvalidTypeException, InvalidTupleSizeException, IOException {
 	}
 
 	/**
 	 * another constructor
 	 */
-	public DummyNode(int _reclen) {
+	public DummyNode(int _reclen) throws InvalidTypeException, InvalidTupleSizeException, IOException {
 		setRecLen(_reclen);
 		data = new byte[_reclen];
 	}
@@ -60,41 +65,37 @@ class DummyNode extends Node {
 }
 
 public class BatchNodeInsert {
-
-	private final static int reclen = 64;
+	
+	private final static int reclen = 74;
 	private final static boolean OK = true;
 	private final static boolean FAIL = false;
-
-	public static void main(String []args) throws NumberFormatException, IOException {
-		if (args.length > 0) {
-			boolean status = OK;
-			String nodeFilePath = args[0];
-			String graphDB = args[1];
-			GraphDB db = SystemDefs.JavabaseDB;
-			NodeHeapfile nhf = db.nodeHeapfile;
-			String [] vals = new String[reclen];
-			Descriptor temp_desc = new Descriptor();
-			for (String line : Files.readAllLines(Paths.get(nodeFilePath),StandardCharsets.US_ASCII)) {
-				line = line.trim();
-				vals = line.split(" ");
-				temp_desc.set(Integer.parseInt(vals[1]),Integer.parseInt(vals[2]),Integer.parseInt(vals[3]),Integer.parseInt(vals[4]),Integer.parseInt(vals[5]));
-				DummyNode node = new DummyNode(reclen);
-				node.label = vals[0];
-				node.desc = temp_desc;
-
-				try {
-					NID nid = nhf.insertNode(node.toByteArray());
-					System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
-					// TODO: No. of pages read/written
-				} catch (Exception e) {
-					status = FAIL;
-					System.err.println("*** Error inserting node " + vals[0] + "\n");
-					e.printStackTrace();
-				}
-
-			}
-		} else {
-			System.out.println("No inputs given\n");
+	
+	public void doSingleBatchNodeInsert(String line, NodeHeapfile nhf, GraphDB db) throws InvalidTypeException, InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException{
+		boolean status = OK;
+		String [] vals = new String[5];
+		Descriptor temp_desc = new Descriptor();
+				
+		line = line.trim();
+		vals = line.split(" ");
+		temp_desc.set(Integer.parseInt(vals[1]),Integer.parseInt(vals[2]),Integer.parseInt(vals[3]),Integer.parseInt(vals[4]),Integer.parseInt(vals[5]));
+		Node node = new Node();
+		node.setLabel(vals[0]);
+		node.setDesc(temp_desc);
+		
+	
+		try {
+			NID nid = nhf.insertNode(node.getNodeByteArray());
+			Node node2 = new Node();
+			node2 = nhf.getNode(nid);
+			node2.print();
+			// TODO: No. of pages read/written
+		} catch (Exception e) {
+			status = FAIL;
+			System.err.println("*** Error inserting node " + vals[0] + "\n");
+			e.printStackTrace();
 		}
 	}
 }
+	
+				
+	

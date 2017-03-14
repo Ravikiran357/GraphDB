@@ -1,12 +1,16 @@
 package nodeheap;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.HashSet;
 
-import diskmgr.*;
-import bufmgr.*;
-import global.*;
+import diskmgr.Page;
+import global.GlobalConst;
+import global.NID;
+import global.PageId;
+import global.RID;
+import global.SystemDefs;
 import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTypeException;
 
 /**  This heapfile implementation is directory-based. We maintain a
  *  directory of info about the data pages (which are of type HFPage
@@ -279,9 +283,11 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public int getNodeCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException,
-			HFBufMgrException, IOException
+			HFBufMgrException, IOException, InvalidTypeException, heap.InvalidTupleSizeException
 
 	{
 		int answer = 0;
@@ -349,9 +355,11 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 *                I/O errors
 	 *
 	 * @return the nid of the node
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public NID insertNode(byte[] recPtr) throws InvalidSlotNumberException, InvalidTupleSizeException,
-			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException {
+			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTypeException, heap.InvalidTupleSizeException {
 		int dpinfoLen = 0;
 		int recLen = recPtr.length;
 		boolean found;
@@ -368,13 +376,11 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 		found = false;
 		Node node;
+
 		DataPageInfo dpinfo = new DataPageInfo();
-		NID currentDataPageRid;
 		while (found == false) { // Start While01
 									// look for suitable dpinfo-struct
-			for (currentDataPageNid = currentDirPage
-					.firstNode(); currentDataPageNid != null; currentDataPageNid = currentDirPage
-							.nextNode(currentDataPageNid)) {
+		for (currentDataPageNid = currentDirPage.firstNode(); currentDataPageNid != null; currentDataPageNid = currentDirPage.nextNode(currentDataPageNid)) {
 				node = currentDirPage.getNode(currentDataPageNid);
 
 				dpinfo = new DataPageInfo(node);
@@ -434,13 +440,13 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 					node = dpinfo.convertToNode();
 
-					byte[] tmpData = node.getTupleByteArray();
-					currentDataPageRid = currentDirPage.insertNode(tmpData);
+					byte[] tmpData = node.getNodeByteArray();
+					currentDataPageNid = currentDirPage.insertNode(tmpData);
 
-					RID tmpnid = currentDirPage.firstNode();
+					NID tmpnid = currentDirPage.firstNode();
 
 					// need catch error here!
-					if (currentDataPageRid == null)
+					if (currentDataPageNid == null)
 						throw new HFException(null, "no space to insert rec.");
 
 					// end the loop, because a new datapage with its node
@@ -854,9 +860,11 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public void deleteFile() throws InvalidSlotNumberException, FileAlreadyDeletedException, InvalidTupleSizeException,
-			HFBufMgrException, HFDiskMgrException, IOException {
+			HFBufMgrException, HFDiskMgrException, IOException, InvalidTypeException, heap.InvalidTupleSizeException {
 		if (_file_deleted)
 			throw new FileAlreadyDeletedException(null, "file alread deleted");
 
@@ -1004,9 +1012,11 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 	 * @exception IOException
 	 *                I/O errors
 	 * @throws FieldNumberOutOfBoundException 
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public int getLabelCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException,
-			HFBufMgrException, IOException, FieldNumberOutOfBoundException
+			HFBufMgrException, IOException, FieldNumberOutOfBoundException, InvalidTypeException, heap.InvalidTupleSizeException
 
 	{
 		HashSet<String> LabelSet = new HashSet<String>();

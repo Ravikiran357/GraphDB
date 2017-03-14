@@ -54,20 +54,22 @@ public class BatchEdgeInsert {
     }
 
 
-    public void doSingleBatchEdgInsert  (String sourceLabel, String destLabel, String edgeLabel, Integer edgeWeight) throws Exception {
+    public void doSingleBatchEdgInsert  (String sourceLabel, String destLabel, String edgeLabel, String edgeWeight) throws Exception {
 
 
-        EID eid = getEdge(edgeLabel);
+        //EID eid = getEdge(edgeLabel);
         Edge edge = new Edge();
-
+        edge.setLabel(edgeLabel);
         NID sourceNID = getNode(sourceLabel);
         NID destNID = getNode(destLabel);
 
-        edge.setLabel(edgeLabel);
+        
         edge.setSource(sourceNID);
         edge.setDestination(destNID);
-        edge.setWeight(edgeWeight);
-        SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
+        edge.setWeight(Integer.parseInt(edgeWeight));
+        EID eid = SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
+		edge = SystemDefs.JavabaseDB.edgeHeapfile.getEdge(eid);
+		edge.print();
 
     }
 

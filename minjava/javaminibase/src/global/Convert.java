@@ -233,7 +233,7 @@ public class Convert {
 		for (int i = 0; i < 5; i++) {
 
 			byte tmp[] = new byte[4];
-			System.arraycopy(data, position, tmp, 0, 4);
+			System.arraycopy(data, position, tmp, 0 , 4);
 			/*
 			 * creates a new data input stream to read data from the specified
 			 * input stream
@@ -241,6 +241,7 @@ public class Convert {
 			in = new ByteArrayInputStream(tmp);
 			instr = new DataInputStream(in);
 			value[i] = instr.readInt();
+			position += 4;
 
 		}
 		retDesc.set(value[0], value[1], value[2], value[3], value[4]);
@@ -279,9 +280,11 @@ public class Convert {
 			// valid contents of the buffer have been copied into it
 			byte[] B = ((ByteArrayOutputStream) out).toByteArray();
 
+			if(i == 4){
 			// copies the first 4 bytes of this byte array into data[]
-			System.arraycopy(B, 0, data, position, 4);
-			position += 4;
+				System.arraycopy(B, 0, data, position, 20);
+			}
+			//position += 4;
 
 		}
 

@@ -6,6 +6,8 @@ import java.io.*;
 import java.lang.*;
 
 import global.*;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import diskmgr.*;
 
 /**
@@ -529,9 +531,11 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 * @see Tuple
 	 */
-	public Edge getEdge(EID eid) throws IOException, InvalidSlotNumberException {
+	public Edge getEdge(EID eid) throws IOException, InvalidSlotNumberException, InvalidTypeException, InvalidTupleSizeException {
 		short recLen;
 		short offset;
 		byte[] record;
@@ -547,7 +551,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 			offset = getSlotOffset(slotNo);
 			record = new byte[recLen];
 			System.arraycopy(data, offset, record, 0, recLen);
-			Edge edge = new Edge(record, 0);
+			Edge edge = new Edge(record, 0, recLen);
 			return edge;
 		}
 
@@ -568,9 +572,11 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	 *                Invalid slot number
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 * @see Tuple
 	 */
-	public Edge returnEdge(EID eid) throws IOException, InvalidSlotNumberException {
+	public Edge returnEdge(EID eid) throws IOException, InvalidSlotNumberException, InvalidTypeException, InvalidTupleSizeException {
 		short recLen;
 		short offset;
 		PageId pageNo = new PageId();
@@ -586,7 +592,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 		if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0) && (pageNo.pid == curPage.pid)) {
 
 			offset = getSlotOffset(slotNo);
-			Edge edge = new Edge(data, offset);
+			Edge edge = new Edge(data, offset,recLen);
 			return edge;
 		}
 

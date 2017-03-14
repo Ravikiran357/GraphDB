@@ -3,6 +3,7 @@ package edgeheap;
 /** File DataPageInfo.java */
 
 import global.*;
+import heap.InvalidTypeException;
 import heap.Tuple;
 
 import java.io.*;
@@ -112,10 +113,12 @@ class DataPageInfo implements GlobalConst {
 	
 	/**
 	 * convert this class objcet to a tuple(like cast a DataPageInfo to Tuple)
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 * 
 	 *
 	 */
-	public Edge convertToEdge() throws IOException {
+	public Edge convertToEdge() throws IOException, InvalidTypeException, heap.InvalidTupleSizeException {
 
 		// 1) write availspace, recct, pageId into data []
 		Convert.setIntValue(availspace, offset, data);
@@ -123,7 +126,7 @@ class DataPageInfo implements GlobalConst {
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
 		// 2) creat a Tuple object using this array
-		Edge anEdge = new Edge(data, offset);
+		Edge anEdge = new Edge(data, offset, size);
 
 		// 3) return tuple object
 		return anEdge;

@@ -139,8 +139,5 @@ public class ZTreeFile extends BTreeFile{
 		Descriptor key = new Descriptor();
 		key.set(5,4,3,7,3);
 		zFileRangeScan(key, 12);
-
 	}
-
-
 }

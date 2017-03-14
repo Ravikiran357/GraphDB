@@ -3,6 +3,7 @@ package nodeheap;
 /** File DataPageInfo.java */
 
 import global.*;
+import heap.InvalidTypeException;
 import heap.Tuple;
 
 import java.io.*;
@@ -43,7 +44,7 @@ class DataPageInfo implements GlobalConst {
 	 * Default constructor
 	 */
 	public DataPageInfo() {
-		data = new byte[12]; // size of datapageinfo
+		data = new byte[size]; // size of datapageinfo
 		int availspace = 0;
 		nodect = 0;
 		pageId.pid = INVALID_PAGE;
@@ -72,14 +73,14 @@ class DataPageInfo implements GlobalConst {
 	 * @param atuple:
 	 *            the input tuple
 	 */
-	public DataPageInfo(Tuple _atuple) throws InvalidTupleSizeException, IOException {
+	public DataPageInfo(Node _atuple) throws InvalidTupleSizeException, IOException {
 		// need check _atuple size == this.size ?otherwise, throw new exception
-		if (_atuple.getLength() != 12) {
+		if (_atuple.getLength() != size) {
 			throw new InvalidTupleSizeException(null, "HEAPFILE: TUPLE SIZE ERROR");
 		}
 
 		else {
-			data = _atuple.returnTupleByteArray();
+			data = _atuple.returnNodeByteArray();
 			offset = _atuple.getOffset();
 
 			availspace = Convert.getIntValue(offset, data);
@@ -112,10 +113,12 @@ class DataPageInfo implements GlobalConst {
 	
 	/**
 	 * convert this class objcet to a tuple(like cast a DataPageInfo to Tuple)
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 * 
 	 *
 	 */
-	public Node convertToNode() throws IOException {
+	public Node convertToNode() throws IOException, InvalidTypeException, heap.InvalidTupleSizeException {
 
 		// 1) write availspace, nodect, pageId into data []
 		Convert.setIntValue(availspace, offset, data);
@@ -123,7 +126,7 @@ class DataPageInfo implements GlobalConst {
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
 		// 2) creat a Tuple object using this array
-		Node atuple = new Node(data, offset);
+		Node atuple = new Node(data, offset, size);
 
 		// 3) return tuple object
 		return atuple;

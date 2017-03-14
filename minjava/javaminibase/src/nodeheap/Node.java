@@ -2,6 +2,8 @@
 
 package nodeheap;
 
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import heap.Tuple;
 
 import java.io.*;
@@ -13,17 +15,7 @@ public class Node extends Tuple {
     /**
      * Maximum size of any tuple
      */
-    public static final int max_size = 64;
-
-    /**
-     * a byte array to hold data
-     */
-    private byte[] data;
-
-    /**
-     * start position of this tuple in data[]
-     */
-    private int node_offset;
+    public static final int max_size = 74;
 
     /**
      * length of this tuple
@@ -31,27 +23,26 @@ public class Node extends Tuple {
     private int node_length;
 
     /**
-     * private field Number of fields in this tuple
-     */
-    private short fldCnt;
-
-    /**
-     * private field Array of offsets of the fields
-     */
-
-    private short[] fldOffset;
-
-    /**
      * Class constructor Creat a new tuple with length = max_size,tuple offset =
      * 0.
+     * @throws IOException 
+     * @throws InvalidTupleSizeException 
+     * @throws InvalidTypeException 
      */
 
-    public Node() {
+    public Node() throws InvalidTypeException, InvalidTupleSizeException, IOException {
         // Creat a new tuple
-        data = new byte[max_size];
-        node_offset = 0;
+    	super(max_size);
         node_length = max_size;
+        AttrType[] attrs = new AttrType[2];
+        short[] str_sizes = new short[1];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrDesc);
+        str_sizes[0] = (short) 44;
+        this.setHdr((short)2, attrs, str_sizes);
     }
+
+
 
     /**
      * Constructor
@@ -62,14 +53,63 @@ public class Node extends Tuple {
      *            the offset of the tuple in the byte array
      *
      *            the length of the tuple
+     * @throws IOException 
+     * @throws InvalidTupleSizeException 
+     * @throws InvalidTypeException 
      */
 
     public Node(byte[] anode, int offset) {
-        data = anode;
-        node_offset = offset;
+        super(anode,offset,max_size);
         node_length = max_size;
         // fldCnt = getShortValue(offset, data);
+        AttrType[] attrs = new AttrType[2];
+        short[] str_sizes = new short[1];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrDesc);
+        str_sizes[0] = (short) 44;
+        try {
+			this.setHdr((short)2, attrs, str_sizes);
+		} catch (InvalidTypeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidTupleSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
+
+
+
+    public Node(byte[] anode, int offset, int size) {
+        super(anode,offset,size);
+        node_length = size;
+        // fldCnt = getShortValue(offset, data);
+        if (size==74){
+            AttrType[] attrs = new AttrType[2];
+            short[] str_sizes = new short[1];
+            attrs[0] = new AttrType(AttrType.attrString);
+            attrs[1] = new AttrType(AttrType.attrDesc);
+            str_sizes[0] = (short) 44;
+            try {
+                this.setHdr((short)2, attrs, str_sizes);
+            } catch (InvalidTypeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InvalidTupleSizeException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
 
     /**
      * Constructor(used as tuple copy)
@@ -79,12 +119,8 @@ public class Node extends Tuple {
      *
      */
     public Node(Node fromNode) {
-        data = fromNode.getNodeByteArray();
+    	super(fromNode);
         node_length = fromNode.getLength();
-        //node_length = max_size;
-        node_offset = 0;
-        fldCnt = fromNode.noOfFlds();
-        fldOffset = fromNode.copyFldOffset();
     }
 
     /**
@@ -106,10 +142,7 @@ public class Node extends Tuple {
      *            the tuple being copied
      */
     public void nodeCopy(Node fromNode) {
-        byte[] temparray = fromNode.getNodeByteArray();
-        System.arraycopy(temparray, 0, data, node_offset, node_length);
-        // fldCnt = fromTuple.noOfFlds();
-        // fldOffset = fromTuple.copyFldOffset();
+    	tupleCopy(fromNode);
     }
 
     /**
@@ -124,10 +157,20 @@ public class Node extends Tuple {
      */
 
     public void nodeInit(byte[] anode, int offset) {
-        data = anode;
-        node_offset = offset;
-        node_length = max_size;
+        tupleInit(anode, offset, max_size);node_length = max_size;
     }
+    
+    
+	/**
+	 * return the data byte array
+	 * 
+	 * @return data byte array
+	 */
+
+	public byte[] returnNodeByteArray() {
+		return returnTupleByteArray();
+	}
+
 
     /**
      * Set a tuple with the given tuple length and offset
@@ -141,8 +184,7 @@ public class Node extends Tuple {
      */
     public void nodeSet(byte[] record, int offset) {
         int length = max_size;
-        System.arraycopy(record, offset, data, 0, length);
-        node_offset = 0;
+        tupleSet(record, offset, max_size);
         node_length = length;
     }
 
@@ -156,24 +198,7 @@ public class Node extends Tuple {
         return node_length;
     }
 
-    /**
-     * get the length of a tuple, call this method if you did call setHdr ()
-     * before
-     *
-     * @return size of this tuple in bytes
-     */
-    public short size() {
-        return ((short) (fldOffset[fldCnt] - node_offset));
-    }
 
-    /**
-     * get the offset of a tuple
-     *
-     * @return offset of the tuple in byte array
-     */
-    public int getOffset() {
-        return node_offset;
-    }
 
     /**
      * Copy the tuple byte array out
@@ -183,9 +208,8 @@ public class Node extends Tuple {
      */
 
     public byte[] getNodeByteArray() {
-        byte[] nodecopy = new byte[node_length];
-        System.arraycopy(data, node_offset, nodecopy, 0, node_length);
-        return nodecopy;
+
+        return getTupleByteArray();
     }
 
     /**

@@ -7,6 +7,7 @@ import diskmgr.*;
 import bufmgr.*;
 import global.*;
 import heap.FieldNumberOutOfBoundException;
+import heap.InvalidTypeException;
 
 /**  This heapfile implementation is directory-based. We maintain a
  *  directory of info about the data pages (which are of type HFPage
@@ -279,9 +280,11 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public int getEdgeCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException,
-			HFBufMgrException, IOException
+			HFBufMgrException, IOException, InvalidTypeException, heap.InvalidTupleSizeException
 
 	{
 		int answer = 0;
@@ -349,9 +352,11 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                I/O errors
 	 *
 	 * @return the eid of the edge
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public EID insertEdge(byte[] recPtr) throws InvalidSlotNumberException, InvalidTupleSizeException,
-			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException {
+			SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTypeException, heap.InvalidTupleSizeException {
 		int dpinfoLen = 0;
 		int recLen = recPtr.length;
 		boolean found;
@@ -853,9 +858,11 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
 	public void deleteFile() throws InvalidSlotNumberException, FileAlreadyDeletedException, InvalidTupleSizeException,
-			HFBufMgrException, HFDiskMgrException, IOException {
+			HFBufMgrException, HFDiskMgrException, IOException, InvalidTypeException, heap.InvalidTupleSizeException {
 		if (_file_deleted)
 			throw new FileAlreadyDeletedException(null, "file alread deleted");
 
@@ -1003,8 +1010,10 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
-	public int getSourceCnt() throws HFBufMgrException, InvalidSlotNumberException, FieldNumberOutOfBoundException, InvalidTupleSizeException, IOException{
+	public int getSourceCnt() throws HFBufMgrException, InvalidSlotNumberException, FieldNumberOutOfBoundException, InvalidTupleSizeException, IOException, InvalidTypeException, heap.InvalidTupleSizeException{
 		HashSet<NID> SourceSet = new HashSet<NID>();
 		
 		int answer = 0;
@@ -1059,8 +1068,10 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */	
-	public int getDestinationCnt() throws HFBufMgrException, InvalidSlotNumberException, FieldNumberOutOfBoundException, InvalidTupleSizeException, IOException{
+	public int getDestinationCnt() throws HFBufMgrException, InvalidSlotNumberException, FieldNumberOutOfBoundException, InvalidTupleSizeException, IOException, InvalidTypeException, heap.InvalidTupleSizeException{
 		HashSet<NID> DestinationSet = new HashSet<NID>();
 		
 		int answer = 0;
@@ -1114,8 +1125,10 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	 *                exception thrown from diskmgr layer
 	 * @exception IOException
 	 *                I/O errors
+	 * @throws heap.InvalidTupleSizeException 
+	 * @throws InvalidTypeException 
 	 */
-	public int getLabelCnt() throws HFBufMgrException, InvalidSlotNumberException, FieldNumberOutOfBoundException, InvalidTupleSizeException, IOException{
+	public int getLabelCnt() throws HFBufMgrException, InvalidSlotNumberException, FieldNumberOutOfBoundException, InvalidTupleSizeException, IOException, InvalidTypeException, heap.InvalidTupleSizeException{
 		HashSet<String> LabelSet = new HashSet<String>();
 		
 		int answer = 0;
