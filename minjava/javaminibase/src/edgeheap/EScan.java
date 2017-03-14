@@ -556,7 +556,7 @@ public class EScan implements GlobalConst {
 		return true;
 	}
 
-	private boolean peekNext(EID eid) {
+	public boolean peekNext(EID eid) {
 
 		eid.pageNo.pid = usereid.pageNo.pid;
 		eid.slotNo = usereid.slotNo;

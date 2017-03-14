@@ -1,4 +1,5 @@
 package tests;
+
 import iterator.FileScan;
 import iterator.FldSpec;
 import iterator.RelSpec;
