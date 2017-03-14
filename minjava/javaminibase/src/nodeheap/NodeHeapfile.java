@@ -8,6 +8,7 @@ import bufmgr.*;
 import global.*;
 import heap.FieldNumberOutOfBoundException;
 import heap.InvalidTypeException;
+import heap.Tuple;
 
 /**  This heapfile implementation is directory-based. We maintain a
  *  directory of info about the data pages (which are of type HFPage
