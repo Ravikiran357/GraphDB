@@ -70,12 +70,12 @@ public class BatchNodeDelete implements GlobalConst{
             
             if(e.getSource().equals(nid) || e.getDestination().equals(nid)){
             	SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
-            	SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(e.getLabel()), eid);
-            	SystemDefs.JavabaseDB.edgeWeightIndexFile.Delete(new IntegerKey(e.getWeight()), eid);
+            	//SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(e.getLabel()), eid);
+            	//SystemDefs.JavabaseDB.edgeWeightIndexFile.Delete(new IntegerKey(e.getWeight()), eid);
             }
         }
         SystemDefs.JavabaseDB.nodeHeapfile.deleteNode(nid);
-        SystemDefs.JavabaseDB.nodeLabelIndexFile.Delete(new StringKey(node.getLabel()), nid);
-        SystemDefs.JavabaseDB.nodeDescriptorIndexFile.Delete(new DescriptorKey(node.getDesc()), nid);
+        //SystemDefs.JavabaseDB.nodeLabelIndexFile.Delete(new StringKey(node.getLabel()), nid);
+        //SystemDefs.JavabaseDB.nodeDescriptorIndexFile.Delete(new DescriptorKey(node.getDesc()), nid);
     }
 }

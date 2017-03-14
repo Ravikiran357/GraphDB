@@ -144,9 +144,10 @@ class BatchDriver implements GlobalConst{
 		case 3:	
 			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
 			String[] edgeValsDel = new String[4];
-			
+			int k = 0;
 			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
 				line = line.trim();
+				System.out.println("deleting edge "+k++);
 				edgeValsDel = line.split(" ");
 				batchEdgeDelete.doSingleBatchEdgeDelete(edgeValsDel[0], edgeValsDel[1], edgeValsDel[2]);
 			}

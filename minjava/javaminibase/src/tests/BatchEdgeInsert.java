@@ -34,9 +34,11 @@ public class BatchEdgeInsert {
                 break;
             }
             if(n.getLabel().equals(nodeLabel)){
+                nScan.closescan();
                 return nid;
             }
         }
+        nScan.closescan();
         return null;
     }
 
@@ -48,9 +50,11 @@ public class BatchEdgeInsert {
             Edge e  = escan.getNext(eid);
             if(e == null){
                 done = false;
+                escan.closescan();
                 break;
             }
             if(e.getLabel().equals(edgeLabel)){
+                escan.closescan();
                 return eid;
             }
 
@@ -78,9 +82,9 @@ public class BatchEdgeInsert {
 		edge.print();
 
 
-        SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
-        SystemDefs.JavabaseDB.edgeLabelIndexFile.insert(new StringKey(edge.getLabel()), eid);
-        SystemDefs.JavabaseDB.edgeWeightIndexFile.insert(new IntegerKey(edge.getWeight()), eid);
+        //SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
+        //SystemDefs.JavabaseDB.edgeLabelIndexFile.insert(new StringKey(edge.getLabel()), eid);
+        //SystemDefs.JavabaseDB.edgeWeightIndexFile.insert(new IntegerKey(edge.getWeight()), eid);
 
     }
 
