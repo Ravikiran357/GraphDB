@@ -29,9 +29,11 @@ public class ZTreeFile extends BTreeFile{
 		BTFileScan scan = this.new_scan(null, null);
 		List<NID> nidList = new ArrayList<NID>();
 		KeyDataEntry entry = scan.get_next();
+		LeafData leafData;
 		while(entry != null) {
-			LeafData leafData = (LeafData) entry.data;
-			NID nid = (NID) leafData.getData();
+			NID nid = new NID();
+			leafData = (LeafData) entry.data;
+			nid.copyRid(leafData.getData());
 			nidList.add(nid);
 			entry = scan.get_next();
 		}

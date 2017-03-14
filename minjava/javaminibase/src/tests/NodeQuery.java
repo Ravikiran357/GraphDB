@@ -1,4 +1,6 @@
 package tests;
+
+
 import iterator.FileScan;
 import iterator.FldSpec;
 import iterator.RelSpec;
@@ -17,6 +19,7 @@ import btree.LeafData;
 import global.AttrType;
 import global.Descriptor;
 import global.NID;
+import global.RID;
 import global.SystemDefs;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
@@ -63,13 +66,15 @@ public class NodeQuery {
 		List<Node> nodeList = new ArrayList<Node>();
 		if (index == 1) {
 			System.out.println("Printing node labels in alphabetical order using index file");
+			NID nid = new NID();
 			BTreeFile indexFile = db.nodeLabelIndexFile;
 			BTFileScan scan = indexFile.new_scan(null,null);
 			KeyDataEntry entry = scan.get_next();
 			while (entry != null) {
 				// Collect node data
 				LeafData leafData = (LeafData) entry.data;
-				Node node = db.nodeHeapfile.getNode((NID) leafData.getData());
+				nid.copyRid(leafData.getData());
+				Node node = db.nodeHeapfile.getNode(nid);
 				nodeList.add(node);
 				entry = scan.get_next();
 			}
@@ -88,12 +93,6 @@ public class NodeQuery {
 	        Collections.sort(nodeList, new Comparator<Node>() {
 	            public int compare(Node n1,Node n2) {
 	            	try {
-						System.out.println("n1 is "+n1.getLabel());
-						System.out.println("n2 is "+n2.getLabel());
-						System.out.println("return type is "+ n1.getLabel().compareTo(n2.getLabel()));
-						String n1Str = n1.getLabel();
-						String n2Str = n2.getLabel();
-						System.out.println("n1star "+n1Str + " n2 star "+ n2Str + "n1 compare to "+ n1Str.compareTo(n2Str));
 						return n1.getLabel().compareTo(n2.getLabel());
 					} catch (FieldNumberOutOfBoundException e) {
 						e.printStackTrace();
@@ -105,7 +104,7 @@ public class NodeQuery {
 	        });
 		}
         for (Node node : nodeList) {
-			//node.print();
+			node.print();
 		}
 	}
 
@@ -155,6 +154,7 @@ public class NodeQuery {
 					tempList = new ArrayList<Node>();
 				}
 	        	tempList.add(node);
+	        	hash.put(dist, tempList);
 	        	node = nScan.getNext(nid);
 	        }
 	        nScan.closescan();
