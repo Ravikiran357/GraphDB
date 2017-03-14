@@ -33,6 +33,7 @@ public class BatchEdgeDelete {
             Edge e  = escan.getNext(eid);
             if(e == null){
                 done = false;
+                escan.closescan();
                 break;
             }
             if(e.getLabel().equals(edgeLabel)){
@@ -41,7 +42,6 @@ public class BatchEdgeDelete {
             }
 
         }
-        escan.closescan();
         return null;
     }
 
@@ -64,7 +64,7 @@ public class BatchEdgeDelete {
         if(edgeSource.equals(sourceLabel) && edgeDest.equals(destLabel)){
             SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
             SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(edge.getLabel()), eid);
-            SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new IntegerKey(edge.getWeight()), eid);
+            SystemDefs.JavabaseDB.edgeWeightIndexFile.Delete(new IntegerKey(edge.getWeight()), eid);
         }
 
     }

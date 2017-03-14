@@ -37,10 +37,11 @@ public class BatchNodeDelete implements GlobalConst{
             Node n  = nScan.getNext(nid);
             if(n == null){
                 done = false;
+                
                 break;
             }
             if(n.getLabel().equals(nodeLabel)){
-                nScan.closescan();
+            	nScan.closescan();
                 return nid;
             }
         }
@@ -63,6 +64,7 @@ public class BatchNodeDelete implements GlobalConst{
             Edge e  = eScan.getNext(eid);
             if(e == null){
                 done = false;
+                eScan.closescan();
                 break;
             }
             
