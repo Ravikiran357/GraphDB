@@ -16,13 +16,13 @@ import java.io.*;
 
 class DataPageInfo implements GlobalConst {
 
-	/** HFPage returns int for avail space, so we use int here */
+	/** EHFPage returns int for avail space, so we use int here */
 	int availspace;
 
 	/** for efficient implementation of getRecCnt() */
 	int recct;
 
-	/** obvious: id of this particular data page (a HFPage) */
+	/** obvious: id of this particular data page (a EHFPage) */
 	PageId pageId = new PageId();
 
 	/** auxiliary fields of DataPageInfo */
@@ -112,7 +112,7 @@ class DataPageInfo implements GlobalConst {
 	}
 	
 	/**
-	 * convert this class objcet to a tuple(like cast a DataPageInfo to Tuple)
+	 * convert this class objcet to a Edge(like cast a DataPageInfo to Edge)
 	 * @throws heap.InvalidTupleSizeException 
 	 * @throws InvalidTypeException 
 	 * 

@@ -34,24 +34,23 @@ public class BatchEdgeDelete {
             if(e == null){
                 done = false;
                 escan.closescan();
-
                 break;
             }
             if(e.getLabel().equals(edgeLabel)){
             	escan.closescan();
                 return eid;
             }
-
         }
-
         return null;
     }
 
-
+    //Delete the edge from the edge heap file
+    //Delete the edge labels and edge weights from index files 
     public void doSingleBatchEdgeDelete  (String sourceLabel, String destLabel, String edgeLabel) throws Exception {
-
-
-        EID eid = getEdge(edgeLabel);
+        
+    	//scan the edge heap file and get the eid
+    	EID eid = getEdge(edgeLabel);
+        if(eid != null){
         Edge edge = SystemDefs.JavabaseDB.edgeHeapfile.getEdge(eid);
         if (edge == null){
             System.out.println("We did not find this "+edgeLabel);
@@ -62,13 +61,13 @@ public class BatchEdgeDelete {
         NID destNID = edge.getDestination();
         String edgeDest = SystemDefs.JavabaseDB.nodeHeapfile.getNode(destNID).getLabel();
 
-        //SystemDefs.JavabaseDB.edgeHeapfile.getEdge();
         if(edgeSource.equals(sourceLabel) && edgeDest.equals(destLabel)){
-            SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
-            //SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(edge.getLabel()), eid);
-            //SystemDefs.JavabaseDB.edgeWeightIndexFile.Delete(new IntegerKey(edge.getWeight()), eid);
+            SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(edge.getLabel()), eid);
+            SystemDefs.JavabaseDB.edgeWeightIndexFile.Delete(new IntegerKey(edge.getWeight()), eid);
+        	SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
         }
-
+    } else{
+    	System.out.println("Edge not found");
     }
-
+    }
 }

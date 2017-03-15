@@ -1,5 +1,6 @@
 package tests;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,31 +11,17 @@ import java.util.TreeMap;
 
 import btree.BTFileScan;
 import btree.BTreeFile;
-import btree.ConstructPageException;
-import btree.IteratorException;
 import btree.KeyDataEntry;
-import btree.KeyNotMatchException;
 import btree.LeafData;
-import btree.PinPageException;
-import btree.ScanIteratorException;
 import btree.StringKey;
-import btree.UnpinPageException;
-import bufmgr.HashEntryNotFoundException;
-import bufmgr.InvalidFrameNumberException;
-import bufmgr.PageUnpinnedException;
-import bufmgr.ReplacerException;
 import diskmgr.GraphDB;
 import edgeheap.EScan;
 import edgeheap.Edge;
-import global.AttrType;
 import global.Descriptor;
 import global.EID;
 import global.NID;
 import global.SystemDefs;
-import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
-import iterator.FldSpec;
-import iterator.RelSpec;
 import nodeheap.HFBufMgrException;
 import nodeheap.HFDiskMgrException;
 import nodeheap.HFException;
@@ -76,7 +63,7 @@ public class NodeQuery {
 		HFException, HFDiskMgrException, HFBufMgrException, Exception {	
 		List<Node> nodeList = new ArrayList<Node>();
 		if (index == 1) {
-			System.out.println("Printing node labels in alphabetical order using index file");
+			System.out.println("Printing node labels in alphanumerical order using index file");
 			NID nid = new NID();
 			BTreeFile indexFile = db.nodeLabelIndexFile;
 			BTFileScan scan = indexFile.new_scan(null,null);
@@ -91,7 +78,7 @@ public class NodeQuery {
 			}
 			scan.DestroyBTreeFileScan();
 		} else {
-			System.out.println("Printing node labels in alphabetical order using node heap file");
+			System.out.println("Printing node labels in alphanumerical order using node heap file");
 			NScan nScan = new NScan(db.nodeHeapfile);
 	        NID nid = new NID();
 	        Node node = nScan.getNext(nid);
@@ -101,6 +88,7 @@ public class NodeQuery {
             	node = nScan.getNext(nid);
 	        }
 	        nScan.closescan();
+	        // Sorting the data by node labels
 	        Collections.sort(nodeList, new Comparator<Node>() {
 	            public int compare(Node n1,Node n2) {
 	            	try {
@@ -212,6 +200,7 @@ public class NodeQuery {
 	}
 	
 	private void printNodesWithLabel(int index, String label) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception{
+		boolean printed = false;
 		if (index == 1) {
 			System.out.println("Printing node information and assosciated edges for nodes with same label using index file");
 			BTreeFile indexFile = db.nodeLabelIndexFile;
@@ -226,6 +215,7 @@ public class NodeQuery {
 				Node node = db.nodeHeapfile.getNode(nid);
 				printNodeAndEdgesContainingNode(node, nid);
 				entry = scan.get_next();
+				printed = true;
 			}
 			scan.DestroyBTreeFileScan();
 		} else {
@@ -236,12 +226,16 @@ public class NodeQuery {
 	        while(node != null){
             	// Collect node data
 	        	if(node.getLabel().equals(label)){
+	        		printed = true;
 	        		printNodeAndEdgesContainingNode(node, nid);
 	        	}
             	node = nScan.getNext(nid);
 	        }
 	        nScan.closescan();
 		}
+        if (printed == false) {
+        	System.out.println("No label matched");
+        }
 	}
 	
 	private void printNodeAndEdgesContainingNode(Node node, NID nid) throws edgeheap.InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException {
@@ -274,9 +268,10 @@ public class NodeQuery {
         System.out.print("\n\n");
 	}
 
-	private void printNodesFromTargetDistance(int index, String desc, int dist) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
-		//Sort sort = null;
+	private void printNodesFromTargetDistance(int index, String desc, int dist) throws InvalidSlotNumberException, 
+		InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
 		Node node = null;
+		boolean printed = false;
 		Descriptor descriptor = convertToDescriptor(desc);
 	
 		if (index == 1) {
@@ -284,27 +279,33 @@ public class NodeQuery {
 			List<NID> nidList = indexFile.zFileRangeScan(descriptor, dist);
 			for(NID nid : nidList){
 				node = db.nodeHeapfile.getNode(nid);
-				System.out.println(node.getLabel());
-		}		}
-		else {
-		try {
-			NScan nScan = new NScan(db.nodeHeapfile);
-			NID nid = new NID();
-			// create an iterator by open a file scan
-			node = nScan.getNext(nid);
-			while(node != null) {
-				if(descriptor.distance(node.getDesc()) <= dist){
-					printNodeAndEdgesContainingNode(node,nid);
-				}
-				node = nScan.getNext(nid);
-			}
-			nScan.closescan();
-		} catch (Exception e) {
-			System.out.println("ERROR: In Task 14, Qtype 4.\n");
-			e.printStackTrace();
+				printNodeAndEdgesContainingNode(node,nid);
+				printed = true;
+			}		
 		}
-	}
-}		
+		else {
+			try {
+				NScan nScan = new NScan(db.nodeHeapfile);
+				NID nid = new NID();
+				// create an iterator by open a file scan
+				node = nScan.getNext(nid);
+				while(node != null) {
+					if(descriptor.distance(node.getDesc()) <= dist){
+						printNodeAndEdgesContainingNode(node,nid);
+						printed = true;
+					}
+					node = nScan.getNext(nid);
+				}
+				nScan.closescan();
+			} catch (Exception e) {
+				System.out.println("ERROR: In Task 14, Qtype 5.\n");
+				e.printStackTrace();
+			}
+		}
+        if (printed == false) {
+        	System.out.println("No label matched");
+        }
+	}		
 
 	public boolean evaluate(int qType, int index, String []args) {
 		boolean status = OK;

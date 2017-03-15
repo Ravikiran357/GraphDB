@@ -85,7 +85,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Constructor of class HFPage open a HFPage and make this HFpage piont to
+	 * Constructor of class EHFPage open a EHFPage and make this EHFpage point to
 	 * the given page
 	 * 
 	 * @param page
@@ -97,7 +97,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Constructor of class HFPage open a existed hfpage
+	 * Constructor of class EHFPage open a existed ehfpage
 	 * 
 	 * @param apage
 	 *            a page in buffer pool
@@ -108,7 +108,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Constructor of class HFPage initialize a new page
+	 * Constructor of class EHFPage initialize a new page
 	 * 
 	 * @param pageNo
 	 *            the page number of a new page to be initialized
@@ -637,7 +637,7 @@ public class EHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Compacts the slot directory on an HFPage. WARNING -- this will probably
+	 * Compacts the slot directory on an EHFPage. WARNING -- this will probably
 	 * lead to a change in the RIDs of records on the page. You CAN'T DO THIS on
 	 * most kinds of pages.
 	 * 

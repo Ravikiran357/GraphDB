@@ -5,7 +5,7 @@ import bufmgr.HashEntryNotFoundException;
 import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
-import global.AttrType;
+
 import global.Descriptor;
 import global.NID;
 
@@ -18,18 +18,15 @@ public class ZTreeFile extends BTreeFile{
 
 	public ZTreeFile(String filename, int keytype, int keysize, int delete_fashion ) throws GetFileEntryException, PinPageException, ConstructPageException, AddFileEntryException, IOException {
 		super(filename, keytype,keysize,delete_fashion);
-		
-		// TODO Auto-generated constructor stub
 	}
 	
 	public ZTreeFile(String filename) throws GetFileEntryException, PinPageException, ConstructPageException, AddFileEntryException, IOException {
 		super(filename);
-		
-		// TODO Auto-generated constructor stub
 	}
 
-	public List<NID> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException,
-			IOException, ConstructPageException, UnpinPageException, ScanIteratorException, PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException {
+	public List<NID> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException, 
+		IOException, ConstructPageException, UnpinPageException, ScanIteratorException,
+		InvalidFrameNumberException, ReplacerException, PageUnpinnedException, HashEntryNotFoundException {
 		BTFileScan scan = this.new_scan(null, null);
 
 		List<NID> nidList = new ArrayList<NID>();
@@ -46,8 +43,6 @@ public class ZTreeFile extends BTreeFile{
 
 		return nidList;
 	}
-
-//	public ArrayList<Descriptor> zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
 
 	public  List<NID> zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException, ScanIteratorException, PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException {
 		ArrayList<Descriptor> retDescriptors = new ArrayList<Descriptor> ();
@@ -117,7 +112,6 @@ public class ZTreeFile extends BTreeFile{
 				}
 			}
 		}
-		System.out.println("allPossible size is"+allPossible.size());
 
 
 		//Sort all possible zorders
@@ -143,7 +137,6 @@ public class ZTreeFile extends BTreeFile{
 				//peek next
 				int nextZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
 				if(nextZorder != zorder+1){
-					int za=1;
 					//System.out.println("lowZorder "+lZorder + "hiZorder "+zorder);
 					DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
 					DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
@@ -163,13 +156,10 @@ public class ZTreeFile extends BTreeFile{
 
 					lowZorder = allPossible.get(a+1);
 					lZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
-					//System.out.println();
-
 				}
 			}
 			a+=1;
 		}
-		//System.out.println("lowZorder "+lZorder + "hiZorder "+hiZorder);
 		DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
 		DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
 
@@ -186,16 +176,12 @@ public class ZTreeFile extends BTreeFile{
 		}
 		scan.DestroyBTreeFileScan();
 
-
 		return nidList;
-
-		//BTFileScan scan = this.new_scan(null, null);
-		//return retDescriptors;
 	}
 
 	public void main(String[] args) throws KeyNotMatchException, IteratorException, IOException,
-			PinPageException, ConstructPageException, UnpinPageException, ScanIteratorException, InvalidFrameNumberException, HashEntryNotFoundException, PageUnpinnedException, ReplacerException {
-		System.out.println("haga summane");
+		PinPageException, ConstructPageException, UnpinPageException, ScanIteratorException, 
+		InvalidFrameNumberException, HashEntryNotFoundException, PageUnpinnedException, ReplacerException {
 		Descriptor key = new Descriptor();
 		key.set(5,4,3,7,3);
 		zFileRangeScan(key, 4);

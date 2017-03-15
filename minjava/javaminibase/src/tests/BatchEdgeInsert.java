@@ -19,6 +19,8 @@ import btree.StringKey;
  * Created by revu on 3/10/17.
  */
 public class BatchEdgeInsert {
+boolean OK = true;
+boolean FAIL = false;
 
     BatchEdgeInsert(){
 
@@ -65,7 +67,7 @@ public class BatchEdgeInsert {
 
     public void doSingleBatchEdgInsert  (String sourceLabel, String destLabel, String edgeLabel, String edgeWeight) throws Exception {
 
-
+    	boolean status = OK;
         EID eid ;//= getEdge(edgeLabel);
         Edge edge = new Edge();
         edge.setLabel(edgeLabel);
@@ -76,15 +78,14 @@ public class BatchEdgeInsert {
         edge.setSource(sourceNID);
         edge.setDestination(destNID);
         edge.setWeight(Integer.parseInt(edgeWeight));
-
         eid = SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
 		edge = SystemDefs.JavabaseDB.edgeHeapfile.getEdge(eid);
 		edge.print();
 
 
         //SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
-        //SystemDefs.JavabaseDB.edgeLabelIndexFile.insert(new StringKey(edge.getLabel()), eid);
-        //SystemDefs.JavabaseDB.edgeWeightIndexFile.insert(new IntegerKey(edge.getWeight()), eid);
+        SystemDefs.JavabaseDB.edgeLabelIndexFile.insert(new StringKey(edge.getLabel()), eid);
+        SystemDefs.JavabaseDB.edgeWeightIndexFile.insert(new IntegerKey(edge.getWeight()), eid);
 
     }
 
