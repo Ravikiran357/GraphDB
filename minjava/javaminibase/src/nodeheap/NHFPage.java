@@ -1,4 +1,4 @@
-/* File HFPage.java */
+/* File NHFPage.java */
 
 package nodeheap;
 
@@ -20,7 +20,7 @@ interface ConstSlot {
 }
 
 /**
- * Class heap file page. The design assumes that records are kept compacted when
+ * Class node heap file page. The design assumes that records are kept compacted when
  * deletions are performed.
  */
 
@@ -85,7 +85,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Constructor of class HFPage open a HFPage and make this NHFpage piont to
+	 * Constructor of class NHFPage open a HFPage and make this NHFpage point to
 	 * the given page
 	 * 
 	 * @param page
@@ -108,7 +108,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * Constructor of class HFPage initialize a new page
+	 * Constructor of class NHFPage initialize a new page
 	 * 
 	 * @param pageNo
 	 *            the page number of a new page to be initialized
@@ -250,7 +250,7 @@ public class NHFPage extends Page implements ConstSlot, GlobalConst {
 	}
 
 	/**
-	 * @return the ype
+	 * @return the type
 	 * @exception IOException
 	 *                I/O errors
 	 */
