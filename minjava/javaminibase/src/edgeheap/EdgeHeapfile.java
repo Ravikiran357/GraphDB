@@ -9,10 +9,10 @@ import global.*;
 import heap.FieldNumberOutOfBoundException;
 import heap.InvalidTypeException;
 
-/**  This heapfile implementation is directory-based. We maintain a
- *  directory of info about the data pages (which are of type HFPage
+/**  This Edgeheapfile implementation is directory-based. We maintain a
+ *  directory of info about the data pages (which are of type EHFPage
  *  when loaded into memory).  The directory itself is also composed
- *  of HFPages, with each edge being of type DataPageInfo
+ *  of EHFPages, with each edge being of type DataPageInfo
  *  as defined below.
  *
  *  The first directory page is a header page for the entire database
@@ -26,7 +26,7 @@ import heap.InvalidTypeException;
  *  into the free space in the middle of the page.
  *
  *  We can store roughly pagesize/sizeof(DataPageInfo) edges per
- *  directory page; for any given HeapFile insertion, it is likely
+ *  directory page; for any given EdgeHeapFile insertion, it is likely
  *  that at least one of those referenced data pages will have
  *  enough free space to satisfy the request.
  */
@@ -54,7 +54,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	/*
 	 * get a new datapage from the buffer manager and initialize dpinfo
 	 * 
-	 * @param dpinfop the information in the new HFPage
+	 * @param dpinfop the information in the new EHFPage
 	 */
 	private EHFPage _newDatapage(DataPageInfo dpinfop)
 			throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
@@ -79,7 +79,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	} // end of _newDatapage
 
 	/*
-	 * Internal HeapFile function (used in getEdge and updateEdge): returns
+	 * Internal EdgeHeapFile function (used in getEdge and updateEdge): returns
 	 * pinned directory page and pinned data page of the specified user
 	 * edge(eid) and true if edge is found. If the user edge cannot be
 	 * found, return false.
@@ -185,7 +185,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	} // end of _findDatapage
 
 	/**
-	 * Initialize. A null name produces a temporary heapfile which will be
+	 * Initialize. A null name produces a temporary edgeheapfile which will be
 	 * deleted by the destructor. If the name already denotes a file, the file
 	 * is opened; otherwise, a new empty file is created.
 	 *
@@ -434,7 +434,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 					// didn't check if currentDataPage==NULL, auto exception
 
 					// currentDataPage is pinned: insert its edge
-					// calling a HFPage function
+					// calling a EHFPage function
 
 					anEdge = dpinfo.convertToEdge();
 
@@ -535,7 +535,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 				// System.out.println("find the dirpagerecord on current page");
 
 				pinPage(dpinfo.pageId, currentDataPage, false);
-				// currentDataPage.openHFpage(pageinbuffer);
+				// currentDataPage.openEHFpage(pageinbuffer);
 
 			} // End else01
 		} // end of While01

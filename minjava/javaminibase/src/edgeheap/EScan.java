@@ -15,24 +15,24 @@ import global.RID;
 import global.SystemDefs;
 
 /**
- * A Scan object is created ONLY through the function openScan of a HeapFile. It
+ * A EScan object is created ONLY through the function openScan of a HeapFile. It
  * supports the getNext interface which will simply retrieve the next edge in
- * the heapfile.
+ * the Edgeheapfile.
  *
  * An object of type scan will always have pinned one directory page of the
- * heapfile.
+ * Edgeheapfile.
  */
 public class EScan implements GlobalConst {
 
 	/**
-	 * Note that one record in our way-cool HeapFile implementation is specified
+	 * Note that one record in our way-cool EdgeHeapFile implementation is specified
 	 * by six (6) parameters, some of which can be determined from others:
 	 */
 
-	/** The heapfile we are using. */
+	/** The Edgeheapfile we are using. */
 	private EdgeHeapfile _hf;
 
-	/** PageId of current directory page (which is itself an HFPage) */
+	/** PageId of current directory page (which is itself an EHFPage) */
 	private PageId dirpageId = new PageId();
 
 	/** pointer to in-core data of dirpageId (page is pinned) */
@@ -58,7 +58,7 @@ public class EScan implements GlobalConst {
 
 	/**
 	 * The constructor pins the first directory page in the file and initializes
-	 * its private data members from the private data member from hf
+	 * its private data members from the private data member from ehf
 	 *
 	 * @exception InvalidTupleSizeException
 	 *                Invalid tuple size
@@ -283,7 +283,7 @@ public class EScan implements GlobalConst {
 			 * the first directory page is the only one which can possibly
 			 * remain empty: therefore try to get the next directory page and
 			 * check it. The next one has to contain a datapage record, unless
-			 * the heapfile is empty:
+			 * the edgeheapfile is empty:
 			 */
 			PageId nextDirPageId = new PageId();
 
