@@ -177,7 +177,9 @@ public class NodeQuery {
 			List<NID> nidList = indexFile.zFileRangeScan(descriptor, dist);
 			for(NID nid : nidList){
 				node = db.nodeHeapfile.getNode(nid);
-				System.out.println(node.getLabel());
+				if(descriptor.distance(node.getDesc()) <= dist){
+					System.out.println(node.getLabel());
+				}
 			}
 		} else {
 			try {
@@ -279,7 +281,9 @@ public class NodeQuery {
 			List<NID> nidList = indexFile.zFileRangeScan(descriptor, dist);
 			for(NID nid : nidList){
 				node = db.nodeHeapfile.getNode(nid);
-				printNodeAndEdgesContainingNode(node,nid);
+				if(descriptor.distance(node.getDesc()) <= dist){
+					printNodeAndEdgesContainingNode(node,nid);
+				}
 				printed = true;
 			}		
 		}
