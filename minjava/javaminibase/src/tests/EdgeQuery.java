@@ -261,12 +261,12 @@ public class EdgeQuery {
 		HashMap<Edge,Edge> hash;
 		System.out.println("Printing data of incident edges using edge heap file");
 		EScan eScan1 = new EScan(db.edgeHeapfile);
-		EScan eScan2 = new EScan(db.edgeHeapfile);
         EID eid1 = new EID();
         EID eid2 = new EID();
         Edge edge1 = eScan1.getNext(eid1);
-        Edge edge2 = eScan2.getNext(eid2);
         while(edge1 != null){
+    		EScan eScan2 = new EScan(db.edgeHeapfile);
+            Edge edge2 = eScan2.getNext(eid2);
         	while(edge2 != null){
 	        	// Check if its duplicate edges using the labels and
         		// if the source node of first edge is same as destination node of second edge
@@ -278,10 +278,10 @@ public class EdgeQuery {
 	        	}
 	        	edge2 = eScan2.getNext(eid2);
         	}
+            eScan2.closescan();
         	edge1 = eScan1.getNext(eid1);
         }
         eScan1.closescan();
-        eScan2.closescan();
 	    for (Map<Edge,Edge> map : edgeList) {
 	    	for (Map.Entry<Edge,Edge> entry : map.entrySet()) {
 				Edge key = entry.getKey();
