@@ -1,30 +1,40 @@
 package tests;
 
-
-import iterator.FileScan;
-import iterator.FldSpec;
-import iterator.RelSpec;
-import iterator.Sort;
-
 import java.io.IOException;
-import java.util.*;
-
-import zIndex.ZTreeFile;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import btree.BTFileScan;
 import btree.BTreeFile;
+import btree.ConstructPageException;
+import btree.IteratorException;
 import btree.KeyDataEntry;
+import btree.KeyNotMatchException;
 import btree.LeafData;
-
+import btree.PinPageException;
+import btree.ScanIteratorException;
+import btree.StringKey;
+import btree.UnpinPageException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import diskmgr.GraphDB;
+import edgeheap.EScan;
+import edgeheap.Edge;
 import global.AttrType;
 import global.Descriptor;
+import global.EID;
 import global.NID;
-import global.RID;
 import global.SystemDefs;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
-import heap.Tuple;
-import diskmgr.GraphDB;
+import iterator.FldSpec;
+import iterator.RelSpec;
 import nodeheap.HFBufMgrException;
 import nodeheap.HFDiskMgrException;
 import nodeheap.HFException;
@@ -32,6 +42,7 @@ import nodeheap.InvalidSlotNumberException;
 import nodeheap.InvalidTupleSizeException;
 import nodeheap.NScan;
 import nodeheap.Node;
+import zIndex.ZTreeFile;
 
 
 public class NodeQuery {
@@ -168,56 +179,132 @@ public class NodeQuery {
 		}
 	}
 	
-	public void printNodeLabelFromTargetDistance(int index, String desc, int dist) {
-		List<Node> nidList = new ArrayList<Node>();
-		Sort sort = null;
+	public void printNodeLabelFromTargetDistance(int index, String desc, int dist) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
+		//Sort sort = null;
 		Node node = null;
 		Descriptor descriptor = convertToDescriptor(desc);
 		
 		if (index == 1) {
-			//TODO: with index
+			ZTreeFile indexFile = db.nodeDescriptorIndexFile;
+			List<NID> nidList = indexFile.zFileRangeScan(descriptor, dist);
+			for(NID nid : nidList){
+				node = db.nodeHeapfile.getNode(nid);
+				System.out.println(node.getLabel());
+			}
 		} else {
-			FileScan fscan = null;
-			short numFlds = 2;
-	        
-			short[] str_sizes = new short[1];
-	        str_sizes[0] = (short) 44;
-	        
-	        AttrType[] attrs = new AttrType[2];
-	        attrs[0] = new AttrType(AttrType.attrString);
-	        attrs[1] = new AttrType(AttrType.attrDesc);
-			
-			TupleOrder[] order = new TupleOrder[2];
-			order[0] = new TupleOrder(TupleOrder.Ascending);
-			order[1] = new TupleOrder(TupleOrder.Descending);
-	        
-			FldSpec[] projlist = new FldSpec[2];
-			RelSpec rel = new RelSpec(RelSpec.outer);
-			projlist[0] = new FldSpec(rel, 1);
-			projlist[1] = new FldSpec(rel, 2);
-	
 			try {
+				NScan nScan = new NScan(db.nodeHeapfile);
+				NID nid = new NID();
 				// create an iterator by open a file scan
-				fscan = new FileScan("14_Q4.in", attrs, str_sizes, (short) numFlds, 2, 
-						projlist, null);
-				Tuple t = new Tuple();
-				t.setHdr(numFlds, attrs, str_sizes);
-				sort = new Sort(attrs, numFlds, str_sizes, fscan, 1, order[0], 
-						0, 12, (double) dist, descriptor);
-				node = (Node) sort.get_next();
-				while (node != null) {
-					// return node labels and distance
-					nidList.add(node);
-					node = (Node) sort.get_next();
+				node = nScan.getNext(nid);
+				while(node != null) {
+					if(descriptor.distance(node.getDesc()) <= dist){
+						System.out.println(node.getLabel());
+					}
+					node = nScan.getNext(nid);
 				}
-				sort.close();
-				fscan.close();
+		        nScan.closescan();
 			} catch (Exception e) {
 				System.out.println("ERROR: In Task 14, Qtype 4.\n");
 				e.printStackTrace();
 			}
 		}
 	}
+	
+	private void printNodesWithLabel(int index, String label) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception{
+		if (index == 1) {
+			System.out.println("Printing node information and assosciated edges for nodes with same label using index file");
+			BTreeFile indexFile = db.nodeLabelIndexFile;
+			//low == high for doing exact match in btree.
+			BTFileScan scan = indexFile.new_scan(new StringKey(label),new StringKey(label));
+			KeyDataEntry entry = scan.get_next();
+			while (entry != null) {
+				// Collect node data
+				LeafData leafData = (LeafData) entry.data;
+				NID nid = new NID();
+				nid.copyRid(leafData.getData());
+				Node node = db.nodeHeapfile.getNode(nid);
+				printNodeAndEdgesContainingNode(node, nid);
+				entry = scan.get_next();
+			}
+			scan.DestroyBTreeFileScan();
+		} else {
+			System.out.println("Printing node information and assosciated edges for nodes with same label using node heap file");
+			NScan nScan = new NScan(db.nodeHeapfile);
+	        NID nid = new NID();
+	        Node node = nScan.getNext(nid);
+	        while(node != null){
+            	// Collect node data
+	        	if(node.getLabel().equals(label)){
+	        		printNodeAndEdgesContainingNode(node, nid);
+	        	}
+            	node = nScan.getNext(nid);
+	        }
+	        nScan.closescan();
+		}
+	}
+	
+	private void printNodeAndEdgesContainingNode(Node node, NID nid) throws edgeheap.InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException {
+    	EScan eScan = new EScan(SystemDefs.JavabaseDB.edgeHeapfile);
+    	EID eid = new EID();
+        boolean done = true;
+        List<Edge> outgoingEdges = new ArrayList<Edge>();
+        List<Edge> incomingEdges = new ArrayList<Edge>();
+        while(done){
+            Edge e  = eScan.getNext(eid);
+            if(e == null){
+                done = false;
+                eScan.closescan();
+                break;
+            }
+
+            if(e.getSource().equals(nid)){
+            	outgoingEdges.add(e);
+            }
+            else if(e.getDestination().equals(nid)){
+            	incomingEdges.add(e);
+            }
+        }
+        
+        node.print();
+        System.out.print("Incoming Edges : \n");
+        for(Edge e : incomingEdges) e.print();;
+        System.out.print("\nOutgoing Edges : ");
+        for(Edge e : outgoingEdges) e.print();;
+        System.out.print("\n\n");
+	}
+
+	private void printNodesFromTargetDistance(int index, String desc, int dist) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
+		//Sort sort = null;
+		Node node = null;
+		Descriptor descriptor = convertToDescriptor(desc);
+	
+		if (index == 1) {
+			ZTreeFile indexFile = db.nodeDescriptorIndexFile;
+			List<NID> nidList = indexFile.zFileRangeScan(descriptor, dist);
+			for(NID nid : nidList){
+				node = db.nodeHeapfile.getNode(nid);
+				System.out.println(node.getLabel());
+		}		}
+		else {
+		try {
+			NScan nScan = new NScan(db.nodeHeapfile);
+			NID nid = new NID();
+			// create an iterator by open a file scan
+			node = nScan.getNext(nid);
+			while(node != null) {
+				if(descriptor.distance(node.getDesc()) <= dist){
+					printNodeAndEdgesContainingNode(node,nid);
+				}
+				node = nScan.getNext(nid);
+			}
+			nScan.closescan();
+		} catch (Exception e) {
+			System.out.println("ERROR: In Task 14, Qtype 4.\n");
+			e.printStackTrace();
+		}
+	}
+}		
 
 	public boolean evaluate(String []args) {
 		boolean status = OK;
@@ -242,8 +329,13 @@ public class NodeQuery {
 					case 3: descriptor = args[4]; // expecting descriptor as CSV values
 							int dist = Integer.parseInt(args[5]);
 							this.printNodeLabelFromTargetDistance(index, descriptor, dist);
-					case 4:
-					case 5:
+							break;
+					case 4:String label = args[4]; //expect a label
+						   this.printNodesWithLabel(index,label);
+						   break;
+					case 5:descriptor = args[4]; // expecting descriptor as CSV values
+						   dist = Integer.parseInt(args[5]);
+						   this.printNodesFromTargetDistance(index, descriptor, dist);
 					default:
 				}
 			} catch (Exception e) {
