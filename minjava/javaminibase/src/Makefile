@@ -39,6 +39,7 @@ db:
 	make -C edgeheap
 	make -C index
 	make -C iterator
+	make -C zIndex
 	
 doc:
 	$(JAVADOC) $(DOCFILES)
