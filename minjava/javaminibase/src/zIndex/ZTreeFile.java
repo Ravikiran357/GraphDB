@@ -112,7 +112,6 @@ public class ZTreeFile extends BTreeFile{
 				}
 			}
 		}
-		System.out.println("allPossible size is"+allPossible.size());
 
 
 		//Sort all possible zorders
@@ -157,13 +156,10 @@ public class ZTreeFile extends BTreeFile{
 
 					lowZorder = allPossible.get(a+1);
 					lZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
-					//System.out.println();
-
 				}
 			}
 			a+=1;
 		}
-		//System.out.println("lowZorder "+lZorder + "hiZorder "+hiZorder);
 		DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
 		DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
 
@@ -180,16 +176,12 @@ public class ZTreeFile extends BTreeFile{
 		}
 		scan.DestroyBTreeFileScan();
 
-
 		return nidList;
-
-		//BTFileScan scan = this.new_scan(null, null);
-		//return retDescriptors;
 	}
 
 	public void main(String[] args) throws KeyNotMatchException, IteratorException, IOException,
-			PinPageException, ConstructPageException, UnpinPageException, ScanIteratorException, InvalidFrameNumberException, HashEntryNotFoundException, PageUnpinnedException, ReplacerException {
-		System.out.println("haga summane");
+		PinPageException, ConstructPageException, UnpinPageException, ScanIteratorException, 
+		InvalidFrameNumberException, HashEntryNotFoundException, PageUnpinnedException, ReplacerException {
 		Descriptor key = new Descriptor();
 		key.set(5,4,3,7,3);
 		zFileRangeScan(key, 4);

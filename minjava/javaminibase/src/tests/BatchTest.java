@@ -12,7 +12,6 @@ import java.util.Scanner;
 
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
-import global.AttrType;
 import global.GlobalConst;
 import global.SystemDefs;
 import nodeheap.NodeHeapfile;
@@ -39,8 +38,6 @@ class BatchDriver implements GlobalConst{
 
 		SystemDefs sysdef = new SystemDefs(dbpath, 5000, 5000, "Clock");
 		System.out.println("\n" + "Running " + " tests...." + "\n");
-
-		int keyType = AttrType.attrInteger;
 
 		// Kill anything that might be hanging around
 		String newdbpath;
