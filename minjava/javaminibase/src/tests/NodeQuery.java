@@ -319,9 +319,7 @@ public class NodeQuery {
 							break;
 					case 1: this.printNodeLabels(index);
 							break;
-					case 2: 
-							
-							descriptor = args[0]; // expecting descriptor as CSV values
+					case 2: descriptor = args[0]; // expecting descriptor as CSV values
 							this.printNodeDataFromTarget(index, descriptor);
 							break;
 					case 3: descriptor = args[0]; // expecting descriptor as CSV values
@@ -334,7 +332,9 @@ public class NodeQuery {
 					case 5:descriptor = args[0]; // expecting descriptor as CSV values
 						   dist = Integer.parseInt(args[1]);
 						   this.printNodesFromTargetDistance(index, descriptor, dist);
+						   break;
 					default:
+						System.out.println("Invalid option given");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

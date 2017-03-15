@@ -268,14 +268,15 @@ public class EdgeQuery {
         	while(edge2 != null){
 	        	// Check if its duplicate edges using the labels and
         		// if the source node of first edge is same as destination node of second edge
-	        	if ((edge1.getLabel() != edge2.getLabel()) && (edge1.getSource() == edge2.getDestination())) {
+	        	if ((!edge1.getLabel().equals(edge2.getLabel())) && 
+	        		(edge1.getSource().equals(edge2.getDestination()))) {
 	        		hash = new HashMap<Edge,Edge>();
 	        		hash.put(edge1, edge2);
 	        		edgeList.add(hash);
 	        	}
-	        	edge1 = eScan1.getNext(eid1);
 	        	edge2 = eScan2.getNext(eid2);
         	}
+        	edge1 = eScan1.getNext(eid1);
         }
         eScan1.closescan();
         eScan2.closescan();
@@ -307,13 +308,14 @@ public class EdgeQuery {
 					case 4: this.printEdgeWeights(index, null, null);
 							break;
 					case 5: KeyClass lowkey, hikey;
-							lowkey = new IntegerKey(Integer.parseInt(args[4]));
-							hikey = new IntegerKey(Integer.parseInt(args[5]));
+							lowkey = new IntegerKey(Integer.parseInt(args[0]));
+							hikey = new IntegerKey(Integer.parseInt(args[1]));
 							this.printEdgeWeights(index, lowkey, hikey);
 							break;
 					case 6: this.printIncidentEdges(index);
 							break;
 					default:
+							System.out.println("Invalid option given");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

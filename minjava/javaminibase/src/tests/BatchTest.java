@@ -12,7 +12,6 @@ import java.util.Scanner;
 import btree.BT;
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
-import global.AttrType;
 import global.GlobalConst;
 import global.SystemDefs;
 import nodeheap.NodeHeapfile;
@@ -86,19 +85,14 @@ class BatchDriver implements GlobalConst {
 		System.out.println("[6] Quit");
 	}
 
-	public void runTests() {
-		//SystemDefs sysdef = new SystemDefs(dbpath, 5000, numBuf, "Clock");
-	}
-
 	public void runAllTests(int choice) throws Exception {
 		Scanner in = new Scanner(System.in);
 		switch (choice) {
 		case 0:
 			System.out.println("Nodefile name: ");
-			String filename = in.next();
+			String filename = in.nextLine();
 			System.out.println("Graphdb name: ");
-			dbpath = in.next();
-			runTests();
+			dbpath = in.nextLine();
 			GraphDB db = SystemDefs.JavabaseDB;// new GraphDB(0);
 			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
 
@@ -110,15 +104,12 @@ class BatchDriver implements GlobalConst {
 			}
 			System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			BT.printBTree(SystemDefs.JavabaseDB.nodeLabelIndexFile.getHeaderPage());
-			BT.printBTree(SystemDefs.JavabaseDB.nodeDescriptorIndexFile.getHeaderPage());
 			break;
 		case 1:
 			System.out.println("Nodefile name: ");
-			filename = in.next();
+			filename = in.nextLine();
 			System.out.println("Graphdb name: ");
-			dbpath = in.next();
-			runTests();
+			dbpath = in.nextLine();
 			BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
 			for (String line : Files.readAllLines(Paths.get(filename), StandardCharsets.US_ASCII)) {
 				batchNodeDelete.doSingleBatchNodeDelete(line.trim());
@@ -126,16 +117,13 @@ class BatchDriver implements GlobalConst {
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:"
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			BT.printAllLeafPages(SystemDefs.JavabaseDB.nodeLabelIndexFile.getHeaderPage());
-			BT.printAllLeafPages(SystemDefs.JavabaseDB.nodeDescriptorIndexFile.getHeaderPage());
 			break;
 
 		case 2:
 			System.out.println("Edgefile name: ");
-			String edgeFile = in.next();
+			String edgeFile = in.nextLine();
 			System.out.println("Graphdb name: ");
-			dbpath = in.next();
-			runTests();
+			dbpath = in.nextLine();
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
 			String[] edgeVals = new String[4];
 			int i = 0;
@@ -153,10 +141,9 @@ class BatchDriver implements GlobalConst {
 
 		case 3:
 			System.out.println("Edgefile name: ");
-			edgeFile = in.next();
+			edgeFile = in.nextLine();
 			System.out.println("Graphdb name: ");
-			dbpath = in.next();
-			runTests();
+			dbpath = in.nextLine();
 			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
 			String[] edgeValsDel = new String[4];
 			int k = 0;
@@ -172,10 +159,9 @@ class BatchDriver implements GlobalConst {
 			break;
 		case 4:
 			System.out.println("Enter Graphdb name: ");
-			dbpath = in.next();
+			dbpath = in.nextLine();
 			System.out.println("Enter Numbuf: ");
 			numBuf = in.nextInt();
-			runTests();
 			System.out.println("Enter Query Type:");
 			int qtype = in.nextInt();
 			System.out.println("With(1) or Without index(0):");
@@ -203,14 +189,13 @@ class BatchDriver implements GlobalConst {
 			default:
 		}
 		    NodeQuery nq = new NodeQuery();
-			nq.evaluate(qtype, index,args);
+			nq.evaluate(qtype, index, args);
 			break;
 		case 5:
 			System.out.println("Enter Graphdb name: ");
-			dbpath = in.next();
+			dbpath = in.nextLine();
 			System.out.println("Enter Numbuf: ");
 			numBuf = in.nextInt();
-			runTests();
 			System.out.println("Enter Query Type:");
 			qtype = in.nextInt();
 			System.out.println("With(1) or Without index(0):");
@@ -219,28 +204,19 @@ class BatchDriver implements GlobalConst {
 			switch(qtype) {
 			case 0: break;
 			case 1: break;
-			case 2: System.out.println("Enter Descriptor as a csv val: ");
+			case 2: break;
+			case 3:	break;
+			case 4: break;
+			case 5: System.out.println("Enter lower edge weight:");
 					args[0] = in.next();
-					break;
-			case 3: System.out.println("Enter Descriptor as a csv val: ");
-					args[0] = in.next();
-					System.out.println("Enter Distance: ");
+					System.out.println("Enter upper edge weight:");
 					args[1] = in.next();
 					break;
-			case 4:System.out.println("Enter Label: ");
-				   args[0] = in.next();
-				   break;
-			case 5:System.out.println("Enter Descriptor as a csv val: ");
-				   args[0] = in.next();
-			       System.out.println("Enter Distance: ");
-			       args[1] = in.next();
-			       break;
+			case 6: break;
 			default:
 		}
 		    EdgeQuery eq = new EdgeQuery();
-		    eq.evaluate(qtype, index,args);
-			break;
-		case 6:
+		    eq.evaluate(qtype, index, args);
 			break;
 		default:
 			break;
