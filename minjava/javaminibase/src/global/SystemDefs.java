@@ -14,9 +14,18 @@ public class SystemDefs {
 	public static boolean MINIBASE_RESTART_FLAG = false;
 	public static String MINIBASE_DBNAME;
 
+	/**
+	 * Default constructor
+	 */
 	public SystemDefs() {
 	};
 
+	/** Constructor for the class SystemDefs
+	 * @param dbname - name of the database
+	 * @param num_pgs - number of pages
+	 * @param bufpoolsize - buffer pool size
+	 * @param replacement_policy - the replacement algorithm used
+	 */
 	public SystemDefs(String dbname, int num_pgs, int bufpoolsize, String replacement_policy) {
 		int logsize;
 
@@ -36,6 +45,15 @@ public class SystemDefs {
 		init(real_dbname, real_logname, num_pgs, logsize, bufpoolsize, replacement_policy);
 	}
 
+	/** Initialize method
+	 * This method initializes the Buffer Manager and the Database
+	 * @param dbname - Database name
+	 * @param logname
+	 * @param num_pgs - Number of pages
+	 * @param maxlogsize 
+	 * @param bufpoolsize - Buffer pool size
+	 * @param replacement_policy - Replacement algorithm
+	 */
 	public void init(String dbname, String logname, int num_pgs, int maxlogsize, int bufpoolsize,
 			String replacement_policy) {
 

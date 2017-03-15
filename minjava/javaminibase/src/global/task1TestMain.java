@@ -4,6 +4,9 @@ package global;
  * Created by revu on 2/17/17.
  */
 public class task1TestMain {
+	/**
+	 * To test the working of Task 1
+	 */
 	public static void main(String[] args) {
 		Descriptor desc1 = new Descriptor();
 		desc1.set(0, 1, 2, 3, 4);
