@@ -32,6 +32,7 @@ public class PredEval {
 	 *                field number exceeds limit
 	 * @exception PredEvalException
 	 *                exception from this method
+	 *NOW SUPPORTS DESCRIPTOR ATTRIBUTE TYPE
 	 */
 	public static boolean Eval(CondExpr p[], Tuple t1, Tuple t2, AttrType in1[], AttrType in2[])
 			throws IOException, UnknowAttrType, InvalidTupleSizeException, InvalidTypeException,
