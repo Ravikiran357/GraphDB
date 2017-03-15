@@ -6,8 +6,7 @@
 JARFILES=bufmgr/*.class diskmgr/*.class global/*.class iterator/*.class\
          heap/*.class chainexception/*.class  btree/*.class index/*.class tests/*.class
 
-JDKPATH = /Library/Java/JavaVirtualMachines/jdk1.8.0_91.jdk/Contents/Home
-#JDKPATH = /usr/java/jdk1.3.1_02
+JDKPATH = /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/home
 LIBPATH = .:..
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
@@ -17,9 +16,8 @@ JAVA  = $(JDKPATH)/bin/java  -classpath $(CLASSPATH)
 DOCFILES=bufmgr diskmgr global chainexception heap btree iterator index
 
 ##############  update the above for each assignment in making
-ASSIGN=~/All_files/asu_courses/dbmsi/phase_1/minjava/javaminibase/src
 
-#ASSIGN=/home/candan/Courses/CSE510spr02
+ASSIGN=/Users/Ayush/Documents/Study/DBIS/minjava/javaminibase
 LIBDIR=$(ASSIGN)/lib
 KEY=$(ASSIGN)/key
 SRC=$(ASSIGN)/src
@@ -37,6 +35,8 @@ db:
 	make -C bufmgr
 	make -C diskmgr
 	make -C heap
+	make -C nodeheap
+	make -C edgeheap
 	make -C index
 	make -C iterator
 	
@@ -44,7 +44,7 @@ doc:
 	$(JAVADOC) $(DOCFILES)
 
 test: 
-	cd tests; make bmtest dbtest; whoami; make hftest bttest indextest jointest sorttest sortmerge
+	cd tests; make batchtest
 
 clean:
 	\rm -f $(CLASSPATH)/*.class *~ \#* core $(JARFILES) TRACE

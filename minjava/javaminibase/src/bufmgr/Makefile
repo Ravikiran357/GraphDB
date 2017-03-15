@@ -1,5 +1,4 @@
-#JDKPATH = /s/java
-JDKPATH = /Library/Java/JavaVirtualMachines/jdk1.8.0_91.jdk/Contents/Home
+JDKPATH =/Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/home
 LIBPATH = /p/course/cs784-raghu/minibase_share/javaminibase/construction
 CLASSPATH = $(JDKPATH)/lib/classes.zip:.:..:$(LIBPATH)
 BINPATH = $(JDKPATH)/bin

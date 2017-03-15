@@ -319,14 +319,10 @@ public class EdgeQuery {
 		}
 	}
 
-	public boolean evaluate(String []args) {
+	public boolean evaluate(int qType, int index, String []args) {
 		boolean status = OK;
 		if (args.length > 0) {
 			try {
-				String graphDBName = args[0];
-				String numBuf = args[1];
-				int qType = Integer.parseInt(args[2]);
-				int index = Integer.parseInt(args[3]);
 				this.db = SystemDefs.JavabaseDB;
 				
 				switch(qType) {

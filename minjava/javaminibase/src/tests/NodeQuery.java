@@ -306,15 +306,10 @@ public class NodeQuery {
 	}
 }		
 
-	public boolean evaluate(String []args) {
+	public boolean evaluate(int qType, int index, String []args) {
 		boolean status = OK;
 		if (args.length > 0) {
 			try {
-				String graphDBName = args[0];
-				String numBuf = args[1];
-				int qType = Integer.parseInt(args[2]);
-				int index = Integer.parseInt(args[3]);
-
 				this.db = SystemDefs.JavabaseDB;
 				String descriptor;
 	
@@ -323,18 +318,20 @@ public class NodeQuery {
 							break;
 					case 1: this.printNodeLabels(index);
 							break;
-					case 2: descriptor = args[4]; // expecting descriptor as CSV values
+					case 2: 
+							
+							descriptor = args[0]; // expecting descriptor as CSV values
 							this.printNodeDataFromTarget(index, descriptor);
 							break;
-					case 3: descriptor = args[4]; // expecting descriptor as CSV values
-							int dist = Integer.parseInt(args[5]);
+					case 3: descriptor = args[0]; // expecting descriptor as CSV values
+							int dist = Integer.parseInt(args[1]);
 							this.printNodeLabelFromTargetDistance(index, descriptor, dist);
 							break;
-					case 4:String label = args[4]; //expect a label
+					case 4:String label = args[0]; //expect a label
 						   this.printNodesWithLabel(index,label);
 						   break;
-					case 5:descriptor = args[4]; // expecting descriptor as CSV values
-						   dist = Integer.parseInt(args[5]);
+					case 5:descriptor = args[0]; // expecting descriptor as CSV values
+						   dist = Integer.parseInt(args[1]);
 						   this.printNodesFromTargetDistance(index, descriptor, dist);
 					default:
 				}
