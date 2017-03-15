@@ -7,5 +7,6 @@ public class Operand {
 	public String string;
 	public int integer;
 	public float real;
+	//added type Descriptor
 	public Descriptor desc;
 }

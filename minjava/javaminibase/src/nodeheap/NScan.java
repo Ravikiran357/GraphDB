@@ -280,7 +280,7 @@ public class NScan implements GlobalConst {
 			 * the first directory page is the only one which can possibly
 			 * remain empty: therefore try to get the next directory page and
 			 * check it. The next one has to contain a datapage record, unless
-			 * the heapfile is empty:
+			 * the nodeheapfile is empty:
 			 */
 			PageId nextDirPageId = new PageId();
 

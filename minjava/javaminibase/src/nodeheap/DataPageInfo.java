@@ -16,13 +16,13 @@ import java.io.*;
 
 class DataPageInfo implements GlobalConst {
 
-	/** HFPage returns int for avail space, so we use int here */
+	/** NHFPage returns int for avail space, so we use int here */
 	int availspace;
 
 	/** for efficient implementation of getRecCnt() */
 	int nodect;
 
-	/** obvious: id of this particular data page (a HFPage) */
+	/** obvious: id of this particular data page (a NHFPage) */
 	PageId pageId = new PageId();
 
 	/** auxiliary fields of DataPageInfo */
@@ -35,7 +35,7 @@ class DataPageInfo implements GlobalConst {
 
 	/**
 	 * We can store roughly pagesize/sizeof(DataPageInfo) records per directory
-	 * page; for any given HeapFile insertion, it is likely that at least one of
+	 * page; for any given NodeHeapFile insertion, it is likely that at least one of
 	 * those referenced data pages will have enough free space to satisfy the
 	 * request.
 	 */
@@ -92,7 +92,7 @@ class DataPageInfo implements GlobalConst {
 	}
 
 	/**
-	 * convert this class objcet to a tuple(like cast a DataPageInfo to Tuple)
+	 * convert this class object to a tuple(like cast a DataPageInfo to Tuple)
 	 * 
 	 *
 	 */
@@ -112,7 +112,7 @@ class DataPageInfo implements GlobalConst {
 	}
 	
 	/**
-	 * convert this class objcet to a tuple(like cast a DataPageInfo to Tuple)
+	 * convert this class object to a node(like cast a DataPageInfo to Node)
 	 * @throws heap.InvalidTupleSizeException 
 	 * @throws InvalidTypeException 
 	 * 
@@ -125,10 +125,10 @@ class DataPageInfo implements GlobalConst {
 		Convert.setIntValue(nodect, offset + 4, data);
 		Convert.setIntValue(pageId.pid, offset + 8, data);
 
-		// 2) creat a Tuple object using this array
+		// 2) create a Node object using this array
 		Node atuple = new Node(data, offset, size);
 
-		// 3) return tuple object
+		// 3) return Node object
 		return atuple;
 
 	}

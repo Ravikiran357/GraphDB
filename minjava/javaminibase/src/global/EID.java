@@ -15,9 +15,10 @@ public class EID extends RID{
 	}
 
 	/**
-	 * make a copy of the given rid
+	 * make a copy of the given eid
 	 */
 	public void copyEid(EID eid) {
-		copyRid(eid);
+		pageNo = eid.pageNo;
+		slotNo = eid.slotNo;
 	}
 }

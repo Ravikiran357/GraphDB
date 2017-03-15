@@ -21,11 +21,11 @@ public class NID extends RID{
 	}
 
 	/**
-	 * make a copy of the given rid
+	 * make a copy of the given nid
 	 */
 	public void copyNid(NID nid) {
-		copyRid(nid);
+		pageNo = nid.pageNo;
+		slotNo = nid.slotNo;
 	}
-
 }
 

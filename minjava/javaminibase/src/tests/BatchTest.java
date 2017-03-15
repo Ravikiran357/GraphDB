@@ -108,11 +108,12 @@ class BatchDriver implements GlobalConst{
 			args1[2] = in.next();
 			System.out.println("With(1) or Without index(0)");
 			args1[3] = in.next();
-			System.out.println("Enter descriptor in csv");
-
-			args1[4] = in.next();
-			System.out.println("Enter distance");
-			args1[5] = in.next();
+			if (Integer.parseInt(args1[2]) > 1) {
+				System.out.println("Enter descriptor in csv");
+				args1[4] = in.next();
+				System.out.println("Enter distance");
+				args1[5] = in.next();
+			}
 
 			nq.evaluate(args1);
 		} else {
