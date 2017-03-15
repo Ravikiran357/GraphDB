@@ -83,6 +83,11 @@ public class BatchNodeInsert {
 	private final static boolean OK = true;
 	private final static boolean FAIL = false;
 	
+	/**
+	 * Insert
+	 * 
+	 */
+	
 	public void doSingleBatchNodeInsert(String line, NodeHeapfile nhf, GraphDB db) throws InvalidTypeException, InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException{
 		boolean status = OK;
 		String [] vals = new String[5];
@@ -94,9 +99,8 @@ public class BatchNodeInsert {
 		Node node = new Node();
 		node.setLabel(vals[0]);
 		node.setDesc(temp_desc);
-		
-	
 		try {
+			
 			NID nid = nhf.insertNode(node.getNodeByteArray());
 			
 			Node node2 = new Node();
@@ -112,6 +116,7 @@ public class BatchNodeInsert {
 			e.printStackTrace();
 		}
 	}
+	
 }
 	
 				
