@@ -1,5 +1,6 @@
 package tests;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,19 +10,12 @@ import java.nio.file.Paths;
 import java.util.Random;
 import java.util.Scanner;
 
-import btree.BT;
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
 import global.AttrType;
 import global.GlobalConst;
 import global.SystemDefs;
-import nodeheap.HFBufMgrException;
-import nodeheap.HFDiskMgrException;
-import nodeheap.HFException;
-import nodeheap.InvalidSlotNumberException;
-import nodeheap.InvalidTupleSizeException;
 import nodeheap.NodeHeapfile;
-import zIndex.ZTreeFile;
 
 class BatchDriver implements GlobalConst{
 	protected String dbpath;
@@ -98,17 +92,21 @@ class BatchDriver implements GlobalConst{
 	}
 	
 	public void runQueryTests(int choice, String []args) {
+		String[] args1 = new String[6];
+		args1[0] = "a";
+		args1[1] = "a";
+		Scanner in = new Scanner(System.in);
+		System.out.println("Qtype is :");
+		args1[2] = in.next();
+		System.out.println("With(1) or Without index(0)");
+		args1[3] = in.next();
 		if (choice == 4) {
 			NodeQuery nq = new NodeQuery();
-			String[] args1 = new String[6];
-			args1[0] = "a";
-			args1[1] = "a";
-			Scanner in = new Scanner(System.in);
-			System.out.println("Qtype is :");
-			args1[2] = in.next();
-			System.out.println("With(1) or Without index(0)");
-			args1[3] = in.next();
-			if (Integer.parseInt(args1[2]) > 1) {
+			if (Integer.parseInt(args1[2]) == 4) {
+				System.out.println("Enter the label");
+				args1[4] = in.next();
+			}
+			else if (Integer.parseInt(args1[2]) > 1) {
 				System.out.println("Enter descriptor in csv");
 				args1[4] = in.next();
 				System.out.println("Enter distance");
@@ -117,113 +115,101 @@ class BatchDriver implements GlobalConst{
 
 			nq.evaluate(args1);
 		} else {
+			if (Integer.parseInt(args1[2]) == 5) {
+				System.out.println("Enter the lower bound");
+				args1[4] = in.next();
+				System.out.println("Enter the upper bound");
+				args1[5] = in.next();
+			}
 			EdgeQuery eq = new EdgeQuery();
 			eq.evaluate(args);
 		}
 	}
 	
 	public void runAllTests(int choice, String filename, String graphDBName, String edgeFile) throws Exception {
-		switch(choice){
-		case 0:
-			GraphDB db = SystemDefs.JavabaseDB;//new GraphDB(0);
-			NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
-			
-			BatchNodeInsert batchNodeInsert = new BatchNodeInsert();
-
-
-			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
-				batchNodeInsert.doSingleBatchNodeInsert(line, nhf, db);
-
-			}
-			System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			BT.printBTree(SystemDefs.JavabaseDB.nodeLabelIndexFile.getHeaderPage());
-			BT.printBTree(SystemDefs.JavabaseDB.nodeDescriptorIndexFile.getHeaderPage());
-			break;
-		case 1:
-			
-			BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
-			for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
-				batchNodeDelete.doSingleBatchNodeDelete(line.trim());
-			}
-			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			BT.printAllLeafPages(SystemDefs.JavabaseDB.nodeLabelIndexFile.getHeaderPage());
-			BT.printAllLeafPages(SystemDefs.JavabaseDB.nodeDescriptorIndexFile.getHeaderPage());
-			break;
-			
-		case 2:
-			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
-			String[] edgeVals = new String[4];
-			int i = 0;
-			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
-				line = line.trim();
-				edgeVals = line.split(" ");
-				batchEdgeInsert.doSingleBatchEdgInsert(edgeVals[0], edgeVals[1], edgeVals[2], edgeVals[3]);
-				System.out.println("Edges inserted : " + i++);
-			}
-			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			
-			break;
+		GraphDB db = SystemDefs.JavabaseDB;
 		
-		case 3:	
-			BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
-			String[] edgeValsDel = new String[4];
-			int k = 0;
-			for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
-				line = line.trim();
-				System.out.println("deleting edge "+k++);
-				edgeValsDel = line.split(" ");
-				batchEdgeDelete.doSingleBatchEdgeDelete(edgeValsDel[0], edgeValsDel[1], edgeValsDel[2]);
-			}
-			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:" + SystemDefs.JavabaseDB.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-			break;
-
+		switch(choice){
+			case 0:
+				NodeHeapfile nhf = SystemDefs.JavabaseDB.nodeHeapfile;
+				BatchNodeInsert batchNodeInsert = new BatchNodeInsert();
+				for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+					batchNodeInsert.doSingleBatchNodeInsert(line, nhf, db);
+	
+				}
+				break;
+	
+			case 1:
+				BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
+				for (String line : Files.readAllLines(Paths.get(filename),StandardCharsets.US_ASCII)) {
+					batchNodeDelete.doSingleBatchNodeDelete(line.trim());
+				}
+				break;
+				
+			case 2:
+				BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
+				String[] edgeVals = new String[4];
+				int i = 0;
+				for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
+					line = line.trim();
+					edgeVals = line.split(" ");
+					batchEdgeInsert.doSingleBatchEdgInsert(edgeVals[0], edgeVals[1], edgeVals[2], edgeVals[3]);
+					System.out.println("Edges inserted : " + i++);
+				}
+				break;
 			
-		case 6:
-			break;
-		default:
-			break;
-	}
+			case 3:	
+				BatchEdgeDelete batchEdgeDelete = new BatchEdgeDelete();
+				String[] edgeValsDel = new String[4];
+				int k = 0;
+				for (String line : Files.readAllLines(Paths.get(edgeFile),StandardCharsets.US_ASCII)) {
+					line = line.trim();
+					System.out.println("deleting edge "+k++);
+					edgeValsDel = line.split(" ");
+					batchEdgeDelete.doSingleBatchEdgeDelete(edgeValsDel[0], edgeValsDel[1], edgeValsDel[2]);
+				}
+				break;
+
+			default:
+				System.out.println("Invalid option given");
+				break;
+		}
+		if (choice >= 0 && choice <= 3) {
+			System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
+			System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
+		}
 	}
 }
 
-	class GetStuff {
-		GetStuff() {
-		}
-	
-		public static int getChoice() {
-	
-			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-			int choice = -1;
-	
-			try {
-				choice = Integer.parseInt(in.readLine());
-			} catch (NumberFormatException e) {
-				return -1;
-			} catch (IOException e) {
-				return -1;
-			}
-	
-			return choice;
-		}
+class GetStuff {
+	GetStuff() {
 	}
-	
-	
+
+	public static int getChoice() {
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		int choice = -1;
+
+		try {
+			choice = Integer.parseInt(in.readLine());
+		} catch (NumberFormatException e) {
+			return -1;
+		} catch (IOException e) {
+			return -1;
+		}
+
+		return choice;
+	}
+}
+
 	
 public class BatchTest implements GlobalConst{
-	private final static boolean OK = true;
-	private final static boolean FAIL = false;
 	public static void main(String[] args) {
-		int choice = 0;
-		
+		int choice = 0;		
 		try {
 			BatchDriver bttest = new BatchDriver();
 			bttest.runTests();
 			if (args.length > 0) {
-				boolean status = OK;
 				String file = args[0];
 				String graphDB = args[1];
 				String edgeF = args[2];
@@ -231,10 +217,12 @@ public class BatchTest implements GlobalConst{
 					bttest.menu();
 					try {
 						choice = GetStuff.getChoice();
-						if (choice > 3)
+						if (choice == 6)
+							break;
+						else if (choice > 3)
 							bttest.runQueryTests(choice, args);
 						else
-							bttest.runAllTests(choice, file, graphDB,edgeF);
+							bttest.runAllTests(choice, file, graphDB, edgeF);
 					}catch (Exception e) {
 						e.printStackTrace();
 						System.out.println("       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -247,7 +235,7 @@ public class BatchTest implements GlobalConst{
 			else {
 				System.out.println("No inputs given\n");
 			}
-
+			System.out.println("Program exited succesfully");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Error encountered during buffer manager tests:\n");

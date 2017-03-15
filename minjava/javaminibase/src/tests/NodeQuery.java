@@ -19,7 +19,6 @@ import btree.LeafData;
 import global.AttrType;
 import global.Descriptor;
 import global.NID;
-import global.RID;
 import global.SystemDefs;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
@@ -65,7 +64,7 @@ public class NodeQuery {
 		HFException, HFDiskMgrException, HFBufMgrException, Exception {	
 		List<Node> nodeList = new ArrayList<Node>();
 		if (index == 1) {
-			System.out.println("Printing node labels in alphabetical order using index file");
+			System.out.println("Printing node labels in alphanumerical order using index file");
 			NID nid = new NID();
 			BTreeFile indexFile = db.nodeLabelIndexFile;
 			BTFileScan scan = indexFile.new_scan(null,null);
@@ -80,7 +79,7 @@ public class NodeQuery {
 			}
 			scan.DestroyBTreeFileScan();
 		} else {
-			System.out.println("Printing node labels in alphabetical order using node heap file");
+			System.out.println("Printing node labels in alphanumerical order using node heap file");
 			NScan nScan = new NScan(db.nodeHeapfile);
 	        NID nid = new NID();
 	        Node node = nScan.getNext(nid);
@@ -90,6 +89,7 @@ public class NodeQuery {
             	node = nScan.getNext(nid);
 	        }
 	        nScan.closescan();
+	        // Sorting the data by node labels
 	        Collections.sort(nodeList, new Comparator<Node>() {
 	            public int compare(Node n1,Node n2) {
 	            	try {

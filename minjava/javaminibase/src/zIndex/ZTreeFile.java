@@ -1,7 +1,10 @@
 package zIndex;
 
 import btree.*;
-import global.AttrType;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
 import global.Descriptor;
 import global.NID;
 
@@ -25,7 +28,8 @@ public class ZTreeFile extends BTreeFile{
 	}
 
 	public List<NID> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException, 
-		IOException, ConstructPageException, UnpinPageException, ScanIteratorException {
+		IOException, ConstructPageException, UnpinPageException, ScanIteratorException, 
+		InvalidFrameNumberException, ReplacerException, PageUnpinnedException, HashEntryNotFoundException {
 		BTFileScan scan = this.new_scan(null, null);
 		List<NID> nidList = new ArrayList<NID>();
 		KeyDataEntry entry = scan.get_next();
@@ -37,6 +41,7 @@ public class ZTreeFile extends BTreeFile{
 			nidList.add(nid);
 			entry = scan.get_next();
 		}
+		scan.DestroyBTreeFileScan();
 		return nidList;
 	}
 
