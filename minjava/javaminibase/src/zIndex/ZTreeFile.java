@@ -137,14 +137,14 @@ public class ZTreeFile extends BTreeFile{
 			int zorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a));
 			//System.out.println("zorder is "+zorder);
 			//Check if the next element exists
-			System.out.print(zorder+" ");
+			//System.out.print(zorder+" ");
 
 			if(a+1< allPossible.size()){
 				//peek next
 				int nextZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
 				if(nextZorder != zorder+1){
 					int za=1;
-					System.out.println("lowZorder "+lZorder + "hiZorder "+zorder);
+					//System.out.println("lowZorder "+lZorder + "hiZorder "+zorder);
 					DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
 					DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
 
@@ -163,13 +163,13 @@ public class ZTreeFile extends BTreeFile{
 
 					lowZorder = allPossible.get(a+1);
 					lZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
-					System.out.println();
+					//System.out.println();
 
 				}
 			}
 			a+=1;
 		}
-		System.out.println("lowZorder "+lZorder + "hiZorder "+hiZorder);
+		//System.out.println("lowZorder "+lZorder + "hiZorder "+hiZorder);
 		DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
 		DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
 
