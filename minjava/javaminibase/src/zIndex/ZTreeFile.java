@@ -5,6 +5,7 @@ import bufmgr.HashEntryNotFoundException;
 import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
+
 import global.Descriptor;
 import global.NID;
 
@@ -17,20 +18,17 @@ public class ZTreeFile extends BTreeFile{
 
 	public ZTreeFile(String filename, int keytype, int keysize, int delete_fashion ) throws GetFileEntryException, PinPageException, ConstructPageException, AddFileEntryException, IOException {
 		super(filename, keytype,keysize,delete_fashion);
-		
-		// TODO Auto-generated constructor stub
 	}
 	
 	public ZTreeFile(String filename) throws GetFileEntryException, PinPageException, ConstructPageException, AddFileEntryException, IOException {
 		super(filename);
-		
-		// TODO Auto-generated constructor stub
 	}
 
 	public List<NID> zTreeFileScan() throws PinPageException, KeyNotMatchException, IteratorException, 
-		IOException, ConstructPageException, UnpinPageException, ScanIteratorException, 
+		IOException, ConstructPageException, UnpinPageException, ScanIteratorException,
 		InvalidFrameNumberException, ReplacerException, PageUnpinnedException, HashEntryNotFoundException {
 		BTFileScan scan = this.new_scan(null, null);
+
 		List<NID> nidList = new ArrayList<NID>();
 		KeyDataEntry entry = scan.get_next();
 		LeafData leafData;
@@ -42,15 +40,16 @@ public class ZTreeFile extends BTreeFile{
 			entry = scan.get_next();
 		}
 		scan.DestroyBTreeFileScan();
+
 		return nidList;
 	}
 
-//	public ArrayList<Descriptor> zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
-
-	public static void zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
+	public  List<NID> zFileRangeScan(Descriptor key, int distance) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException, ScanIteratorException, PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException {
 		ArrayList<Descriptor> retDescriptors = new ArrayList<Descriptor> ();
 		//First find the lowerbound for the given key.
 		int lowKeyVal[] = new int[5];
+		List<NID> nidList = new ArrayList<NID>();
+
 		lowKeyVal[0] = key.get(0) - distance;
 		lowKeyVal[1] = key.get(1) - distance;
 		lowKeyVal[2] = key.get(2) - distance;
@@ -125,7 +124,11 @@ public class ZTreeFile extends BTreeFile{
 		}
 		int a = 0;
 		//System.exit(1);
+		String lowZorder = allPossible.get(0);
+		int lZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(0));
+		String hiZorder = allPossible.get(0);
 		while( a< allPossible.size()){
+			hiZorder = allPossible.get(a);
 			int zorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a));
 			//System.out.println("zorder is "+zorder);
 			//Check if the next element exists
@@ -135,23 +138,60 @@ public class ZTreeFile extends BTreeFile{
 				//peek next
 				int nextZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
 				if(nextZorder != zorder+1){
-					int za=1;
+					//System.out.println("lowZorder "+lZorder + "hiZorder "+zorder);
+					DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
+					DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
+
+					BTFileScan scan = this.new_scan(lowDescriptor, highDescriptor);
+
+					KeyDataEntry entry = scan.get_next();
+					LeafData leafData;
+					while(entry != null) {
+						NID nid = new NID();
+						leafData = (LeafData) entry.data;
+						nid.copyRid(leafData.getData());
+						nidList.add(nid);
+						entry = scan.get_next();
+					}
+					scan.DestroyBTreeFileScan();
+
+					lowZorder = allPossible.get(a+1);
+					lZorder = (int)(long)DescriptorKey.getZorder(allPossible.get(a+1));
 					//System.out.println();
 
 				}
 			}
 			a+=1;
 		}
+		//System.out.println("lowZorder "+lZorder + "hiZorder "+hiZorder);
+		DescriptorKey lowDescriptor = new DescriptorKey(lowZorder);
+		DescriptorKey highDescriptor = new DescriptorKey(hiZorder);
+
+		BTFileScan scan = this.new_scan(lowDescriptor, highDescriptor);
+
+		KeyDataEntry entry = scan.get_next();
+		LeafData leafData;
+		while(entry != null) {
+			NID nid = new NID();
+			leafData = (LeafData) entry.data;
+			nid.copyRid(leafData.getData());
+			nidList.add(nid);
+			entry = scan.get_next();
+		}
+		scan.DestroyBTreeFileScan();
+
+
+		return nidList;
 
 		//BTFileScan scan = this.new_scan(null, null);
 		//return retDescriptors;
 	}
 
-	public static void main(String[] args) throws KeyNotMatchException, IteratorException, IOException, 
-		PinPageException, ConstructPageException, UnpinPageException {
+	public void main(String[] args) throws KeyNotMatchException, IteratorException, IOException,
+			PinPageException, ConstructPageException, UnpinPageException, ScanIteratorException, InvalidFrameNumberException, HashEntryNotFoundException, PageUnpinnedException, ReplacerException {
 		System.out.println("haga summane");
 		Descriptor key = new Descriptor();
 		key.set(5,4,3,7,3);
-		zFileRangeScan(key, 12);
+		zFileRangeScan(key, 4);
 	}
 }

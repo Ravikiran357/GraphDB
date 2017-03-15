@@ -169,7 +169,7 @@ public class Convert {
 
 	/**
 	 * reads 4 Integer bytes from the given byte array at the specified position
-	 * convert it to a character
+	 * convert it to a RID object
 	 *
 	 * @param data
 	 *            a byte array
@@ -177,7 +177,7 @@ public class Convert {
 	 *            the position in data[]
 	 * @exception java.io.IOException
 	 *                I/O errors
-	 * @return the character
+	 * @return the RID object
 	 */
 	public static RID getRIDValue (int position, byte[] data) throws java.io.IOException {
 		InputStream in;
@@ -213,7 +213,7 @@ public class Convert {
 
 	/**
 	 * reads 4 Integer bytes from the given byte array at the specified position
-	 * convert it to a character
+	 * convert it to a Descriptor Object
 	 * 
 	 * @param data
 	 *            a byte array
@@ -221,7 +221,7 @@ public class Convert {
 	 *            the position in data[]
 	 * @exception java.io.IOException
 	 *                I/O errors
-	 * @return the character
+	 * @return the Descriptor object
 	 */
 	public static Descriptor getDescValue(int position, byte[] data) throws java.io.IOException {
 		InputStream in;
@@ -250,14 +250,14 @@ public class Convert {
 	}
 
 	/**
-	 * update an integer value in the given byte array at the specified position
+	 * update a Descriptor value in the given byte array at the specified position
 	 * 
 	 * @param data
 	 *            a byte array
-	 * @param value
+	 * @param descValue
 	 *            the value to be copied into the data[]
 	 * @param position
-	 *            the position of tht value in data[]
+	 *            the position of that value in data[]
 	 * @exception java.io.IOException
 	 *                I/O errors
 	 */
@@ -293,14 +293,14 @@ public class Convert {
 
 
 	/**
-	 * update an integer value in the given byte array at the specified position
+	 * update a RID value in the given byte array at the specified position
 	 *
 	 * @param data
 	 *            a byte array
-	 * @param value
-	 *            the value to be copied into the data[]
+	 * @param rid
+	 *            the RID to be copied into the data[]
 	 * @param position
-	 *            the position of tht value in data[]
+	 *            the position of that value in data[]
 	 * @exception java.io.IOException
 	 *                I/O errors
 	 */

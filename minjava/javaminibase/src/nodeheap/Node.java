@@ -13,17 +13,17 @@ import global.*;
 public class Node extends Tuple {
 
     /**
-     * Maximum size of any tuple
+     * Maximum size of any node
      */
     public static final int max_size = 74;
 
     /**
-     * length of this tuple
+     * length of this node
      */
     private int node_length;
 
     /**
-     * Class constructor Creat a new tuple with length = max_size,tuple offset =
+     * Class constructor Create a new node with length = max_size,tuple offset =
      * 0.
      * @throws IOException 
      * @throws InvalidTupleSizeException 
@@ -48,11 +48,11 @@ public class Node extends Tuple {
      * Constructor
      *
      * @param anode
-     *            a byte array which contains the tuple
+     *            a byte array which contains the node
      * @param offset
-     *            the offset of the tuple in the byte array
+     *            the offset of the node in the byte array
      *
-     *            the length of the tuple
+     *            the length of the node
      * @throws IOException 
      * @throws InvalidTupleSizeException 
      * @throws InvalidTypeException 
@@ -112,10 +112,10 @@ public class Node extends Tuple {
 
 
     /**
-     * Constructor(used as tuple copy)
+     * Constructor(used as node copy)
      *
      * @param fromNode
-     *            a byte array which contains the tuple
+     *            a byte array which contains the node
      *
      */
     public Node(Node fromNode) {
@@ -124,7 +124,7 @@ public class Node extends Tuple {
     }
 
     /**
-     * Class constructor Creat a new tuple with length = size,tuple offset = 0.
+     * Class constructor Creat a new node with length = size,tuple offset = 0.
      */
 //
 //    public Node(int size) {
@@ -135,11 +135,11 @@ public class Node extends Tuple {
 //    }
 
     /**
-     * Copy a tuple to the current tuple position you must make sure the tuple
+     * Copy a node to the current node position you must make sure the node
      * lengths must be equal
      *
      * @param fromNode
-     *            the tuple being copied
+     *            the node being copied
      */
     public void nodeCopy(Node fromNode) {
     	tupleCopy(fromNode);
@@ -149,11 +149,11 @@ public class Node extends Tuple {
      * This is used when you don't want to use the constructor
      *
      * @param anode
-     *            a byte array which contains the tuple
+     *            a byte array which contains the node
      * @param offset
-     *            the offset of the tuple in the byte array
+     *            the offset of the node in the byte array
      *
-     *            the length of the tuple
+     *            the length of the node
      */
 
     public void nodeInit(byte[] anode, int offset) {
@@ -173,14 +173,14 @@ public class Node extends Tuple {
 
 
     /**
-     * Set a tuple with the given tuple length and offset
+     * Set a node with the given node length and offset
      *
      * @param record
-     *            a byte array contains the tuple
+     *            a byte array contains the node
      * @param offset
-     *            the offset of the tuple ( =0 by default)
+     *            the offset of the node ( =0 by default)
      *
-     *            the length of the tuple
+     *            the length of the node
      */
     public void nodeSet(byte[] record, int offset) {
         int length = max_size;
@@ -189,10 +189,10 @@ public class Node extends Tuple {
     }
 
     /**
-     * get the length of a tuple, call this method if you did not call setHdr ()
+     * get the length of a node, call this method if you did not call setHdr ()
      * before
      *
-     * @return length of this tuple in bytes
+     * @return length of this node in bytes
      */
     public int getLength() {
         return node_length;
@@ -201,10 +201,10 @@ public class Node extends Tuple {
 
 
     /**
-     * Copy the tuple byte array out
+     * Copy the node byte array out
      *
-     * @return byte[], a byte array contains the tuple the length of byte[] =
-     *         length of the tuple
+     * @return byte[], a byte array contains the node the length of byte[] =
+     *         length of the node
      */
 
     public byte[] getNodeByteArray() {

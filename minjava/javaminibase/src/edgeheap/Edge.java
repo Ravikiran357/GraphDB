@@ -12,12 +12,12 @@ import global.*;
 public class Edge extends Tuple {
 
     /**
-     * Maximum size of any tuple
+     * Maximum size of any Edge
      */
     public static final int max_size = 82;
 
     /**
-     * Class constructor Creat a new tuple with length = max_size,tuple offset =
+     * Class constructor Create a new Edge with length = max_size,Edge offset =
      * 0.
      * @throws IOException 
      * @throws InvalidTupleSizeException 
@@ -34,11 +34,11 @@ public class Edge extends Tuple {
      * Constructor
      *
      *  anode
-     *            a byte array which contains the tuple
+     *            a byte array which contains the Edge
      * @param offset
-     *            the offset of the tuple in the byte array
+     *            the offset of the Edge in the byte array
      *
-     *            the length of the tuple
+     *            the length of the Edge
      * @throws IOException 
      * @throws InvalidTupleSizeException 
      * @throws InvalidTypeException 
@@ -70,10 +70,10 @@ public class Edge extends Tuple {
     }
 
     /**
-     * Constructor(used as tuple copy)
+     * Constructor(used as Edge copy)
      *
      *  fromNode
-     *            a byte array which contains the tuple
+     *            a byte array which contains the Edge
      *
      */
     public Edge(Edge fromEdge) {
@@ -81,7 +81,7 @@ public class Edge extends Tuple {
     }
 
     /**
-     * Class constructor Creat a new tuple with length = size,tuple offset = 0.
+     * Class constructor Creat a new Edge with length = size,Edge offset = 0.
      */
 //
 //    public Node(int size) {
@@ -92,7 +92,7 @@ public class Edge extends Tuple {
 //    }
 
     /**
-     * Copy a tuple to the current tuple position you must make sure the tuple
+     * Copy a tuple to the current Edge position you must make sure the Edge
      * lengths must be equal
      *
      *  fromNode
@@ -106,7 +106,7 @@ public class Edge extends Tuple {
      * This is used when you don't want to use the constructor
      *
      *  anode
-     *            a byte array which contains the tuple
+     *            a byte array which contains the Edge
      * @param offset
      *            the offset of the tuple in the byte array
      *
@@ -154,27 +154,58 @@ public class Edge extends Tuple {
 //    }
 
 
+    /**
+     * To get the Label of the Edge
+     * @return String Label
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public String getLabel() throws IOException, heap.FieldNumberOutOfBoundException{
         return getStrFld(1);
     }
     
+    /**
+     * To get the source node of the edge
+     * @return Source NID
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public NID getSource() throws IOException, heap.FieldNumberOutOfBoundException {
          int pid = getIntFld(2);
          int slotno = getIntFld(3);
          return new NID(new PageId(pid), slotno);
     }
 
+    /**
+     * To get the Destination node of the edge
+     * @return Destination NID
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public NID getDestination() throws IOException, heap.FieldNumberOutOfBoundException {
         int pid = getIntFld(4);
         int slotno = getIntFld(5);
         return new NID(new PageId(pid), slotno);    }
     
+    /**
+     * To get the weight of the edge
+     * @return weight integer
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public int getWeight() throws IOException, heap.FieldNumberOutOfBoundException{
         return getIntFld(6);
     }
 
 
 
+	/**
+	 * To get the NID
+	 * @param fldNo
+	 * @return NID
+	 * @throws IOException
+	 * @throws FieldNumberOutOfBoundException
+	 */
 	private NID getNIDFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
 		NID val = new NID();
 		RID rid = getRIDFld(fldNo);
@@ -184,22 +215,55 @@ public class Edge extends Tuple {
 	}
 
 
+    /**
+     * To set the label of the edge
+     * @param val
+     * @return Edge
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public Edge setLabel(String val) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Edge)setStrFld(1, val);
     }
+    /**
+     * To set the source of the edge
+     * @param sourceID
+     * @return Edge
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public Edge setSource(NID sourceID) throws IOException, heap.FieldNumberOutOfBoundException {
     	setIntFld(2, sourceID.pageNo.pid);
     	return (Edge)setIntFld(3,sourceID.slotNo);
     }
+    /**
+     * To set the Destination of the edge
+     * @param destID
+     * @return Edge
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public Edge setDestination(NID destID) throws IOException, heap.FieldNumberOutOfBoundException {
     	setIntFld(4, destID.pageNo.pid);
     	return (Edge)setIntFld(5,destID.slotNo);    }
+    /**
+     * To set the weight of the edge
+     * @param val
+     * @return Edge
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public Edge setWeight(int val) throws IOException, heap.FieldNumberOutOfBoundException {
         return (Edge)setIntFld(6, val);
     }
 
 
 
+    /**
+     * To print the contents of the Edge object
+     * @throws IOException
+     * @throws heap.FieldNumberOutOfBoundException
+     */
     public void print() throws IOException, heap.FieldNumberOutOfBoundException {
         System.out.println("label is "+ getLabel());
         System.out.println("Weight is : "+ getWeight());

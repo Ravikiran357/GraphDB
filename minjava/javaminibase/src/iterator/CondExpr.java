@@ -5,7 +5,7 @@ import java.io.*;
 import global.*;
 
 /**
- * This clas will hold single select condition It is an element of linked list
+ * This class will hold single select condition It is an element of linked list
  * which is logically connected by OR operators.
  */
 
@@ -49,7 +49,7 @@ public class CondExpr {
 
 		operand1.integer = 0;
 		operand2.integer = 0;
-
+		// now made suitable to handle Descriptor attribute type
 		if (type1.attrType == AttrType.attrDesc && type2.attrType == AttrType.attrDesc) {
 			distance = 0;
 		}
