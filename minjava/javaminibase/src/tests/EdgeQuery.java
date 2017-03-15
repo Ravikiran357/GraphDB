@@ -203,7 +203,7 @@ public class EdgeQuery {
 		}
 	}
 	
-	private void printEdgeWeights(int index, KeyClass low, KeyClass high) throws 
+	private void printEdgeWeights(int index, IntegerKey low, IntegerKey high) throws 
 		nodeheap.InvalidTupleSizeException, HFException, HFDiskMgrException, 
 		HFBufMgrException, Exception {
 		List<Edge> edgeList = new ArrayList<Edge>();
@@ -211,7 +211,7 @@ public class EdgeQuery {
 			System.out.println("Printing edge data in order of weights using index file");
 			EID eid = new EID();
 			BTreeFile edgeIndexFile = db.edgeWeightIndexFile;
-			BTFileScan scan = edgeIndexFile.new_scan(null,null);
+			BTFileScan scan = edgeIndexFile.new_scan(low,high);
 			KeyDataEntry entry = scan.get_next();
 			while (entry != null) {
 				// Collect edge data
@@ -229,11 +229,12 @@ public class EdgeQuery {
 	        Edge edge = eScan.getNext(eid);
 	        while(edge != null){
 	        	// Collect edge data
-	        	edgeList.add(edge);
-	        	edge = eScan.getNext(eid);
+	        	if(low == null && high == null || edge.getWeight() <= high.getKey() && edge.getWeight() >= low.getKey()) edgeList.add(edge);
+	        		edge = eScan.getNext(eid);
 	        }
 	        eScan.closescan();
 	        // Sorting the data by edge weights
+	        if(low == null && high == null)
 	        Collections.sort(edgeList, new Comparator<Edge>() {
 	            public int compare(Edge e1,Edge e2) {
 	            	try {
@@ -246,6 +247,7 @@ public class EdgeQuery {
 					return 0;
 	            }
 	        });
+	        
 		}
 	    for (Edge edge : edgeList) {
 			edge.print();
@@ -307,7 +309,7 @@ public class EdgeQuery {
 							break;
 					case 4: this.printEdgeWeights(index, null, null);
 							break;
-					case 5: KeyClass lowkey, hikey;
+					case 5: IntegerKey lowkey, hikey;
 							lowkey = new IntegerKey(Integer.parseInt(args[0]));
 							hikey = new IntegerKey(Integer.parseInt(args[1]));
 							this.printEdgeWeights(index, lowkey, hikey);
