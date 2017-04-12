@@ -1,10 +1,13 @@
 package tests;
 
 
+import iterator.FileScan;
+import iterator.FldSpec;
+import iterator.RelSpec;
+import iterator.Sort;
+
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -17,11 +20,14 @@ import btree.StringKey;
 import diskmgr.GraphDB;
 import edgeheap.EScan;
 import edgeheap.Edge;
+import global.AttrType;
 import global.Descriptor;
 import global.EID;
 import global.NID;
 import global.SystemDefs;
+import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
+import heap.Tuple;
 import nodeheap.HFBufMgrException;
 import nodeheap.HFDiskMgrException;
 import nodeheap.HFException;
@@ -79,32 +85,62 @@ public class NodeQuery {
 			scan.DestroyBTreeFileScan();
 		} else {
 			System.out.println("Printing node labels in alphanumerical order using node heap file");
-			NScan nScan = new NScan(db.nodeHeapfile);
-	        NID nid = new NID();
-	        Node node = nScan.getNext(nid);
-	        while(node != null){
-            	// Collect node data
-	        	nodeList.add(node);
-            	node = nScan.getNext(nid);
-	        }
-	        nScan.closescan();
-	        // Sorting the data by node labels
-	        Collections.sort(nodeList, new Comparator<Node>() {
-	            public int compare(Node n1,Node n2) {
-	            	try {
-						return n1.getLabel().compareTo(n2.getLabel());
-					} catch (FieldNumberOutOfBoundException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					return 0;
-	            }
-	        });
+			AttrType[] attrType = new AttrType[2];
+			attrType[0] = new AttrType(AttrType.attrString);
+			attrType[1] = new AttrType(AttrType.attrDesc);
+			short[] attrSize = new short[1];
+			attrSize[0] = 44;
+			//attrSize[1] = 20;
+			RelSpec rel = new RelSpec(RelSpec.outer);
+			FldSpec[] projlist = new FldSpec[2];
+			projlist[0] = new FldSpec(rel, 1);
+			projlist[1] = new FldSpec(rel, 2);
+			FileScan fscan = new FileScan("nodeheapfile", attrType, attrSize, (short) 2, 2, projlist, null);	        
+			Sort sort = new Sort(attrType, (short) 2, attrSize, fscan, 1, new TupleOrder(TupleOrder.Descending), 44, 12, 3.0, null);
+			Tuple t = sort.get_next();
+			while (t != null) {
+				try {
+					String outval = t.getStrFld(1);
+					System.out.println(outval);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				t = sort.get_next();
+			}
+
+			// clean up
+			try {
+				sort.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-        for (Node node : nodeList) {
-			node.print();
-		}
+//			NScan nScan = new NScan(db.nodeHeapfile);
+//	        NID nid = new NID();
+//	        Node node = nScan.getNext(nid);
+//	        while(node != null){
+//            	// Collect node data
+//	        	nodeList.add(node);
+//            	node = nScan.getNext(nid);
+//	        }
+//	        nScan.closescan();
+//	        // Sorting the data by node labels
+//	        Collections.sort(nodeList, new Comparator<Node>() {
+//	            public int compare(Node n1,Node n2) {
+//	            	try {
+//						return n1.getLabel().compareTo(n2.getLabel());
+//					} catch (FieldNumberOutOfBoundException e) {
+//						e.printStackTrace();
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//					return 0;
+//	            }
+//	        });
+//		}
+//        for (Node node : nodeList) {
+//			node.print();
+//		}
 	}
 
 	private void printNodeDataFromTarget(int index, String desc) throws InvalidSlotNumberException, HFException, 
