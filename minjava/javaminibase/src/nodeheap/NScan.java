@@ -302,6 +302,7 @@ public class NScan implements GlobalConst {
 
 					dirpage = new NHFPage();
 					pinPage(nextDirPageId, (Page) dirpage, false);
+					dirpageId = nextDirPageId;
 
 				}
 
