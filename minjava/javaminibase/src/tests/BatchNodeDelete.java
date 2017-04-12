@@ -35,12 +35,13 @@ public class BatchNodeDelete implements GlobalConst{
     public Edge getEdge(EID targetEid) throws edgeheap.InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException, heap.FieldNumberOutOfBoundException {
         EScan escan = new EScan(SystemDefs.JavabaseDB.edgeHeapfile);
         EID eid = new EID();
-        Edge e  = escan.getNext(eid);
+        Edge e = escan.getNext(eid);
         while(e != null){
     		if(eid.equals(targetEid) ){
     			escan.closescan();
     			return e;
     		}
+    		e = escan.getNext(eid);
     	}
         escan.closescan();
         return null;
@@ -57,21 +58,24 @@ public class BatchNodeDelete implements GlobalConst{
                 
                 break;
             }
+            System.out.println(nodeLabel);
             if(n.getLabel().equals(nodeLabel)){
             	nScan.closescan();
                 return nid;
             }
         }
+        nScan.closescan();
         return null;
     }
     
     public EID getEdgeSourceDest(NID nid) throws InvalidTupleSizeException, IOException, heap.FieldNumberOutOfBoundException{
-    	EScan escan = new EScan(SystemDefs.JavabaseDB.edgeHeapfile);
-    	
-    	EID eid = new EID();
-    	Edge e  = escan.getNext(eid);
-    	while(e != null){
-    		if(e.getSource().equals(nid) || e.getDestination().equals(nid)){
+		EScan escan = new EScan(SystemDefs.JavabaseDB.edgeHeapfile);
+		EID eid = new EID();
+		Edge e  = escan.getNext(eid);
+		while(e != null){
+    		NID sourceNid = e.getSource();
+    		NID destinationNid = e.getDestination();
+    		if(sourceNid.equals(nid) || destinationNid.equals(nid)){
     			escan.closescan();
     			return eid;
     		}
@@ -81,21 +85,19 @@ public class BatchNodeDelete implements GlobalConst{
     	return null;
     }
     
-    
+
     public void doSingleBatchNodeDelete(String line) throws InvalidSlotNumberException, HFException, HFBufMgrException, HFDiskMgrException, Exception{
         line = line.trim();
         String [] vals = new String[5];
-
-        
-        
         vals = line.split(" ");
         this.nodeLabel = vals[0];
     	NID nid = getNode(nodeLabel);
-    	Node node = new Node();
-    	//loop and get all eid
+		if (nid == null)
+			return;
     	
+		Node node = new Node();
         EID eid = new EID();
-        
+        // loop and get all eid
         while(true){
         	eid = getEdgeSourceDest(nid);
         	if(eid == null){
