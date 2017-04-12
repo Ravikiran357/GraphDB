@@ -254,6 +254,7 @@ public class BatchTest implements GlobalConst {
 			bttest.clearFiles();
 			bttest.menu();
 			while ((choice = GetStuff.getChoice()) != 6) {
+				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);
 				} catch (Exception e) {
