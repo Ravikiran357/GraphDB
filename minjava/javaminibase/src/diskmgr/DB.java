@@ -57,6 +57,11 @@ public class DB implements GlobalConst {
 	 * default constructor.
 	 */
 	public DB() {
+		this.resetPageCounter();
+	}
+	
+	@SuppressWarnings("static-access")
+	public void resetPageCounter() {
 		pCounter.initialize();
 	}
 
