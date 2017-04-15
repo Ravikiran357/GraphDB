@@ -3,16 +3,20 @@ package iterator;
 
 import heap.*;
 import global.*;
-import diskmgr.*;
-import bufmgr.*;
-
 import java.io.*;
 
 public class IoBuf implements GlobalConst {
+
 	/**
 	 * Constructor - use init to initialize.
 	 */
-	public void IoBuf() {
+	public IoBuf() {
+	}
+
+	public IoBuf(boolean flag){
+		// Flag is used to manipulate the done flag.For inner relation
+		// we do not require done
+		is_outer = flag;
 	}
 
 	/**
@@ -109,13 +113,15 @@ public class IoBuf implements GlobalConst {
 		if (flushed) {
 			// get tuples from
 			if ((temptuple = i_buf.Get(buf)) == null) {
-				done = true;
+				if(is_outer)
+					done = true;
 				return null;
 			}
 		} else {
 			// just reading tuples from the buffer pages.
 			if ((curr_page * t_per_pg + t_rd_from_pg) == t_written) {
-				done = true;
+				if (is_outer)
+					done = true;
 				buf = null;
 				return null;
 			}
@@ -208,4 +214,5 @@ public class IoBuf implements GlobalConst {
 	private int mode;
 	private int t_rd_from_pg; // # of tuples read from current page
 	private SpoofIbuf i_buf; // gets input from a temporary file
+	private boolean is_outer;
 }

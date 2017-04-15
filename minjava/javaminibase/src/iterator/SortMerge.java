@@ -138,6 +138,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		p_i1 = am1;
 		p_i2 = am2;
+		//p_inner_reset = am2;
 
 		if (!in1_sorted) {
 			try {
@@ -163,8 +164,8 @@ public class SortMerge extends Iterator implements GlobalConst {
 		get_from_in2 = true;
 
 		// open io_bufs
-		io_buf1 = new IoBuf();
-		io_buf2 = new IoBuf();
+		io_buf1 = new IoBuf(true);
+		io_buf2 = new IoBuf(false);
 
 		// Allocate memory for the temporary tuples
 		TempTuple1 = new Tuple();
@@ -255,11 +256,11 @@ public class SortMerge extends Iterator implements GlobalConst {
 			InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException, SortException,
 			LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
 
-		int comp_res;
+		int comp_res=0;
 		Tuple _tuple1, _tuple2;
 		if (done)
 			return null;
-
+		int comp_res1 = 0;
 		while (true) {
 			if (process_next_block) {
 				process_next_block = false;
@@ -279,6 +280,8 @@ public class SortMerge extends Iterator implements GlobalConst {
 				// is ascending or descending,
 				// this loop will be modified.
 				comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
+				comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1+1, tuple2, jc_in2+1, distance, target);
+				//Here the outer iterator moves
 				while ((comp_res < 0 && _order.tupleOrder == TupleOrder.Ascending)
 						|| (comp_res > 0 && _order.tupleOrder == TupleOrder.Descending)) {
 					if ((tuple1 = p_i1.get_next()) == null) {
@@ -296,7 +299,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 						done = true;
 						return null;
 					}
-
+					// p_i2 = p_inner_reset;
 					comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
 				}
 
@@ -304,14 +307,15 @@ public class SortMerge extends Iterator implements GlobalConst {
 					process_next_block = true;
 					continue;
 				}
-
+				//Comp_res is zero that means that there is a match
 				TempTuple1.tupleCopy(tuple1);
 				TempTuple2.tupleCopy(tuple2);
 
 				io_buf1.init(_bufs1, 1, t1_size, temp_file_fd1);
 				io_buf2.init(_bufs2, 1, t2_size, temp_file_fd2);
 
-				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, TempTuple1, jc_in1, distance, target) == 0) {
+				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
+						jc_in1, TempTuple1, jc_in1, distance, target) == 0) {
 					// Insert tuple1 into io_buf1
 					try {
 						io_buf1.Put(tuple1);
@@ -324,7 +328,8 @@ public class SortMerge extends Iterator implements GlobalConst {
 					}
 				}
 
-				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2, jc_in2, TempTuple2, jc_in2, distance, target) == 0) {
+				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2, jc_in2,
+						TempTuple2, jc_in2, distance, target) == 0) {
 					// Insert tuple2 into io_buf2
 
 					try {
@@ -354,6 +359,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 					System.out.println("Equiv. class 1 in sort-merge has no tuples");
 			}
 
+			//come out of process_next_block if loop
 			if ((_tuple2 = io_buf2.Get(TempTuple2)) == null) {
 				if ((_tuple1 = io_buf1.Get(TempTuple1)) == null) {
 					process_next_block = true;
@@ -363,8 +369,13 @@ public class SortMerge extends Iterator implements GlobalConst {
 					_tuple2 = io_buf2.Get(TempTuple2);
 				}
 			}
+			comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1+1, TempTuple2, jc_in2+1, distance, target);
+
 			if (PredEval.Eval(OutputFilter, TempTuple1, TempTuple2, _in1, _in2) == true) {
 				Projection.Join(TempTuple1, _in1, TempTuple2, _in2, Jtuple, perm_mat, nOutFlds);
+				//System.out.println("comp_res " + comp_res + ", comp_res1 " + comp_res1);
+				if (comp_res1 != 0)
+					continue;
 				return Jtuple;
 			}
 		}

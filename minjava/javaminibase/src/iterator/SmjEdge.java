@@ -95,7 +95,7 @@ public class SmjEdge {
 		try {
 			sm = new SortMerge(
 					attrs, 6, attrSize, attrs, 6, attrSize, 
-					1, 44, 1, 44, 
+					4, 4, 2, 4,
 					25, out_fscan, in_fscan, false, false, ascending,
 					null, projlist, 6, -1.0, null);
 		} catch (Exception e) {
