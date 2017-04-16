@@ -2,10 +2,10 @@ package iterator;
 
 import heap.*;
 import global.*;
-import diskmgr.*;
 import bufmgr.*;
 import index.*;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * This file contains the interface for the sort_merg joins. We name the two
@@ -40,7 +40,10 @@ public class SortMerge extends Iterator implements GlobalConst {
 	private int nOutFlds;
 	private double distance;
 	private Descriptor target;
-
+	private ArrayList<Tuple> outerJoinList;
+	private ArrayList<Tuple> innerJoinList;
+	private int outerListptr;
+	private int innerListptr;
 	/**
 	 * constructor,initialization
 	 * 
@@ -113,7 +116,10 @@ public class SortMerge extends Iterator implements GlobalConst {
 		System.arraycopy(in2, 0, _in2, 0, in2.length);
 		in1_len = len_in1;
 		in2_len = len_in2;
-
+		outerJoinList = new ArrayList<Tuple>();
+		innerJoinList = new ArrayList<Tuple>();
+		innerListptr = 0;
+		outerListptr = 0;
 		Jtuple = new Tuple();
 		AttrType[] Jtypes = new AttrType[n_out_flds];
 		short[] ts_size = null;
@@ -138,7 +144,6 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		p_i1 = am1;
 		p_i2 = am2;
-		//p_inner_reset = am2;
 
 		if (!in1_sorted) {
 			try {
@@ -166,6 +171,8 @@ public class SortMerge extends Iterator implements GlobalConst {
 		// open io_bufs
 		io_buf1 = new IoBuf(true);
 		io_buf2 = new IoBuf(false);
+//		io_buf1 = new IoBuf();
+//		io_buf2 = new IoBuf();
 
 		// Allocate memory for the temporary tuples
 		TempTuple1 = new Tuple();
@@ -280,7 +287,6 @@ public class SortMerge extends Iterator implements GlobalConst {
 				// is ascending or descending,
 				// this loop will be modified.
 				comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
-				comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1+1, tuple2, jc_in2+1, distance, target);
 				//Here the outer iterator moves
 				while ((comp_res < 0 && _order.tupleOrder == TupleOrder.Ascending)
 						|| (comp_res > 0 && _order.tupleOrder == TupleOrder.Descending)) {
@@ -299,7 +305,6 @@ public class SortMerge extends Iterator implements GlobalConst {
 						done = true;
 						return null;
 					}
-					// p_i2 = p_inner_reset;
 					comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1, jc_in1, tuple2, jc_in2, distance, target);
 				}
 
@@ -310,10 +315,11 @@ public class SortMerge extends Iterator implements GlobalConst {
 				//Comp_res is zero that means that there is a match
 				TempTuple1.tupleCopy(tuple1);
 				TempTuple2.tupleCopy(tuple2);
-
+				outerJoinList = new ArrayList<Tuple>();
+				innerJoinList = new ArrayList<Tuple>();
 				io_buf1.init(_bufs1, 1, t1_size, temp_file_fd1);
 				io_buf2.init(_bufs2, 1, t2_size, temp_file_fd2);
-
+				//System.out.println("outer edges");
 				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
 						jc_in1, TempTuple1, jc_in1, distance, target) == 0) {
 					// Insert tuple1 into io_buf1
@@ -322,59 +328,62 @@ public class SortMerge extends Iterator implements GlobalConst {
 					} catch (Exception e) {
 						throw new JoinsException(e, "IoBuf error in sortmerge");
 					}
+					//Edge e1 = new Edge(tuple1.getTupleByteArray(), 0);
+					//e1.print();
+					Tuple t = new Tuple(tuple1);
+					outerJoinList.add(t);
+					outerListptr =0;
 					if ((tuple1 = p_i1.get_next()) == null) {
 						get_from_in1 = true;
 						break;
 					}
 				}
-
+				TempTuple1 = outerJoinList.get(0);
+				//System.out.println("inner edges");
 				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2, jc_in2,
 						TempTuple2, jc_in2, distance, target) == 0) {
 					// Insert tuple2 into io_buf2
-
 					try {
 						io_buf2.Put(tuple2);
 					} catch (Exception e) {
 						throw new JoinsException(e, "IoBuf error in sortmerge");
 					}
+					//Edge e1 = new Edge(tuple2.getTupleByteArray(), 0);
+					//e1.print();
+					Tuple t = new Tuple(tuple2);
+					innerJoinList.add(t);
+					innerListptr = 0;
 					if ((tuple2 = p_i2.get_next()) == null) {
 						get_from_in2 = true;
 						break;
 					}
 				}
-
-				// tuple1 and tuple2 contain the next tuples to be processed
-				// after this set.
-				// Now perform a join of the tuples in io_buf1 and io_buf2.
-				// This is going to be a simple nested loops join with no
-				// frills. I guess,
-				// it can be made more efficient, this can be done by a future
-				// 564 student.
-				// Another optimization that can be made is to choose the inner
-				// and outer
-				// by checking the number of tuples in each equivalence class.
-
-				if ((_tuple1 = io_buf1.Get(TempTuple1)) == null) // Should not
-																	// occur
-					System.out.println("Equiv. class 1 in sort-merge has no tuples");
 			}
-
 			//come out of process_next_block if loop
-			if ((_tuple2 = io_buf2.Get(TempTuple2)) == null) {
-				if ((_tuple1 = io_buf1.Get(TempTuple1)) == null) {
+			if(innerListptr <innerJoinList.size() && outerListptr <outerJoinList.size()){
+				TempTuple2 = innerJoinList.get(innerListptr);
+				innerListptr++;
+			} else if(outerListptr < outerJoinList.size()){
+				outerListptr++;
+				if(outerListptr>= outerJoinList.size()){
 					process_next_block = true;
-					continue; // Process next equivalence class
-				} else {
-					io_buf2.reread();
-					_tuple2 = io_buf2.Get(TempTuple2);
+					continue;
 				}
+				TempTuple1 = outerJoinList.get(outerListptr);
+				innerListptr = 0;
+				TempTuple2 = innerJoinList.get(innerListptr);
+				innerListptr++;
+			} else{
+				process_next_block = true;
+				continue;
 			}
-			comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1+1, TempTuple2, jc_in2+1, distance, target);
+
+			int comp_res2 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1, TempTuple2, jc_in2, distance, target);
+			comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1-1, TempTuple2, jc_in2-1, distance, target);
 
 			if (PredEval.Eval(OutputFilter, TempTuple1, TempTuple2, _in1, _in2) == true) {
 				Projection.Join(TempTuple1, _in1, TempTuple2, _in2, Jtuple, perm_mat, nOutFlds);
-				//System.out.println("comp_res " + comp_res + ", comp_res1 " + comp_res1);
-				if (comp_res1 != 0)
+				if (comp_res1 != 0 || comp_res2 !=0)
 					continue;
 				return Jtuple;
 			}
