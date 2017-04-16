@@ -36,16 +36,45 @@ public class GraphDB extends DB implements GlobalConst{
 	public GraphDB(int type) {
 		super();
 	}
+	
+	public void openDB(String fname, int num_pgs)
+			throws IOException, InvalidPageNumberException, FileIOException, DiskMgrException {
+		super.openDB(fname, num_pgs);
+		try {
+			createFiles();
+			createIndexFiles();
+		} catch (HFException | HFBufMgrException | HFDiskMgrException | GetFileEntryException | ConstructPageException
+				| AddFileEntryException | edgeheap.HFException | edgeheap.HFBufMgrException
+				| edgeheap.HFDiskMgrException | PinPageException e) {
+			throw new DiskMgrException(e, e.getMessage());
+		}
+	}
+	
+	public void openDB(String fname) throws InvalidPageNumberException, FileIOException, DiskMgrException, IOException{
+		super.openDB(fname);
+		try {
+			createFiles();
+			createIndexFiles();
+		} catch (HFException | HFBufMgrException | HFDiskMgrException | GetFileEntryException | ConstructPageException
+				| AddFileEntryException | edgeheap.HFException | edgeheap.HFBufMgrException
+				| edgeheap.HFDiskMgrException | PinPageException e) {
+			throw new DiskMgrException(e, e.getMessage());
+		}
+	}
 
-	public void createFiles() throws HFException, HFBufMgrException, HFDiskMgrException, IOException, 
+	private void createFiles() throws HFException, HFBufMgrException, HFDiskMgrException, IOException, 
 		GetFileEntryException, ConstructPageException, AddFileEntryException, edgeheap.HFException, 
 		edgeheap.HFBufMgrException, edgeheap.HFDiskMgrException, PinPageException {
 		this.nodeHeapfile = new NodeHeapfile(NODEFILENAME);
 		this.edgeHeapfile = new EdgeHeapfile(EDGEFILENAME);
+	}
+	
+	private void createIndexFiles() throws GetFileEntryException, ConstructPageException, AddFileEntryException, IOException, PinPageException {
 		this.nodeLabelIndexFile = new BTreeFile("NodeLabel", AttrType.attrString, 44, 1);
 		this.nodeDescriptorIndexFile = new ZTreeFile("NodeDescriptor",AttrType.attrDesc,20,1);
 		this.edgeLabelIndexFile = new BTreeFile("EdgeLabel", AttrType.attrString, 44, 1);
 		this.edgeWeightIndexFile = new BTreeFile("EdgeWeight", AttrType.attrInteger, 4, 1);
+		
 	}
 	
 	public int getNodeCnt() throws InvalidSlotNumberException, InvalidTupleSizeException, HFDiskMgrException, 

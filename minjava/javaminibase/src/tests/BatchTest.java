@@ -1,6 +1,7 @@
 package tests;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -10,6 +11,14 @@ import java.util.Random;
 import java.util.Scanner;
 
 import btree.BT;
+import bufmgr.BufMgrException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.HashOperationException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageNotFoundException;
+import bufmgr.PagePinnedException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
 import global.GlobalConst;
@@ -20,9 +29,31 @@ class BatchDriver implements GlobalConst {
 	protected String dbpath = "data.minibase-db";
 	private int numBuf = NUMBUF;
 	
-	public void clearFiles(){
+	public void exitClean() throws PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException, HashOperationException, PagePinnedException, PageNotFoundException, BufMgrException, IOException{
+		//close index files
+		SystemDefs.JavabaseDB.nodeDescriptorIndexFile.close();
+		SystemDefs.JavabaseDB.nodeLabelIndexFile.close();
+		SystemDefs.JavabaseDB.edgeLabelIndexFile.close();
+		SystemDefs.JavabaseDB.edgeWeightIndexFile.close();
+		
+		SystemDefs.JavabaseBM.flushAllPages();
+		
+		SystemDefs.JavabaseDB.closeDB();
+		
+	}
+	
+	public void init(){
 		System.out.println("\n" + "Running " + " tests...." + "\n");
-		SystemDefs sysdef = new SystemDefs(dbpath, 5000, numBuf, "Clock");
+		File f = new File(dbpath);
+		if(f.exists()) { 
+			SystemDefs.MINIBASE_RESTART_FLAG = true;
+		}
+		SystemDefs sysdef = new SystemDefs(dbpath, 5000, numBuf, "Clock");		
+	}
+	
+	public void clearFiles(){
+		System.out.println("\n" + "Clearing db files.\n");
+
 		Random random = new Random();
 		String logpath = "BTREE" + random.nextInt() + ".minibase-log";
 
@@ -251,7 +282,7 @@ public class BatchTest implements GlobalConst {
 
 		try {
 			BatchDriver bttest = new BatchDriver();
-			bttest.clearFiles();
+			bttest.init();
 			bttest.menu();
 			while ((choice = GetStuff.getChoice()) != 6) {
 				SystemDefs.JavabaseDB.resetPageCounter();
@@ -266,10 +297,13 @@ public class BatchTest implements GlobalConst {
 				}
 				bttest.menu();
 			}
+			
+			//choice 6, exit.
+			bttest.exitClean();
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println("Error encountered during buffer manager tests:\n");
+			System.err.println("Error encountered during tests:\n");
 			Runtime.getRuntime().exit(1);
 		}
 	}

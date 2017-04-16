@@ -204,10 +204,12 @@ public class BTreeFile extends IndexFile implements GlobalConst {
 		} else {
 			headerPage = new BTreeHeaderPage(headerPageId);
 		}
-
+		
 		dbname = new String(filename);
 
 	}
+	
+	
 
 	/**
 	 * Close the B+ tree file. Unpin header page.

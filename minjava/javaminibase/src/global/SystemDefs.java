@@ -94,8 +94,6 @@ public class SystemDefs {
 		} else {
 			try {
 				JavabaseDB.openDB(dbname, num_pgs);
-				JavabaseDB.createFiles();
-				//JavabaseBM.flushAllPages();
 			} catch (Exception e) {
 				System.err.println("" + e);
 				e.printStackTrace();
