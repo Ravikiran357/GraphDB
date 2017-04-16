@@ -379,7 +379,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 			}
 
 			int comp_res2 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1, TempTuple2, jc_in2, distance, target);
-			comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1+1, TempTuple2, jc_in2+1, distance, target);
+			comp_res1 = TupleUtils.CompareTupleWithTuple(sortFldType, TempTuple1, jc_in1-1, TempTuple2, jc_in2-1, distance, target);
 
 			if (PredEval.Eval(OutputFilter, TempTuple1, TempTuple2, _in1, _in2) == true) {
 				Projection.Join(TempTuple1, _in1, TempTuple2, _in2, Jtuple, perm_mat, nOutFlds);
