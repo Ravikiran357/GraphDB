@@ -11,10 +11,11 @@ import global.EID;
 import global.SystemDefs;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
+import heap.Heapfile;
 import heap.Tuple;
 
 public class SmjEdge {
-
+	public static Heapfile joinHeapfile;
 	private void Query1_CondExpr(CondExpr[] expr) {
 
 		expr[0].next = null;
@@ -40,11 +41,15 @@ public class SmjEdge {
 	    }
 	    eScan.closescan();
 	}
+	
+//	public String returnJoinedFile(){
+//		return "joinheapfile";
+//	}
 
 	
-	public SmjEdge(String filename) throws UnknowAttrType, LowMemException, JoinsException, Exception {
+	public SmjEdge(String filename1, String filename2) throws UnknowAttrType, LowMemException, JoinsException, Exception {
 		printEdgesInHeap();
-		
+		joinHeapfile = new Heapfile("joinheapfile");
 		AttrType[] attrs = new AttrType[6];
         attrs[0] = new AttrType(AttrType.attrString);
         attrs[1] = new AttrType(AttrType.attrInteger); //source pg no.
@@ -65,7 +70,7 @@ public class SmjEdge {
 		out_projlist[4] = new FldSpec(rel_out, 5);
 		out_projlist[5] = new FldSpec(rel_out, 6);
 		
-		FileScan out_fscan = new FileScan(filename, attrs, attrSize, (short) 6, 6, out_projlist, null);
+		FileScan out_fscan = new FileScan(filename1, attrs, attrSize, (short) 6, 6, out_projlist, null);
 		FldSpec[] in_projlist = new FldSpec[6];
 		in_projlist[0] = new FldSpec(rel_in, 1);
 		in_projlist[1] = new FldSpec(rel_in, 2);
@@ -73,7 +78,7 @@ public class SmjEdge {
 		in_projlist[3] = new FldSpec(rel_in, 4);
 		in_projlist[4] = new FldSpec(rel_in, 5);
 		in_projlist[5] = new FldSpec(rel_in, 6);
-		FileScan in_fscan = new FileScan(filename, attrs, attrSize, (short) 6, 6, out_projlist, null);
+		FileScan in_fscan = new FileScan(filename2, attrs, attrSize, (short) 6, 6, out_projlist, null);
 
 		
 		FldSpec[] projlist = new FldSpec[6];
@@ -119,7 +124,10 @@ public class SmjEdge {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			joinHeapfile.insertRecord(t.getTupleByteArray());
 			t = sm.get_next();
+			
+			//returnJoinedFile();
 		}
 	}
 	

@@ -1,3 +1,5 @@
+package tests;
+
 import java.io.IOException;
 
 import edgeheap.EScan;
@@ -20,6 +22,10 @@ import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import iterator.FileScan;
+import iterator.JoinsException;
+import iterator.LowMemException;
+import iterator.SmjEdge;
+import iterator.UnknowAttrType;
 
 
 public class TriangleQuery {
@@ -78,6 +84,38 @@ public class TriangleQuery {
 		
 	}
 	
+	
+	public void filterTupleLabels23(Heapfile hf,  String label, 
+			String outheapfile) throws HFException, HFBufMgrException, HFDiskMgrException, 
+			IOException, InvalidTupleSizeException, InvalidSlotNumberException, SpaceNotAvailableException, 
+			FieldNumberOutOfBoundException, edgeheap.InvalidTupleSizeException, InvalidTypeException {
+		//Heapfile hf = new Heapfile(heapfilename);
+		Scan fscan = new Scan(hf);
+		Heapfile outhf = new Heapfile(outheapfile);
+		
+		
+		RID rid = new RID();
+        boolean done = true;
+        while(done){
+            Tuple t  = fscan.getNext(rid);
+            if(t == null){
+                done = false;
+                fscan.closescan();
+                break;
+            }
+            t = setHdrFilter1(t);
+            if(t.getStrFld(4).equals(label)){
+            	//Add to the new heapfile
+//                Tuple tuple = new Tuple(t.getEdgeByteArray(),0,t.getLength());
+//                tuple.setHdr((short)6, attrs, str_sizes);
+                outhf.insertRecord(t.getTupleByteArray());
+            }
+        }
+ 
+		
+	}
+	
+	
 	public void printTuplesInRelation(String heapfilename) throws FieldNumberOutOfBoundException, IOException,
 	InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException, InvalidTypeException{
 		Heapfile hf = new Heapfile(heapfilename);
@@ -94,16 +132,47 @@ public class TriangleQuery {
             t = setHdrFilter1(t);
             System.out.println(t.getStrFld(1));
         }
- 
-		
 	}
-	public void startTriangleQuery() throws HFException, HFBufMgrException, HFDiskMgrException, InvalidTupleSizeException, 
-	InvalidSlotNumberException, SpaceNotAvailableException, FieldNumberOutOfBoundException, edgeheap.InvalidTupleSizeException, 
-	IOException, InvalidTypeException{
+	
+	
+	public void printTuplesInRelation2(Heapfile heapfilename) throws FieldNumberOutOfBoundException, IOException,
+	InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException, InvalidTypeException{
+		//Heapfile hf = new Heapfile(heapfilename);
+		Scan fscan = new Scan(heapfilename);
+		RID rid = new RID();
+        boolean done = true;
+        while(done){
+        	Tuple t  = fscan.getNext(rid);
+            if(t == null){
+                done = false;
+                fscan.closescan();
+                break;
+            }
+            t = setHdrFilter1(t);
+            System.out.println(t.getStrFld(1));
+        }
+	}
+	
+	
+	public void startTriangleQuery() throws UnknowAttrType, LowMemException, JoinsException, Exception{
 		//From the edge relation filter label1 from outer
 		EdgeHeapfile hf = SystemDefs.JavabaseDB.edgeHeapfile;
-		String outheapfile = "filterlabel1";
+
+		String outheapfile = "filterlabels1";
+		String inheapfile = "filterlabels2";
 		filterTupleLabels(hf, label1, outheapfile);
-		printTuplesInRelation(outheapfile);
+		filterTupleLabels(hf, label2, inheapfile);
+		//printTuplesInRelation(outheapfile);
+		String joinheapfile = "joinheapfile";
+		
+		SmjEdge smj = new SmjEdge(outheapfile, inheapfile);
+		printTuplesInRelation2(smj.joinHeapfile);
+
+		//Filter inner based on label 3 
+		filterTupleLabels(hf, label3, inheapfile);
+		
+		//Pass the already joined heapfile and the filtered file as input to smj
+		
+		
 	}
 }
