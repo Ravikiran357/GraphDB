@@ -53,26 +53,77 @@ public class TriangleQuery {
         return t;
 	}
 	
-	public void filterTupleLabels(EdgeHeapfile hf,  String label, String outheapfile) throws 
+	private Tuple setTriHdr(Tuple t) throws InvalidTypeException, InvalidTupleSizeException, IOException {
+		AttrType[] attrs = new AttrType[18];
+        short[] str_sizes = new short[3];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrInteger); //source pg no.
+        attrs[2] = new AttrType(AttrType.attrInteger); //source slot no.
+        attrs[3] = new AttrType(AttrType.attrInteger); //dest pg no.
+        attrs[4] = new AttrType(AttrType.attrInteger); //dest slot no.
+        attrs[5] = new AttrType(AttrType.attrInteger);
+        attrs[6] = new AttrType(AttrType.attrString);
+        attrs[7] = new AttrType(AttrType.attrInteger); //source pg no.
+        attrs[8] = new AttrType(AttrType.attrInteger); //source slot no.
+        attrs[9] = new AttrType(AttrType.attrInteger); //dest pg no.
+        attrs[10] = new AttrType(AttrType.attrInteger); //dest slot no.
+        attrs[11] = new AttrType(AttrType.attrInteger);
+        attrs[12] = new AttrType(AttrType.attrString);
+        attrs[13] = new AttrType(AttrType.attrInteger); //source pg no.
+        attrs[14] = new AttrType(AttrType.attrInteger); //source slot no.
+        attrs[15] = new AttrType(AttrType.attrInteger); //dest pg no.
+        attrs[16] = new AttrType(AttrType.attrInteger); //dest slot no.
+        attrs[17] = new AttrType(AttrType.attrInteger);
+        str_sizes[0] = (short)44;
+        str_sizes[1] = (short)44;
+        str_sizes[2] = (short)44;
+        t.setHdr((short)18, attrs, str_sizes);
+        return t;
+	}
+	
+	private void filterTupleLabels(EdgeHeapfile hf,  String label, String outheapfile) throws 
 			HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
 			InvalidSlotNumberException, SpaceNotAvailableException,	FieldNumberOutOfBoundException,
 			edgeheap.InvalidTupleSizeException, InvalidTypeException {
 		Heapfile outhf = new Heapfile(outheapfile);
 		EScan fscan = new EScan(hf);
-		EID rid = new EID();
-		Edge edge = fscan.getNext(rid);
+		EID eid = new EID();
+		Edge edge = fscan.getNext(eid);
         while(edge != null){
             Tuple t = new Tuple(edge.getTupleByteArray(), 0, edge.getLength());
             t = setHdr(t);
-            if(t.getStrFld(1).equals(label)){
+            String tupleLabel = t.getStrFld(1); 
+            if(tupleLabel.equals(label)){
             	//Add tuples to the new heapfile
                 outhf.insertRecord(t.getTupleByteArray());
             }
-            edge = fscan.getNext(rid);
+            edge = fscan.getNext(eid);
         }
         fscan.closescan();
 	}
 
+	private void filterTupleByNID(String heapfile, String resheapfile) throws 
+		HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
+		InvalidSlotNumberException, SpaceNotAvailableException,	FieldNumberOutOfBoundException,
+		edgeheap.InvalidTupleSizeException, InvalidTypeException {
+		Heapfile hf = new Heapfile(heapfile);
+		Heapfile reshf = new Heapfile(resheapfile);
+		Scan fscan = new Scan(hf);
+		RID rid = new RID();
+		Tuple tuple = fscan.getNext(rid);
+		while(tuple != null){
+		    tuple = setTriHdr(tuple);
+		    // Checking common NID of 1st and 3rd edge
+		    if((tuple.getIntFld(2) == tuple.getIntFld(16))
+		    && (tuple.getIntFld(3) == tuple.getIntFld(17))) {
+		    	//Add tuples to the final heapfile
+		    	reshf.insertRecord(tuple.getTupleByteArray());
+		    }
+		    tuple = fscan.getNext(rid);
+		}
+		fscan.closescan();
+}
+	
 	public void printTuplesInRelation(String heapfilename) throws FieldNumberOutOfBoundException, 
 		IOException, InvalidTupleSizeException, HFException, HFBufMgrException, 
 		HFDiskMgrException, InvalidTypeException{
@@ -100,7 +151,7 @@ public class TriangleQuery {
 		String joinheapfile1 = "joinheapfile1";
 		SmjEdge smj1 = new SmjEdge();
 		smj1.joinOperation(rheapfile, sheapfile, joinheapfile1, joinOperationType, true);
-		
+
 		//Pass the already joined heapfile and the file filtered on label3 as input to smj
 		joinOperationType = 1;
 		String sheapfile_s = "filterlabels3";
@@ -108,5 +159,12 @@ public class TriangleQuery {
 		String joinheapfile2 = "joinheapfile2";
 		SmjEdge smj2 = new SmjEdge();
 		smj2.joinOperation(joinheapfile1, sheapfile_s, joinheapfile2, joinOperationType, true);
+		
+		//Filter by checking NID of 3rd edge and 1st edge
+		String resFileName = "resultTriangels";
+		filterTupleByNID(joinheapfile2, resFileName);
+
+		//Printing the results
+		smj2.printTuplesInRelation(resFileName, 1);
 	}
 }
