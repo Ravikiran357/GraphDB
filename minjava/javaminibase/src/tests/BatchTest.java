@@ -82,7 +82,8 @@ class BatchDriver implements GlobalConst {
 		System.out.println("[3] Batch Edge Delete");
 		System.out.println("[4] Simple Node Query");
 		System.out.println("[5] Simple Edge Query");
-		System.out.println("[6] Quit");
+		System.out.println("[6] Triangle Query");
+		System.out.println("[7] Quit");
 	}
 
 	public void runAllTests(int choice) throws Exception {
@@ -90,7 +91,7 @@ class BatchDriver implements GlobalConst {
 		switch (choice) {
 		case 0:
 			System.out.println("Nodefile name: ");
-			String filename = in.nextLine();
+			String filename = "/Users/rahulrao/Documents/DBMSI/NodeInsertData.txt";
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			GraphDB db = SystemDefs.JavabaseDB;// new GraphDB(0);
@@ -107,7 +108,8 @@ class BatchDriver implements GlobalConst {
 			break;
 		case 1:
 			System.out.println("Nodefile name: ");
-			filename = in.nextLine();
+			filename = "/Users/rahulrao/Documents/DBMSI/NodeInsertData.txt";
+//					in.nextLine();
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
@@ -121,7 +123,8 @@ class BatchDriver implements GlobalConst {
 
 		case 2:
 			System.out.println("Edgefile name: ");
-			String edgeFile = in.nextLine();
+			String edgeFile = "/Users/rahulrao/Documents/DBMSI/TriQuery";
+			//String firstParameter = in.nextLine();
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
@@ -136,7 +139,8 @@ class BatchDriver implements GlobalConst {
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:"
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-
+//			TriangleQuery tq = new TriangleQuery();
+//			tq.startTriangleQuery();
 			break;
 
 		case 3:
@@ -157,6 +161,7 @@ class BatchDriver implements GlobalConst {
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
 			break;
+			
 		case 4:
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
@@ -191,6 +196,7 @@ class BatchDriver implements GlobalConst {
 		    NodeQuery nq = new NodeQuery();
 			nq.evaluate(qtype, index, args);
 			break;
+			
 		case 5:
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
@@ -212,12 +218,31 @@ class BatchDriver implements GlobalConst {
 					System.out.println("Enter upper edge weight:");
 					args[1] = in.next();
 					break;
-			case 6: break;
+			
 			default:
 		}
 		    EdgeQuery eq = new EdgeQuery();
 		    eq.evaluate(qtype, index, args);
 			break;
+			
+		case 6: args = new String[3];
+				String[] values = new String[3];
+				System.out.println("Enter the type of first parameter (l) for label || (w) for max weight");
+				args[0] = in.nextLine();
+				System.out.println("Enter the label or max_weight ");
+				values[0] = in.nextLine();
+				System.out.println("Enter the type of second parameter (l) for label || (w) for max weight");
+				args[1] = in.nextLine();
+				System.out.println("Enter the label or max_weight ");
+				values[1] = in.nextLine();
+				System.out.println("Enter the type of third parameter (l) for label || (w) for max weight");
+				args[2] = in.nextLine();
+				System.out.println("Enter the label or max_weight ");
+				values[2] = in.nextLine();
+				TriangleQuery tq = new TriangleQuery();
+				tq.startTriangleQuery(args, values);
+				break;
+		case 7: break;
 		default:
 			break;
 		}
@@ -253,7 +278,7 @@ public class BatchTest implements GlobalConst {
 			BatchDriver bttest = new BatchDriver();
 			bttest.clearFiles();
 			bttest.menu();
-			while ((choice = GetStuff.getChoice()) != 6) {
+			while ((choice = GetStuff.getChoice()) != 7) {
 				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);

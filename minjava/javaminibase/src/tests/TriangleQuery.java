@@ -101,6 +101,29 @@ public class TriangleQuery {
         }
         fscan.closescan();
 	}
+	
+	
+	private void filterTupleWeights(EdgeHeapfile hf,  int max_weight, String outheapfile) throws 
+		HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
+		InvalidSlotNumberException, SpaceNotAvailableException,	FieldNumberOutOfBoundException,
+		edgeheap.InvalidTupleSizeException, InvalidTypeException {
+			Heapfile outhf = new Heapfile(outheapfile);
+			EScan fscan = new EScan(hf);
+			EID eid = new EID();
+			Edge edge = fscan.getNext(eid);
+			while(edge != null){
+			    Tuple t = new Tuple(edge.getTupleByteArray(), 0, edge.getWeight());
+			    t = setHdr(t);
+			    int tupleWeight = t.getIntFld(6); 
+			    if(tupleWeight <= max_weight){
+			    	//Add tuples to the new heapfile
+			        outhf.insertRecord(t.getTupleByteArray());
+			    }
+			    edge = fscan.getNext(eid);
+			}
+			fscan.closescan();
+			}
+
 
 	private void filterTupleByNID(String heapfile, String resheapfile) throws 
 		HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
@@ -139,15 +162,26 @@ public class TriangleQuery {
         fscan.closescan();
 	}
 
-	public void startTriangleQuery() throws UnknowAttrType, LowMemException, JoinsException, Exception{
+	public void startTriangleQuery(String[] args, String[] values) throws UnknowAttrType, LowMemException, JoinsException, Exception{
 		EdgeHeapfile hf = SystemDefs.JavabaseDB.edgeHeapfile;
 		int joinOperationType = 0;
 
 		//From the edge relation filter label1 from R relation and label2 from S relation
 		String rheapfile = "filterlabels1";
 		String sheapfile = "filterlabels2";
-		filterTupleLabels(hf, label1, rheapfile);
-		filterTupleLabels(hf, label2, sheapfile);
+		
+		if(args[0].equals("w")){
+			filterTupleWeights(hf, Integer.parseInt(values[0]), rheapfile);
+		}else if(args[0].equals("l")){
+			filterTupleLabels(hf, values[0], rheapfile);
+		}
+		
+		if(args[1].equals("w")){
+			filterTupleWeights(hf, Integer.parseInt(values[1]), sheapfile);
+		}else if(args[1].equals("l")){
+			filterTupleLabels(hf, values[1], sheapfile);
+		}
+
 		String joinheapfile1 = "joinheapfile1";
 		SmjEdge smj1 = new SmjEdge();
 		smj1.joinOperation(rheapfile, sheapfile, joinheapfile1, joinOperationType, true);
@@ -155,7 +189,13 @@ public class TriangleQuery {
 		//Pass the already joined heapfile and the file filtered on label3 as input to smj
 		joinOperationType = 1;
 		String sheapfile_s = "filterlabels3";
-		filterTupleLabels(hf, label3, sheapfile_s);
+		
+		if(args[2].equals("w")){
+			filterTupleWeights(hf, Integer.parseInt(values[2]), sheapfile_s);
+		}else if(args[2].equals("l")){
+			filterTupleLabels(hf, values[2], sheapfile_s);
+		}
+		
 		String joinheapfile2 = "joinheapfile2";
 		SmjEdge smj2 = new SmjEdge();
 		smj2.joinOperation(joinheapfile1, sheapfile_s, joinheapfile2, joinOperationType, true);
