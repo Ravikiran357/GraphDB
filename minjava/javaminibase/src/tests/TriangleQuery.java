@@ -39,6 +39,7 @@ import iterator.Sort;
 import iterator.UnknowAttrType;
 import iterator.UnknownKeyTypeException;
 import nodeheap.Node;
+import sun.java2d.pipe.BufferedMaskBlit;
 
 
 public class TriangleQuery {
@@ -315,6 +316,8 @@ public class TriangleQuery {
 		IOException, InvalidTupleSizeException, HFException, HFBufMgrException, 
 		HFDiskMgrException, InvalidTypeException{
 		
+		int count = 0;
+		
 		AttrType[] attrs = new AttrType[4];
 		attrs[0] = new AttrType(AttrType.attrString);
 		attrs[1] = new AttrType(AttrType.attrString);
@@ -332,10 +335,12 @@ public class TriangleQuery {
 		RID rid = new RID();
 		Tuple t = fscan.getNext(rid);
         while(t != null){
+        	count++;
     		t.setHdr((short)4, attrs, str_sizes);
             System.out.println(t.getStrFld(1) + " " + t.getStrFld(2)+ " "+ t.getStrFld(3));
             t = fscan.getNext(rid);
         }
+        System.out.println("Total count = "+ count);
         fscan.closescan();
 	}
 
@@ -374,7 +379,7 @@ public class TriangleQuery {
 		SmjEdge smj1 = new SmjEdge();
 		System.out.println("Sort-Merge JOIN on first 2 filtered tuples");
 		smj1.joinOperation(rheapfile, sheapfile, joinheapfile1, joinOperationType, true);
-
+		
 		//Pass the already joined heapfile and the file filtered on label3 as input to smj
 		joinOperationType = 1;
 		String sheapfile_s = "filterlabels3";
@@ -390,6 +395,7 @@ public class TriangleQuery {
 		String joinheapfile2 = "joinheapfile2";
 		SmjEdge smj2 = new SmjEdge();
 		System.out.println("Sort-Merge JOIN on last the result of first smj and 3rd filtered tuple");
+		
 		smj2.joinOperation(joinheapfile1, sheapfile_s, joinheapfile2, joinOperationType, true);
 		
 		//Filter by checking NID of 3rd edge and 1st edge
@@ -420,7 +426,6 @@ public class TriangleQuery {
 			System.out.println("------ TQ2 - Distinct order --------");
 			printTuplesInRelation(distinctResFile);
 		}
-		
 		cleanup(nodeheapfile, sortedResFile, distinctResFile, resFileName, joinheapfile1, joinheapfile2, rheapfile, sheapfile_s, sheapfile);
 	}
 	

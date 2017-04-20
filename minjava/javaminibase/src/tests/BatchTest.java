@@ -22,7 +22,7 @@ class BatchDriver implements GlobalConst {
 	
 	public void clearFiles(){
 		System.out.println("\n" + "Running " + " tests...." + "\n");
-		SystemDefs sysdef = new SystemDefs(dbpath, 5000, numBuf, "Clock");
+		SystemDefs sysdef = new SystemDefs(dbpath, 50000, numBuf, "Clock");
 		Random random = new Random();
 		String logpath = "BTREE" + random.nextInt() + ".minibase-log";
 
@@ -91,7 +91,7 @@ class BatchDriver implements GlobalConst {
 		switch (choice) {
 		case 0:
 			System.out.println("Nodefile name: ");
-			String filename = "/Users/rahulrao/Documents/DBMSI/NodeInsertData.txt";
+			String filename = "/Users/rahulrao/Documents/DBMSI/NodeInsertDataPhase3.txt";
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			GraphDB db = SystemDefs.JavabaseDB;// new GraphDB(0);
@@ -123,7 +123,7 @@ class BatchDriver implements GlobalConst {
 
 		case 2:
 			System.out.println("Edgefile name: ");
-			String edgeFile = "/Users/rahulrao/Documents/DBMSI/TriQuery";
+			String edgeFile = "/Users/rahulrao/Documents/DBMSI/EdgeInsertDataPhase3.txt";
 			//String firstParameter = in.nextLine();
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
@@ -139,8 +139,6 @@ class BatchDriver implements GlobalConst {
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:"
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
 			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
-//			TriangleQuery tq = new TriangleQuery();
-//			tq.startTriangleQuery();
 			break;
 
 		case 3:

@@ -257,7 +257,7 @@ public class SmjEdge {
 		if (joinRelationsType == 0){
 			numBuf = 40;
 		} else{
-			numBuf = 45;
+			numBuf = 46;
 		}
 		
 		try {
