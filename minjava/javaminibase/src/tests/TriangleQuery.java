@@ -2,15 +2,19 @@ package tests;
 
 import java.io.IOException;
 
+import bufmgr.PageNotReadException;
 import edgeheap.EScan;
 import edgeheap.Edge;
 import edgeheap.EdgeHeapfile;
 
 import global.AttrType;
 import global.EID;
+import global.NID;
 import global.RID;
 import global.SystemDefs;
+import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
+import heap.FileAlreadyDeletedException;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
@@ -21,21 +25,25 @@ import heap.InvalidTypeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
+import index.IndexException;
+import iterator.DuplElim;
+import iterator.FileScan;
+import iterator.FldSpec;
+import iterator.Iterator;
 import iterator.JoinsException;
 import iterator.LowMemException;
+import iterator.PredEvalException;
+import iterator.RelSpec;
 import iterator.SmjEdge;
+import iterator.Sort;
 import iterator.UnknowAttrType;
+import iterator.UnknownKeyTypeException;
+import nodeheap.Node;
 
 
 public class TriangleQuery {
-	public String label1;
-	public String label2;
-	public String label3;
-	
-	TriangleQuery(){
-		label1 = "1_2";
-		label2 = "2_3";
-		label3 = "3_1";
+
+	TriangleQuery() {
 		
 	}
 
@@ -125,21 +133,23 @@ public class TriangleQuery {
 			}
 
 
-	private void filterTupleByNID(String heapfile, String resheapfile) throws 
-		HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
-		InvalidSlotNumberException, SpaceNotAvailableException,	FieldNumberOutOfBoundException,
-		edgeheap.InvalidTupleSizeException, InvalidTypeException {
+	private void filterTupleByNID(String heapfile, String resheapfile, String nhf) throws 
+		nodeheap.InvalidSlotNumberException, nodeheap.InvalidTupleSizeException, nodeheap.HFException, 
+		nodeheap.HFDiskMgrException, nodeheap.HFBufMgrException, Exception {
 		Heapfile hf = new Heapfile(heapfile);
 		Heapfile reshf = new Heapfile(resheapfile);
 		Scan fscan = new Scan(hf);
 		RID rid = new RID();
+		Heapfile nheapfile = new Heapfile(nhf);
+				
 		Tuple tuple = fscan.getNext(rid);
 		while(tuple != null){
 		    tuple = setTriHdr(tuple);
 		    // Checking common NID of 1st and 3rd edge
 		    if((tuple.getIntFld(2) == tuple.getIntFld(16))
-		    && (tuple.getIntFld(3) == tuple.getIntFld(17))) {
+		    && (tuple.getIntFld(3) == tuple.getIntFld(17))) {	
 		    	//Add tuples to the final heapfile
+		    	getNodeLabels(tuple, nheapfile);
 		    	reshf.insertRecord(tuple.getTupleByteArray());
 		    }
 		    tuple = fscan.getNext(rid);
@@ -147,43 +157,222 @@ public class TriangleQuery {
 		fscan.closescan();
 }
 	
+	
+	public void getNodeLabels(Tuple tuple, Heapfile nhf) 
+			throws nodeheap.InvalidSlotNumberException, nodeheap.InvalidTupleSizeException, Exception{
+		
+		StringBuilder sb = new StringBuilder();
+		
+		AttrType[] attrs = new AttrType[4];
+		attrs[0] = new AttrType(AttrType.attrString);
+		attrs[1] = new AttrType(AttrType.attrString);
+		attrs[2] = new AttrType(AttrType.attrString);
+		attrs[3] = new AttrType(AttrType.attrString);
+		short[] str_sizes = new short[4];
+		
+		Tuple t = new Tuple();
+		
+		str_sizes[0] = (short)44;
+		str_sizes[1] = (short)44;
+		str_sizes[2] = (short)44;
+		str_sizes[3] = (short)44;
+		
+		t.setHdr((short)4, attrs, str_sizes);
+		
+    	NID nid = new NID();
+    	Node node = new Node();
+    	String[] nodes = new String[4];
+    	
+    	node.setHdr((short)2, attrs, str_sizes);
+    	nid.pageNo.pid = tuple.getIntFld(2);
+    	nid.slotNo = tuple.getIntFld(3);
+    	nodes[0] = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid).getStrFld(1);
+    	sb.append(nodes[0]);
+    	t.setStrFld(1, nodes[0]);
+    	
+    	nid.pageNo.pid = tuple.getIntFld(8);
+    	nid.slotNo = tuple.getIntFld(9);
+    	nodes[1] = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid).getStrFld(1);
+    	sb.append(nodes[1]);
+    	t.setStrFld(2, nodes[1]);
+    	
+    	nid.pageNo.pid = tuple.getIntFld(14);
+    	nid.slotNo = tuple.getIntFld(15);
+    	nodes[2] = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid).getStrFld(1);
+    	sb.append(nodes[2]);
+    	t.setStrFld(3, nodes[2]);
+    	
+    	nodes[3] = sb.toString();
+    	t.setStrFld(4, nodes[3]);
+    	
+    	nhf.insertRecord(t.getTupleByteArray());
+
+	}
+
+	public void sortLabels(String nodelabelheapfile, String sortedResFile) 
+			throws JoinsException, IndexException, InvalidTupleSizeException, InvalidTypeException, 
+			PageNotReadException, PredEvalException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception{
+		
+		Heapfile sortedresfile = new Heapfile(sortedResFile);	
+		Iterator resSort;
+		AttrType[] attrs = new AttrType[4];
+		attrs[0] = new AttrType(AttrType.attrString);
+		attrs[1] = new AttrType(AttrType.attrString);
+		attrs[2] = new AttrType(AttrType.attrString);
+		attrs[3] = new AttrType(AttrType.attrString);
+		short[] str_sizes = new short[4];
+		
+		str_sizes[0] = (short)44;
+		str_sizes[1] = (short)44;
+		str_sizes[2] = (short)44;
+		str_sizes[3] = (short)44;
+		
+		Tuple t = new Tuple();
+		t.setHdr((short)4, attrs, str_sizes);
+		FldSpec[] projlist = new FldSpec[4];
+		projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
+		projlist[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);
+		projlist[2] = new FldSpec(new RelSpec(RelSpec.outer), 3);
+		projlist[3] = new FldSpec(new RelSpec(RelSpec.outer), 4);
+		
+		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
+		
+		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 4, 4, projlist, null);
+		System.out.println("Sort operation");
+		resSort = new Sort(attrs, (short) 4, str_sizes, sorted, 4, order, 44, 12 , -1, null);
+		
+		t = resSort.get_next();
+		
+		while (t != null) {
+			try {
+				sortedresfile.insertRecord(t.getTupleByteArray());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			t = resSort.get_next();
+		}
+		
+		sorted.close();
+		resSort.close();
+		
+	}
+	
+	public void distinctLabels(String nodelabelheapfile, String distinctResFile)
+			throws JoinsException, IndexException, InvalidTupleSizeException, InvalidTypeException, 
+			PageNotReadException, PredEvalException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception{
+		
+		Heapfile distinctresfile = new Heapfile(distinctResFile);
+		
+		Iterator resSort;
+		Iterator dupeli;
+		AttrType[] attrs = new AttrType[4];
+		attrs[0] = new AttrType(AttrType.attrString);
+		attrs[1] = new AttrType(AttrType.attrString);
+		attrs[2] = new AttrType(AttrType.attrString);
+		attrs[3] = new AttrType(AttrType.attrString);
+		short[] str_sizes = new short[4];
+		
+		str_sizes[0] = (short)44;
+		str_sizes[1] = (short)44;
+		str_sizes[2] = (short)44;
+		str_sizes[3] = (short)44;
+		
+		Tuple t = new Tuple();
+		t.setHdr((short)4, attrs, str_sizes);
+		FldSpec[] projlist = new FldSpec[4];
+		projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
+		projlist[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);
+		projlist[2] = new FldSpec(new RelSpec(RelSpec.outer), 3);
+		projlist[3] = new FldSpec(new RelSpec(RelSpec.outer), 4);
+		
+		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
+		
+		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 4, 4, projlist, null);
+		
+		System.out.println("Sort operation");
+		resSort = new Sort(attrs, (short) 4, str_sizes, sorted, 4, order, 44, 12 , -1, null);
+		
+		System.out.println("Distinct operation");
+		dupeli = new DuplElim(attrs, (short) 4, str_sizes, resSort, 12, true, -1, null);
+		
+		t = dupeli.get_next();
+		
+		while (t != null) {
+			try {
+				distinctresfile.insertRecord(t.getTupleByteArray());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			t = dupeli.get_next();
+		}
+		sorted.close();
+		resSort.close();
+		dupeli.close();
+	}
+	
+	
 	public void printTuplesInRelation(String heapfilename) throws FieldNumberOutOfBoundException, 
 		IOException, InvalidTupleSizeException, HFException, HFBufMgrException, 
 		HFDiskMgrException, InvalidTypeException{
+		
+		AttrType[] attrs = new AttrType[4];
+		attrs[0] = new AttrType(AttrType.attrString);
+		attrs[1] = new AttrType(AttrType.attrString);
+		attrs[2] = new AttrType(AttrType.attrString);
+		attrs[3] = new AttrType(AttrType.attrString);
+		
+		short[] str_sizes = new short[4];
+		str_sizes[0] = (short)44;
+		str_sizes[1] = (short)44;
+		str_sizes[2] = (short)44;
+		str_sizes[3] = (short)44;
+		
 		Heapfile hf = new Heapfile(heapfilename);
 		Scan fscan = new Scan(hf);
 		RID rid = new RID();
 		Tuple t = fscan.getNext(rid);
         while(t != null){
-            t = setHdr(t);
-            System.out.println(t.getStrFld(1));
+    		t.setHdr((short)4, attrs, str_sizes);
+            System.out.println(t.getStrFld(1) + " " + t.getStrFld(2)+ " "+ t.getStrFld(3));
             t = fscan.getNext(rid);
         }
         fscan.closescan();
 	}
 
-	public void startTriangleQuery(String[] args, String[] values) throws UnknowAttrType, LowMemException, JoinsException, Exception{
+	public void startTriangleQuery(String[] args, String[] values, String query_type) 
+			throws UnknowAttrType, LowMemException, JoinsException, Exception{
 		EdgeHeapfile hf = SystemDefs.JavabaseDB.edgeHeapfile;
 		int joinOperationType = 0;
+		
+		String nodeheapfile = "nodeheapfile1";
+		
+		String sortedResFile = "sortedResFile";
+		
+		String distinctResFile = "distinctResFile";
 
 		//From the edge relation filter label1 from R relation and label2 from S relation
 		String rheapfile = "filterlabels1";
 		String sheapfile = "filterlabels2";
-		
+		System.out.println("-------- Query Plan -----");
 		if(args[0].equals("w")){
+			System.out.println("Projection based on weights");
 			filterTupleWeights(hf, Integer.parseInt(values[0]), rheapfile);
 		}else if(args[0].equals("l")){
+			System.out.println("Projection based on labels");
 			filterTupleLabels(hf, values[0], rheapfile);
 		}
 		
 		if(args[1].equals("w")){
+			System.out.println("Projection based on weights");
 			filterTupleWeights(hf, Integer.parseInt(values[1]), sheapfile);
 		}else if(args[1].equals("l")){
+			System.out.println("Projection based on labels");
 			filterTupleLabels(hf, values[1], sheapfile);
 		}
 
 		String joinheapfile1 = "joinheapfile1";
 		SmjEdge smj1 = new SmjEdge();
+		System.out.println("Sort-Merge JOIN on first 2 filtered tuples");
 		smj1.joinOperation(rheapfile, sheapfile, joinheapfile1, joinOperationType, true);
 
 		//Pass the already joined heapfile and the file filtered on label3 as input to smj
@@ -191,20 +380,71 @@ public class TriangleQuery {
 		String sheapfile_s = "filterlabels3";
 		
 		if(args[2].equals("w")){
+			System.out.println("Projection based on weights");
 			filterTupleWeights(hf, Integer.parseInt(values[2]), sheapfile_s);
 		}else if(args[2].equals("l")){
+			System.out.println("Projection based on labels");
 			filterTupleLabels(hf, values[2], sheapfile_s);
 		}
 		
 		String joinheapfile2 = "joinheapfile2";
 		SmjEdge smj2 = new SmjEdge();
+		System.out.println("Sort-Merge JOIN on last the result of first smj and 3rd filtered tuple");
 		smj2.joinOperation(joinheapfile1, sheapfile_s, joinheapfile2, joinOperationType, true);
 		
 		//Filter by checking NID of 3rd edge and 1st edge
 		String resFileName = "resultTriangels";
-		filterTupleByNID(joinheapfile2, resFileName);
-
-		//Printing the results
-		smj2.printTuplesInRelation(resFileName, 1);
+		System.out.println("Projection based on NID");
+		filterTupleByNID(joinheapfile2, resFileName, nodeheapfile);
+		
+		
+		if(query_type.equals("0")){
+			System.out.println("------------------");
+			System.out.println("------- TQ0 - insertion order -------");
+			printTuplesInRelation(nodeheapfile);
+		}
+		
+		//Printing the results 
+		//smj2.printTuplesInRelation(resFileName, 1);
+		
+		if(query_type.equals("1")){
+			 sortLabels(nodeheapfile, sortedResFile);
+			 System.out.println("------------------");
+			 System.out.println("----- TQ1 - Sorted order ------");
+			 printTuplesInRelation(sortedResFile);
+		}
+		
+		if(query_type.equals("2")){
+			distinctLabels(nodeheapfile, distinctResFile);
+			System.out.println("------------------");
+			System.out.println("------ TQ2 - Distinct order --------");
+			printTuplesInRelation(distinctResFile);
+		}
+		
+		cleanup(nodeheapfile, sortedResFile, distinctResFile, resFileName, joinheapfile1, joinheapfile2, rheapfile, sheapfile_s, sheapfile);
+	}
+	
+	public void cleanup(String nodeheapfile, String sortedResFile, String distinctResFile, String resFileName, String joinheapfile1, String joinheapfile2, String rheapfile, String sheapfile_s, String sheapfile) 
+			throws HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidSlotNumberException, FileAlreadyDeletedException, InvalidTupleSizeException{
+		Heapfile nhf = new Heapfile(nodeheapfile);
+		Heapfile srf = new Heapfile(sortedResFile);
+		Heapfile drf = new Heapfile(distinctResFile);
+		Heapfile rfn = new Heapfile(resFileName);
+		Heapfile join1 = new Heapfile(joinheapfile1);
+		Heapfile join2 = new Heapfile(joinheapfile2);
+		Heapfile rfilter = new Heapfile(rheapfile);
+		Heapfile sfilter = new Heapfile(sheapfile);
+		Heapfile ssfilter = new Heapfile(sheapfile_s);
+		
+		
+		nhf.deleteFile();
+		srf.deleteFile();
+		drf.deleteFile();
+		rfn.deleteFile();
+		join1.deleteFile();
+		join2.deleteFile();
+		rfilter.deleteFile();
+		sfilter.deleteFile();
+		ssfilter.deleteFile();
 	}
 }

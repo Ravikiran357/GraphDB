@@ -280,6 +280,8 @@ public class SmjEdge {
 			}
 			t = sm.get_next();
 		}
+		r_fscan.close();
+		s_fscan.close();
 		sm.close();
 	}
 }

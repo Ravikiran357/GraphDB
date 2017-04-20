@@ -225,7 +225,11 @@ class BatchDriver implements GlobalConst {
 		    eq.evaluate(qtype, index, args);
 			break;
 			
-		case 6: args = new String[3];
+		case 6: 
+				String query_type;
+				System.out.println("Enter query type");
+				query_type = in.nextLine();
+				args = new String[3];
 				String[] values = new String[3];
 				System.out.println("Enter the type of first parameter (l) for label || (w) for max weight");
 				args[0] = in.nextLine();
@@ -240,7 +244,7 @@ class BatchDriver implements GlobalConst {
 				System.out.println("Enter the label or max_weight ");
 				values[2] = in.nextLine();
 				TriangleQuery tq = new TriangleQuery();
-				tq.startTriangleQuery(args, values);
+				tq.startTriangleQuery(args, values, query_type);
 				break;
 		case 7: break;
 		default:
