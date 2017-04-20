@@ -1,4 +1,4 @@
-//package tests;
+package tests;
 
 import iterator.SmjEdge;
 
@@ -84,9 +84,8 @@ class BatchDriver implements GlobalConst {
 		System.out.println("[3] Batch Edge Delete\n");
 		System.out.println("[4] Simple Node Query");
 		System.out.println("[5] Simple Edge Query\n");
-		System.out.println("[6] Task 2: Sort Merge Join Query");
-		System.out.println("[7] Task 9: Triangle Query");
-		System.out.println("\n[8] Quit");
+		System.out.println("[6] Task 9: Triangle Query");
+		System.out.println("\n[7] Quit");
 	}
 
 	public void runAllTests(int choice) throws Exception {
@@ -223,19 +222,7 @@ class BatchDriver implements GlobalConst {
 		    eq.evaluate(qtype, index, args);
 			break;
 			
-		case 6:
-			SmjEdge smj = new SmjEdge();
-			EdgeHeapfile hf = SystemDefs.JavabaseDB.edgeHeapfile;
-			String res_file = "res_hf";
-			System.out.println("-------- Query Plan -----");
-			smj.joinOperation(hf.get_file_name(), hf.get_file_name(), res_file, 0, true);
-			System.out.println("------------------");
-			System.out.println("------ Task 2: -------");
-			smj.printTuplesInRelation(res_file, 0);
-			smj.close();
-			break;
-
-		case 7: 
+		case 6: 
 			String query_type;
 			System.out.println("Enter query type: a or b or c");
 			query_type = in.nextLine();
@@ -301,7 +288,7 @@ public class BatchTest implements GlobalConst {
 			BatchDriver bttest = new BatchDriver();
 			bttest.clearFiles();
 			bttest.menu();
-			while ((choice = GetStuff.getChoice()) != 8) {
+			while ((choice = GetStuff.getChoice()) != 7) {
 				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);
