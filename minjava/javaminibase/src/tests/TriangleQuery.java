@@ -94,6 +94,8 @@ public class TriangleQuery {
 			HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
 			InvalidSlotNumberException, SpaceNotAvailableException,	FieldNumberOutOfBoundException,
 			edgeheap.InvalidTupleSizeException, InvalidTypeException {
+		System.out.println("Selection on " + hf.get_file_name() + " using label: " + label + " => " + outheapfile);
+		
 		Heapfile outhf = new Heapfile(outheapfile);
 		EScan fscan = new EScan(hf);
 		EID eid = new EID();
@@ -116,22 +118,24 @@ public class TriangleQuery {
 		HFException, HFBufMgrException, HFDiskMgrException, IOException, InvalidTupleSizeException,
 		InvalidSlotNumberException, SpaceNotAvailableException,	FieldNumberOutOfBoundException,
 		edgeheap.InvalidTupleSizeException, InvalidTypeException {
-			Heapfile outhf = new Heapfile(outheapfile);
-			EScan fscan = new EScan(hf);
-			EID eid = new EID();
-			Edge edge = fscan.getNext(eid);
-			while(edge != null){
-			    Tuple t = new Tuple(edge.getTupleByteArray(), 0, edge.getWeight());
-			    t = setHdr(t);
-			    int tupleWeight = t.getIntFld(6); 
-			    if(tupleWeight <= max_weight){
-			    	//Add tuples to the new heapfile
-			        outhf.insertRecord(t.getTupleByteArray());
-			    }
-			    edge = fscan.getNext(eid);
-			}
-			fscan.closescan();
-			}
+		System.out.println("Selection on " + hf.get_file_name() + " using weight: " + max_weight + " => " + outheapfile);
+		
+		Heapfile outhf = new Heapfile(outheapfile);
+		EScan fscan = new EScan(hf);
+		EID eid = new EID();
+		Edge edge = fscan.getNext(eid);
+		while(edge != null){
+		    Tuple t = new Tuple(edge.getTupleByteArray(), 0, edge.getWeight());
+		    t = setHdr(t);
+		    int tupleWeight = t.getIntFld(6); 
+		    if(tupleWeight <= max_weight){
+		    	//Add tuples to the new heapfile
+		        outhf.insertRecord(t.getTupleByteArray());
+		    }
+		    edge = fscan.getNext(eid);
+		}
+		fscan.closescan();
+	}
 
 
 	private void filterTupleByNID(String heapfile, String resheapfile, String nhf) throws 
@@ -156,7 +160,7 @@ public class TriangleQuery {
 		    tuple = fscan.getNext(rid);
 		}
 		fscan.closescan();
-}
+	}
 	
 	
 	public void getNodeLabels(Tuple tuple, Heapfile nhf) 
@@ -207,13 +211,11 @@ public class TriangleQuery {
     	t.setStrFld(4, nodes[3]);
     	
     	nhf.insertRecord(t.getTupleByteArray());
-
 	}
 
 	public void sortLabels(String nodelabelheapfile, String sortedResFile) 
 			throws JoinsException, IndexException, InvalidTupleSizeException, InvalidTypeException, 
 			PageNotReadException, PredEvalException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception{
-		
 		Heapfile sortedresfile = new Heapfile(sortedResFile);	
 		Iterator resSort;
 		AttrType[] attrs = new AttrType[4];
@@ -222,7 +224,6 @@ public class TriangleQuery {
 		attrs[2] = new AttrType(AttrType.attrString);
 		attrs[3] = new AttrType(AttrType.attrString);
 		short[] str_sizes = new short[4];
-		
 		str_sizes[0] = (short)44;
 		str_sizes[1] = (short)44;
 		str_sizes[2] = (short)44;
@@ -235,15 +236,12 @@ public class TriangleQuery {
 		projlist[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);
 		projlist[2] = new FldSpec(new RelSpec(RelSpec.outer), 3);
 		projlist[3] = new FldSpec(new RelSpec(RelSpec.outer), 4);
-		
 		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
-		
 		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 4, 4, projlist, null);
 		System.out.println("Sort operation");
 		resSort = new Sort(attrs, (short) 4, str_sizes, sorted, 4, order, 44, 12 , -1, null);
 		
 		t = resSort.get_next();
-		
 		while (t != null) {
 			try {
 				sortedresfile.insertRecord(t.getTupleByteArray());
@@ -255,7 +253,6 @@ public class TriangleQuery {
 		
 		sorted.close();
 		resSort.close();
-		
 	}
 	
 	public void distinctLabels(String nodelabelheapfile, String distinctResFile)
@@ -317,7 +314,6 @@ public class TriangleQuery {
 		HFDiskMgrException, InvalidTypeException{
 		
 		int count = 0;
-		
 		AttrType[] attrs = new AttrType[4];
 		attrs[0] = new AttrType(AttrType.attrString);
 		attrs[1] = new AttrType(AttrType.attrString);
@@ -347,85 +343,72 @@ public class TriangleQuery {
 	public void startTriangleQuery(String[] args, String[] values, String query_type) 
 			throws UnknowAttrType, LowMemException, JoinsException, Exception{
 		EdgeHeapfile hf = SystemDefs.JavabaseDB.edgeHeapfile;
-		int joinOperationType = 0;
-		
+		int joinOperationType = 0;		
 		String nodeheapfile = "nodeheapfile1";
-		
 		String sortedResFile = "sortedResFile";
-		
 		String distinctResFile = "distinctResFile";
 
 		//From the edge relation filter label1 from R relation and label2 from S relation
-		String rheapfile = "filterlabels1";
-		String sheapfile = "filterlabels2";
+		String rheapfile = "edges_filter1";
+		String sheapfile = "edges_filter2";
 		System.out.println("-------- Query Plan -----");
 		if(args[0].equals("w")){
-			System.out.println("Projection based on weights");
 			filterTupleWeights(hf, Integer.parseInt(values[0]), rheapfile);
 		}else if(args[0].equals("l")){
-			System.out.println("Projection based on labels");
 			filterTupleLabels(hf, values[0], rheapfile);
 		}
-		
 		if(args[1].equals("w")){
-			System.out.println("Projection based on weights");
 			filterTupleWeights(hf, Integer.parseInt(values[1]), sheapfile);
 		}else if(args[1].equals("l")){
-			System.out.println("Projection based on labels");
 			filterTupleLabels(hf, values[1], sheapfile);
 		}
 
 		String joinheapfile1 = "joinheapfile1";
 		SmjEdge smj1 = new SmjEdge();
-		System.out.println("Sort-Merge JOIN on first 2 filtered tuples");
 		smj1.joinOperation(rheapfile, sheapfile, joinheapfile1, joinOperationType, true);
-		
+//		smj1.printTuplesInRelation(joinheapfile1, 0);
+
 		//Pass the already joined heapfile and the file filtered on label3 as input to smj
 		joinOperationType = 1;
-		String sheapfile_s = "filterlabels3";
-		
+		String sheapfile_s = "edges_filter3";
 		if(args[2].equals("w")){
-			System.out.println("Projection based on weights");
 			filterTupleWeights(hf, Integer.parseInt(values[2]), sheapfile_s);
 		}else if(args[2].equals("l")){
-			System.out.println("Projection based on labels");
 			filterTupleLabels(hf, values[2], sheapfile_s);
 		}
 		
 		String joinheapfile2 = "joinheapfile2";
-		SmjEdge smj2 = new SmjEdge();
-		System.out.println("Sort-Merge JOIN on last the result of first smj and 3rd filtered tuple");
-		
+		SmjEdge smj2 = new SmjEdge();	
 		smj2.joinOperation(joinheapfile1, sheapfile_s, joinheapfile2, joinOperationType, true);
+//		smj2.printTuplesInRelation(resFileName, 1);
 		
 		//Filter by checking NID of 3rd edge and 1st edge
 		String resFileName = "resultTriangels";
-		System.out.println("Projection based on NID");
+		System.out.println("Selection based on NID and Projection of node labels");
 		filterTupleByNID(joinheapfile2, resFileName, nodeheapfile);
 		
-		
-		if(query_type.equals("0")){
+		if(query_type.equals("a")){
 			System.out.println("------------------");
-			System.out.println("------- TQ0 - insertion order -------");
+			System.out.println("------- Task 9: TQa - Insertion order -------");
 			printTuplesInRelation(nodeheapfile);
 		}
-		
-		//Printing the results 
-		//smj2.printTuplesInRelation(resFileName, 1);
-		
-		if(query_type.equals("1")){
+
+		if(query_type.equals("b")){
 			 sortLabels(nodeheapfile, sortedResFile);
 			 System.out.println("------------------");
-			 System.out.println("----- TQ1 - Sorted order ------");
+			 System.out.println("------ Task 9: TQb - Sorted order -------");
 			 printTuplesInRelation(sortedResFile);
 		}
 		
-		if(query_type.equals("2")){
+		if(query_type.equals("c")){
 			distinctLabels(nodeheapfile, distinctResFile);
 			System.out.println("------------------");
-			System.out.println("------ TQ2 - Distinct order --------");
+			System.out.println("------ Task 9: TQc - Distinct nodes -------");
 			printTuplesInRelation(distinctResFile);
 		}
+		
+		smj1.close();
+		smj2.close();
 		cleanup(nodeheapfile, sortedResFile, distinctResFile, resFileName, joinheapfile1, joinheapfile2, rheapfile, sheapfile_s, sheapfile);
 	}
 	
@@ -440,7 +423,6 @@ public class TriangleQuery {
 		Heapfile rfilter = new Heapfile(rheapfile);
 		Heapfile sfilter = new Heapfile(sheapfile);
 		Heapfile ssfilter = new Heapfile(sheapfile_s);
-		
 		
 		nhf.deleteFile();
 		srf.deleteFile();

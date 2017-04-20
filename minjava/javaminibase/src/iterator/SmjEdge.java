@@ -7,10 +7,12 @@ import global.AttrType;
 import global.RID;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
+import heap.FileAlreadyDeletedException;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
 import heap.Heapfile;
+import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.Scan;
@@ -18,6 +20,10 @@ import heap.Tuple;
 
 public class SmjEdge {
 	private Heapfile joinHeapfile;
+
+	public SmjEdge() throws UnknowAttrType, LowMemException, JoinsException, Exception {
+	}
+
 	private void Query1_CondExpr(CondExpr[] expr) {
 		expr[0].next = null;
 		expr[0].op = new AttrOperator(AttrOperator.aopEQ);
@@ -26,84 +32,6 @@ public class SmjEdge {
 		expr[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 4);
 		expr[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 2);
 		expr[1] = null;
-	}
-	
-
-	private Tuple setJTupleHdr(Tuple t, int joinType) throws InvalidTypeException, InvalidTupleSizeException, IOException {
-		int numAttrs = 0;
-		int numStr = 0;
-		if (joinType == 0) {
-			numAttrs = 12;
-			numStr = 2;
-		} else if (joinType == 1) {
-			numAttrs = 18;
-			numStr = 3;
-		}
-		AttrType[] attrs = new AttrType[numAttrs];
-        short[] str_sizes = new short[numStr];
-        attrs[0] = new AttrType(AttrType.attrString);
-        attrs[1] = new AttrType(AttrType.attrInteger); //source pg no.
-        attrs[2] = new AttrType(AttrType.attrInteger); //source slot no.
-        attrs[3] = new AttrType(AttrType.attrInteger); //dest pg no.
-        attrs[4] = new AttrType(AttrType.attrInteger); //dest slot no.
-        attrs[5] = new AttrType(AttrType.attrInteger);
-        attrs[6] = new AttrType(AttrType.attrString);
-        attrs[7] = new AttrType(AttrType.attrInteger); //source pg no.
-        attrs[8] = new AttrType(AttrType.attrInteger); //source slot no.
-        attrs[9] = new AttrType(AttrType.attrInteger); //dest pg no.
-        attrs[10] = new AttrType(AttrType.attrInteger); //dest slot no.
-        attrs[11] = new AttrType(AttrType.attrInteger);
-        str_sizes[0] = (short)44;
-        str_sizes[1] = (short)44;
-        if (joinType == 1) {
-			str_sizes[2] = (short)44;
-			attrs[12] = new AttrType(AttrType.attrString);
-			attrs[13] = new AttrType(AttrType.attrInteger); //source pg no.
-			attrs[14] = new AttrType(AttrType.attrInteger); //source slot no.
-			attrs[15] = new AttrType(AttrType.attrInteger); //dest pg no.
-			attrs[16] = new AttrType(AttrType.attrInteger); //dest slot no.
-			attrs[17] = new AttrType(AttrType.attrInteger);        	
-        }
-        t.setHdr((short)numAttrs, attrs, str_sizes);
-        return t;
-	}
-	
-	public void printJTuple(Tuple tuple, int resNumCols) throws FieldNumberOutOfBoundException, IOException {
-		for (int i = 1; i <= resNumCols; i++) {
-			if (i == 1 || i == 7 || i == 13)
-				System.out.print(tuple.getStrFld(i) + " ");
-			else
-				System.out.print(tuple.getIntFld(i) + " ");
-			if (i % 6 == 0)
-				System.out.print(" | ");
-		}
-		System.out.println("!!!!!!");
-	}
-
-	public void printTuplesInRelation(String heapfilename, int joinRelationsType) throws FieldNumberOutOfBoundException, 
-		IOException, InvalidTupleSizeException, HFException, HFBufMgrException, 
-		HFDiskMgrException, InvalidTypeException {
-		Heapfile hf = new Heapfile(heapfilename);
-		Scan fscan = new Scan(hf);
-		RID rid = new RID();
-		Tuple t = fscan.getNext(rid);
-		int counter = 0;
-		int resNumCols = (joinRelationsType == 0 ? 12 : 18);
-		while(t != null){
-			try {	
-				t = setJTupleHdr(t, joinRelationsType);
-				printJTuple(t, resNumCols);
-				t = fscan.getNext(rid);
-				counter++;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	    System.out.println("Total count = " + counter);
-	    fscan.closescan();
-	}
-
-	public SmjEdge() throws UnknowAttrType, LowMemException, JoinsException, Exception {
 	}
 	
 	private AttrType[] setAttrs(int joinRelationsType) {
@@ -214,13 +142,90 @@ public class SmjEdge {
 		}
 		return rel_projList;
 	}
-		
+
+	private Tuple setJTupleHdr(Tuple t, int joinType) throws InvalidTypeException, InvalidTupleSizeException, IOException {
+		int numAttrs = 0;
+		int numStr = 0;
+		if (joinType == 0) {
+			numAttrs = 12;
+			numStr = 2;
+		} else if (joinType == 1) {
+			numAttrs = 18;
+			numStr = 3;
+		}
+		AttrType[] attrs = new AttrType[numAttrs];
+        short[] str_sizes = new short[numStr];
+        attrs[0] = new AttrType(AttrType.attrString);
+        attrs[1] = new AttrType(AttrType.attrInteger); //source pg no.
+        attrs[2] = new AttrType(AttrType.attrInteger); //source slot no.
+        attrs[3] = new AttrType(AttrType.attrInteger); //dest pg no.
+        attrs[4] = new AttrType(AttrType.attrInteger); //dest slot no.
+        attrs[5] = new AttrType(AttrType.attrInteger);
+        attrs[6] = new AttrType(AttrType.attrString);
+        attrs[7] = new AttrType(AttrType.attrInteger); //source pg no.
+        attrs[8] = new AttrType(AttrType.attrInteger); //source slot no.
+        attrs[9] = new AttrType(AttrType.attrInteger); //dest pg no.
+        attrs[10] = new AttrType(AttrType.attrInteger); //dest slot no.
+        attrs[11] = new AttrType(AttrType.attrInteger);
+        str_sizes[0] = (short)44;
+        str_sizes[1] = (short)44;
+        if (joinType == 1) {
+			str_sizes[2] = (short)44;
+			attrs[12] = new AttrType(AttrType.attrString);
+			attrs[13] = new AttrType(AttrType.attrInteger); //source pg no.
+			attrs[14] = new AttrType(AttrType.attrInteger); //source slot no.
+			attrs[15] = new AttrType(AttrType.attrInteger); //dest pg no.
+			attrs[16] = new AttrType(AttrType.attrInteger); //dest slot no.
+			attrs[17] = new AttrType(AttrType.attrInteger);        	
+        }
+        t.setHdr((short)numAttrs, attrs, str_sizes);
+        return t;
+	}
+	
+	public void printJTuple(Tuple tuple, int resNumCols) throws FieldNumberOutOfBoundException, IOException {
+		System.out.print("[ ");
+		for (int i = 1; i <= resNumCols; i++) {
+			if (i == 1 || i == 7 || i == 13)
+				System.out.print(tuple.getStrFld(i) + " ");
+			else
+				System.out.print(tuple.getIntFld(i) + " ");
+			if ((i % 6 == 0) && (i != resNumCols))
+				System.out.print(" | ");
+		}
+		System.out.println("]");
+	}
+
+	public void printTuplesInRelation(String heapfilename, int joinRelationsType) throws FieldNumberOutOfBoundException, 
+		IOException, InvalidTupleSizeException, HFException, HFBufMgrException, 
+		HFDiskMgrException, InvalidTypeException {
+		Heapfile hf = new Heapfile(heapfilename);
+		Scan fscan = new Scan(hf);
+		RID rid = new RID();
+		Tuple t = fscan.getNext(rid);
+		int counter = 0;
+		int resNumCols = (joinRelationsType == 0 ? 12 : 18);
+		while(t != null){
+			try {	
+				t = setJTupleHdr(t, joinRelationsType);
+				printJTuple(t, resNumCols);
+				t = fscan.getNext(rid);
+				counter++;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	    System.out.println("Total count = " + counter);
+	    fscan.closescan();
+	}
+
 	//
 	//JoinTRelationsType = 0 for outer = edge and inner = edge ; out_col1 = 12
 	//JoinTRelationsType = 1 for outer = out_col1(12) and inner = edge ; out_col2 = 18
 	//
 	public void joinOperation(String filename1, String filename2, String res_filename, int joinRelationsType, 
 			boolean asc_order) throws UnknowAttrType, LowMemException, JoinsException, Exception {
+		System.out.println("Sort-Merge Join on " + filename1 + " and " + filename2 + " => " + res_filename);
+		
 		AttrType[] attrs = setAttrs(joinRelationsType);
 		short[] attrSize = setAttrSizes(joinRelationsType);
 		FldSpec[] projlist = setFieldSpecs(joinRelationsType, false);
@@ -283,5 +288,11 @@ public class SmjEdge {
 		r_fscan.close();
 		s_fscan.close();
 		sm.close();
+	}
+	
+	public void close() throws InvalidSlotNumberException, FileAlreadyDeletedException, 
+		InvalidTupleSizeException, HFBufMgrException, HFDiskMgrException, IOException {
+		if (joinHeapfile != null)
+			joinHeapfile.deleteFile();
 	}
 }

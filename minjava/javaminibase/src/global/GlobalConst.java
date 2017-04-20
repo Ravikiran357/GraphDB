@@ -3,7 +3,7 @@ package global;
 public interface GlobalConst {
 
 	public static final int MINIBASE_MAXARRSIZE = 50;
-	public static final int NUMBUF = 100;
+	public static final int NUMBUF = 200;
 
 	/** Size of page. */
 	public static final int MINIBASE_PAGESIZE = 1024; // in bytes
