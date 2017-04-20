@@ -1,4 +1,6 @@
-package tests;
+//package tests;
+
+import iterator.SmjEdge;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.Scanner;
 import btree.BT;
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
+import edgeheap.EdgeHeapfile;
 import global.GlobalConst;
 import global.SystemDefs;
 import nodeheap.NodeHeapfile;
@@ -77,13 +80,13 @@ class BatchDriver implements GlobalConst {
 		System.out.println("-------------------------- MENU ------------------");
 		System.out.println("\n\n[0] Batch Node Insert");
 		System.out.println("[1] Batch Node Delete");
-
-		System.out.println("\n[2] Batch Edge Insert");
-		System.out.println("[3] Batch Edge Delete");
+		System.out.println("[2] Batch Edge Insert");
+		System.out.println("[3] Batch Edge Delete\n");
 		System.out.println("[4] Simple Node Query");
-		System.out.println("[5] Simple Edge Query");
-		System.out.println("[6] Triangle Query");
-		System.out.println("[7] Quit");
+		System.out.println("[5] Simple Edge Query\n");
+		System.out.println("[6] Task 2: Sort Merge Join Query");
+		System.out.println("[7] Task 9: Triangle Query");
+		System.out.println("\n[8] Quit");
 	}
 
 	public void runAllTests(int choice) throws Exception {
@@ -91,7 +94,7 @@ class BatchDriver implements GlobalConst {
 		switch (choice) {
 		case 0:
 			System.out.println("Nodefile name: ");
-			String filename = "/Users/rahulrao/Documents/DBMSI/NodeInsertDataPhase3.txt";
+			String filename = in.nextLine();
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			GraphDB db = SystemDefs.JavabaseDB;// new GraphDB(0);
@@ -108,8 +111,7 @@ class BatchDriver implements GlobalConst {
 			break;
 		case 1:
 			System.out.println("Nodefile name: ");
-			filename = "/Users/rahulrao/Documents/DBMSI/NodeInsertData.txt";
-//					in.nextLine();
+			filename = in.nextLine();
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			BatchNodeDelete batchNodeDelete = new BatchNodeDelete();
@@ -123,8 +125,7 @@ class BatchDriver implements GlobalConst {
 
 		case 2:
 			System.out.println("Edgefile name: ");
-			String edgeFile = "/Users/rahulrao/Documents/DBMSI/EdgeInsertDataPhase3.txt";
-			//String firstParameter = in.nextLine();
+			String edgeFile = in.nextLine();
 			System.out.println("Graphdb name: ");
 			dbpath = in.nextLine();
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
@@ -190,7 +191,7 @@ class BatchDriver implements GlobalConst {
 			       args[1] = in.next();
 			       break;
 			default:
-		}
+			}
 		    NodeQuery nq = new NodeQuery();
 			nq.evaluate(qtype, index, args);
 			break;
@@ -216,37 +217,57 @@ class BatchDriver implements GlobalConst {
 					System.out.println("Enter upper edge weight:");
 					args[1] = in.next();
 					break;
-			
 			default:
-		}
+			}
 		    EdgeQuery eq = new EdgeQuery();
 		    eq.evaluate(qtype, index, args);
 			break;
 			
-		case 6: 
-				String query_type;
-				System.out.println("Enter query type");
-				query_type = in.nextLine();
-				args = new String[3];
-				String[] values = new String[3];
-				System.out.println("Enter the type of first parameter (l) for label || (w) for max weight");
-				args[0] = in.nextLine();
-				System.out.println("Enter the label or max_weight ");
-				values[0] = in.nextLine();
-				System.out.println("Enter the type of second parameter (l) for label || (w) for max weight");
-				args[1] = in.nextLine();
-				System.out.println("Enter the label or max_weight ");
-				values[1] = in.nextLine();
-				System.out.println("Enter the type of third parameter (l) for label || (w) for max weight");
-				args[2] = in.nextLine();
-				System.out.println("Enter the label or max_weight ");
-				values[2] = in.nextLine();
-				TriangleQuery tq = new TriangleQuery();
-				tq.startTriangleQuery(args, values, query_type);
-				break;
-		case 7: break;
-		default:
+		case 6:
+			SmjEdge smj = new SmjEdge();
+			EdgeHeapfile hf = SystemDefs.JavabaseDB.edgeHeapfile;
+			String res_file = "res_hf";
+			System.out.println("-------- Query Plan -----");
+			smj.joinOperation(hf.get_file_name(), hf.get_file_name(), res_file, 0, true);
+			System.out.println("------------------");
+			System.out.println("------ Task 2: -------");
+			smj.printTuplesInRelation(res_file, 0);
+			smj.close();
 			break;
+
+		case 7: 
+			String query_type;
+			System.out.println("Enter query type: a or b or c");
+			query_type = in.nextLine();
+			String[] values = new String[3];
+			args = new String[3];
+			System.out.println("Enter the type of first parameter (l) for label || (w) for max weight");
+			args[0] = in.nextLine();
+			System.out.println("Enter the label or max_weight ");
+			values[0] = in.nextLine();
+			System.out.println("Enter the type of second parameter (l) for label || (w) for max weight");
+			args[1] = in.nextLine();
+			System.out.println("Enter the label or max_weight ");
+			values[1] = in.nextLine();
+			System.out.println("Enter the type of third parameter (l) for label || (w) for max weight");
+			args[2] = in.nextLine();
+			System.out.println("Enter the label or max_weight ");
+			values[2] = in.nextLine();
+
+			TriangleQuery tq = new TriangleQuery();
+//			args[0] = args[1] = args[2] = "l";
+//			values[0] = values[1] = values[2] = "50";
+//			values[0] = "1";values[1] = "2";values[2] = "3";
+
+			tq.startTriangleQuery(args, values, query_type);
+
+//			args[0] = args[1] = args[2] = "w";
+//			values[0] = values[1] = values[2] = "50";
+//			values[0] = "1";values[1] = "2";values[2] = "3";
+//			tq.startTriangleQuery(args, values, query_type);
+			break;
+
+		default:System.out.println("Invalid input");
 		}
 	}
 }
@@ -280,7 +301,7 @@ public class BatchTest implements GlobalConst {
 			BatchDriver bttest = new BatchDriver();
 			bttest.clearFiles();
 			bttest.menu();
-			while ((choice = GetStuff.getChoice()) != 7) {
+			while ((choice = GetStuff.getChoice()) != 8) {
 				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);
@@ -293,7 +314,7 @@ public class BatchTest implements GlobalConst {
 				}
 				bttest.menu();
 			}
-
+			System.out.println("Successfully Terminated...");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Error encountered during buffer manager tests:\n");
