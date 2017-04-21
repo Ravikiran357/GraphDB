@@ -62,6 +62,8 @@ public class BatchEdgeDelete {
 	        if(edgeSource.equals(sourceLabel) && edgeDest.equals(destLabel)){
 				SystemDefs.JavabaseDB.edgeLabelIndexFile.Delete(new StringKey(edge.getLabel()), eid);
 				SystemDefs.JavabaseDB.edgeWeightIndexFile.Delete(new IntegerKey(edge.getWeight()), eid);
+				SystemDefs.JavabaseDB.edgeSourceIndexFile.Delete(new StringKey(sourceLabel), eid);
+	            SystemDefs.JavabaseDB.edgeDestinationIndexFile.Delete(new StringKey(destLabel), eid);
 				SystemDefs.JavabaseDB.edgeHeapfile.deleteEdge(eid);
 	        }
 	    } else{

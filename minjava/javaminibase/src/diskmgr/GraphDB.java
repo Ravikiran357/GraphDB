@@ -32,6 +32,8 @@ public class GraphDB extends DB implements GlobalConst{
 	public ZTreeFile nodeDescriptorIndexFile;
 	public BTreeFile edgeLabelIndexFile;
 	public BTreeFile edgeWeightIndexFile;
+	public BTreeFile edgeSourceIndexFile;
+	public BTreeFile edgeDestinationIndexFile;
 
 	public GraphDB(int type) {
 		super();
@@ -74,6 +76,8 @@ public class GraphDB extends DB implements GlobalConst{
 		this.nodeDescriptorIndexFile = new ZTreeFile("NodeDescriptor",AttrType.attrDesc,20,1);
 		this.edgeLabelIndexFile = new BTreeFile("EdgeLabel", AttrType.attrString, 44, 1);
 		this.edgeWeightIndexFile = new BTreeFile("EdgeWeight", AttrType.attrInteger, 4, 1);
+		this.edgeSourceIndexFile = new BTreeFile("EdgeSourceLabel", AttrType.attrString, 44, 1);
+		this.edgeDestinationIndexFile = new BTreeFile("EdgeDestinationLabel", AttrType.attrString, 44, 1);
 		
 	}
 	

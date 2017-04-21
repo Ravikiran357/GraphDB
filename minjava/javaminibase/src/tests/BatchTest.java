@@ -35,6 +35,8 @@ class BatchDriver implements GlobalConst {
 		SystemDefs.JavabaseDB.nodeLabelIndexFile.close();
 		SystemDefs.JavabaseDB.edgeLabelIndexFile.close();
 		SystemDefs.JavabaseDB.edgeWeightIndexFile.close();
+		SystemDefs.JavabaseDB.edgeSourceIndexFile.close();
+		SystemDefs.JavabaseDB.edgeDestinationIndexFile.close();
 		
 		SystemDefs.JavabaseBM.flushAllPages();
 		
@@ -113,7 +115,9 @@ class BatchDriver implements GlobalConst {
 		System.out.println("[3] Batch Edge Delete");
 		System.out.println("[4] Simple Node Query");
 		System.out.println("[5] Simple Edge Query");
-		System.out.println("[6] Quit");
+		System.out.println("[6] Path Query");
+		System.out.println("[7] Nested Loop Join Test");
+		System.out.println("[8] Quit");
 	}
 
 	public void runAllTests(int choice) throws Exception {
@@ -249,6 +253,22 @@ class BatchDriver implements GlobalConst {
 		    EdgeQuery eq = new EdgeQuery();
 		    eq.evaluate(qtype, index, args);
 			break;
+		case 6:
+			System.out.println("Enter Graphdb name: ");
+			dbpath = in.nextLine();
+			//System.out.println("Enter Query Type:");
+			//qtype = in.nextInt();
+			//System.out.println("With(1) or Without index(0):");
+			System.out.println("Enter query path: ");
+			//String arg = in.nextLine();
+		    PathQuery pq = new PathQuery("L0/L248/L384/L514");
+		    pq.evaluate();
+			break;
+		case 7:
+			System.out.println("Enter Graphdb name: ");
+			dbpath = in.nextLine();
+			JoinTestExtended jte = new JoinTestExtended();
+			jte.doTheJoin();
 		default:
 			break;
 		}
@@ -284,7 +304,7 @@ public class BatchTest implements GlobalConst {
 			BatchDriver bttest = new BatchDriver();
 			bttest.init();
 			bttest.menu();
-			while ((choice = GetStuff.getChoice()) != 6) {
+			while ((choice = GetStuff.getChoice()) != 8) {
 				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);
