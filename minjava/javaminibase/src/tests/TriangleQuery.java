@@ -39,7 +39,6 @@ import iterator.Sort;
 import iterator.UnknowAttrType;
 import iterator.UnknownKeyTypeException;
 import nodeheap.Node;
-import sun.java2d.pipe.BufferedMaskBlit;
 
 
 public class TriangleQuery {

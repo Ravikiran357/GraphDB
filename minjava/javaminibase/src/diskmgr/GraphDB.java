@@ -45,9 +45,7 @@ public class GraphDB extends DB implements GlobalConst{
 		try {
 			createFiles();
 			createIndexFiles();
-		} catch (HFException | HFBufMgrException | HFDiskMgrException | GetFileEntryException | ConstructPageException
-				| AddFileEntryException | edgeheap.HFException | edgeheap.HFBufMgrException
-				| edgeheap.HFDiskMgrException | PinPageException e) {
+		} catch (Exception e) {
 			throw new DiskMgrException(e, e.getMessage());
 		}
 	}
@@ -57,9 +55,7 @@ public class GraphDB extends DB implements GlobalConst{
 		try {
 			createFiles();
 			createIndexFiles();
-		} catch (HFException | HFBufMgrException | HFDiskMgrException | GetFileEntryException | ConstructPageException
-				| AddFileEntryException | edgeheap.HFException | edgeheap.HFBufMgrException
-				| edgeheap.HFDiskMgrException | PinPageException e) {
+		} catch (Exception e) {
 			throw new DiskMgrException(e, e.getMessage());
 		}
 	}

@@ -63,7 +63,7 @@ class JoinsDriver implements GlobalConst {
 		Node n;
 		try {
 			n = new Node();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -261,7 +261,7 @@ class JoinsDriver implements GlobalConst {
 		Node n;
 		try {
 			n = new Node();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -461,7 +461,7 @@ class JoinsDriver implements GlobalConst {
 		Edge e;
 		try {
 			e = new Edge();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -659,7 +659,7 @@ class JoinsDriver implements GlobalConst {
 		Edge e;
 		try {
 			e = new Edge();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -865,7 +865,7 @@ class JoinsDriver implements GlobalConst {
 		Edge e;
 		try {
 			e = new Edge();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}

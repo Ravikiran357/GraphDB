@@ -185,7 +185,7 @@ public class PathQuery {
 		Node n1;
 		try {
 			n1 = new Node();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -396,7 +396,7 @@ public class PathQuery {
 		Edge e;
 		try {
 			e = new Edge();
-		} catch (InvalidTypeException | InvalidTupleSizeException | IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
