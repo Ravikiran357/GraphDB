@@ -53,7 +53,7 @@ class BatchDriver implements GlobalConst {
 		if(f.exists()) { 
 			SystemDefs.MINIBASE_RESTART_FLAG = true;
 		}
-		SystemDefs sysdef = new SystemDefs(dbpath, 50000, numBuf, "Clock");		
+		SystemDefs sysdef = new SystemDefs(dbpath, 50000, 5000, "Clock");		
 	}
 	
 	public void clearFiles(){
