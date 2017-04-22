@@ -96,10 +96,12 @@ public class TupleUtils {
 			} catch (FieldNumberOutOfBoundException e) {
 				throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 			}
+			
 			Descriptor dummyTar = new Descriptor();
 			dummyTar.set(-1, -1, -1, -1, -1);
 			// if target is [-1,-1,-1,-1,-1] just cmpre t1_d,t2_d dist
-			if (target.equal(dummyTar) == 1) {
+			
+			if (target==null||target.equal(dummyTar) == 1) {
 				if (t1_d.distance(t2_d) <= distance)
 					return 0;
 				return 1;

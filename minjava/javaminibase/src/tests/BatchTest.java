@@ -260,9 +260,13 @@ class BatchDriver implements GlobalConst {
 			//qtype = in.nextInt();
 			//System.out.println("With(1) or Without index(0):");
 			System.out.println("Enter query path: ");
-			//String arg = in.nextLine();
-		    PathQuery pq = new PathQuery("L0/L248/L384/L514");
-		    pq.evaluate();
+			String arg = in.nextLine();
+		    //PathQuery pq = new PathQuery("L0/L248/L384/L514");
+			//D7,1,44,22,12/L248/L384/D41,34,28,23,41/D41,22,9,32,18/L996
+			System.out.println("Enter choice: ");
+			String choice1 = in.nextLine();
+			PathQuery pq = new PathQuery(arg);
+		    pq.evaluate(choice1);
 			break;
 		case 7:
 			System.out.println("Enter Graphdb name: ");
