@@ -1,11 +1,6 @@
 package tests;
 
 
-import iterator.FileScan;
-import iterator.FldSpec;
-import iterator.RelSpec;
-import iterator.Sort;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +12,7 @@ import btree.BTreeFile;
 import btree.KeyDataEntry;
 import btree.LeafData;
 import btree.StringKey;
+import catalog.Utility;
 import diskmgr.GraphDB;
 import edgeheap.EScan;
 import edgeheap.Edge;
@@ -28,6 +24,10 @@ import global.SystemDefs;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
 import heap.Tuple;
+import iterator.FileScan;
+import iterator.FldSpec;
+import iterator.RelSpec;
+import iterator.Sort;
 import nodeheap.HFBufMgrException;
 import nodeheap.HFDiskMgrException;
 import nodeheap.HFException;
@@ -43,14 +43,6 @@ public class NodeQuery {
 	private final static boolean OK = true;
 	private final static boolean FAIL = false;
 	private GraphDB db;
-	
-	private Descriptor convertToDescriptor(String desc) {
-		Descriptor descriptor = new Descriptor();
-		String [] val = desc.split(",");
-		descriptor.set(Integer.parseInt(val[0]), Integer.parseInt(val[1]), Integer.parseInt(val[2]), 
-				Integer.parseInt(val[3]), Integer.parseInt(val[4]));
-		return descriptor;
-	}
 	
 	private void printNodesInHeap() throws InvalidTupleSizeException, IOException, FieldNumberOutOfBoundException {	
 		NScan nScan = new NScan(db.nodeHeapfile);
@@ -145,7 +137,7 @@ public class NodeQuery {
 
 	private void printNodeDataFromTarget(int index, String desc) throws InvalidSlotNumberException, HFException, 
 		HFDiskMgrException, HFBufMgrException, Exception {
-		Descriptor descriptor = convertToDescriptor(desc);		
+		Descriptor descriptor = Utility.convertToDescriptor(desc);		
 		double dist;
 		if (index == 1) {
 			System.out.println("Printing node data in order using index file");
@@ -206,7 +198,7 @@ public class NodeQuery {
 	public void printNodeLabelFromTargetDistance(int index, String desc, int dist) throws InvalidSlotNumberException, InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
 		//Sort sort = null;
 		Node node = null;
-		Descriptor descriptor = convertToDescriptor(desc);
+		Descriptor descriptor = Utility.convertToDescriptor(desc);
 		
 		if (index == 1) {
 			ZTreeFile indexFile = db.nodeDescriptorIndexFile;
@@ -310,7 +302,7 @@ public class NodeQuery {
 		InvalidTupleSizeException, HFException, HFDiskMgrException, HFBufMgrException, Exception {
 		Node node = null;
 		boolean printed = false;
-		Descriptor descriptor = convertToDescriptor(desc);
+		Descriptor descriptor = Utility.convertToDescriptor(desc);
 	
 		if (index == 1) {
 			ZTreeFile indexFile = db.nodeDescriptorIndexFile;

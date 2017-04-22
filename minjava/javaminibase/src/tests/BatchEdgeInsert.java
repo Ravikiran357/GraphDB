@@ -86,6 +86,9 @@ boolean FAIL = false;
         //SystemDefs.JavabaseDB.edgeHeapfile.insertEdge(edge.getEdgeByteArray());
         SystemDefs.JavabaseDB.edgeLabelIndexFile.insert(new StringKey(edge.getLabel()), eid);
         SystemDefs.JavabaseDB.edgeWeightIndexFile.insert(new IntegerKey(edge.getWeight()), eid);
+        SystemDefs.JavabaseDB.edgeSourceIndexFile.insert(new StringKey(sourceLabel), eid);
+        SystemDefs.JavabaseDB.edgeDestinationIndexFile.insert(new StringKey(destLabel), eid);
+        
 
     }
 

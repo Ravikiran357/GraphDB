@@ -426,7 +426,11 @@ public class Tuple implements GlobalConst {
 															// strlen +2
 				strCount++;
 				break;
-
+				
+			case AttrType.attrDesc:
+				incr = 20;
+				break;
+			
 			default:
 				throw new InvalidTypeException(null, "TUPLE: TUPLE_TYPE_ERROR");
 			}
@@ -503,6 +507,7 @@ public class Tuple implements GlobalConst {
 		int i, val;
 		float fval;
 		String sval;
+		Descriptor desc;
 
 		System.out.print("[");
 		for (i = 0; i < fldCnt - 1; i++) {
@@ -521,6 +526,14 @@ public class Tuple implements GlobalConst {
 			case AttrType.attrString:
 				sval = Convert.getStrValue(fldOffset[i], data, fldOffset[i + 1] - fldOffset[i]);
 				System.out.print(sval);
+				break;
+			case AttrType.attrDesc:
+				//System.out.print("desc");
+				desc = Convert.getDescValue(fldOffset[i], data);
+				for(int j= 0; j<5;j++){
+		            System.out.print(desc.get(j)+"  ");
+		        }
+				
 				break;
 
 			case AttrType.attrNull:
@@ -545,6 +558,12 @@ public class Tuple implements GlobalConst {
 		case AttrType.attrString:
 			sval = Convert.getStrValue(fldOffset[i], data, fldOffset[i + 1] - fldOffset[i]);
 			System.out.print(sval);
+			break;
+		case AttrType.attrDesc:
+			desc = Convert.getDescValue(fldOffset[i], data);
+			for(int j= 0; j<5;j++){
+	            System.out.print(desc.get(j)+" ");
+	        }
 			break;
 
 		case AttrType.attrNull:

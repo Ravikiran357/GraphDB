@@ -335,5 +335,13 @@ public class Utility implements Catalogglobal {
 	static boolean check_string(attrNode N) {
 		return true;
 	}
+	
+	public static Descriptor convertToDescriptor(String desc) {
+		Descriptor descriptor = new Descriptor();
+		String [] val = desc.split(",");
+		descriptor.set(Integer.parseInt(val[0]), Integer.parseInt(val[1]), Integer.parseInt(val[2]), 
+				Integer.parseInt(val[3]), Integer.parseInt(val[4]));
+		return descriptor;
+	}
 
 }

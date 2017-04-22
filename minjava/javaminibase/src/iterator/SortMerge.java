@@ -147,7 +147,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		if (!in1_sorted) {
 			try {
-				p_i1 = new Sort(in1, (short) len_in1, s1_sizes, am1, join_col_in1, order, sortFld1Len, amt_of_mem / 2, distance, target);
+				p_i1 = new Sort(in1, (short) len_in1, s1_sizes, am1, join_col_in1, order, sortFld1Len, amt_of_mem/2, distance, target);
 			} catch (Exception e) {
 				throw new SortException(e, "Sort failed");
 			}
@@ -155,7 +155,7 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		if (!in2_sorted) {
 			try {
-				p_i2 = new Sort(in2, (short) len_in2, s2_sizes, am2, join_col_in2, order, sortFld2Len, amt_of_mem / 2, distance, target);
+				p_i2 = new Sort(in2, (short) len_in2, s2_sizes, am2, join_col_in2, order, sortFld2Len, amt_of_mem/2, distance, target);
 			} catch (Exception e) {
 				throw new SortException(e, "Sort failed");
 			}
@@ -209,13 +209,6 @@ public class SortMerge extends Iterator implements GlobalConst {
 
 		temp_file_fd1 = null;
 		temp_file_fd2 = null;
-		try {
-			temp_file_fd1 = new Heapfile(null);
-			temp_file_fd2 = new Heapfile(null);
-
-		} catch (Exception e) {
-			throw new SortException(e, "Create heap file failed");
-		}
 
 		sortFldType = _in1[jc_in1 - 1];
 
@@ -317,17 +310,10 @@ public class SortMerge extends Iterator implements GlobalConst {
 				TempTuple2.tupleCopy(tuple2);
 				outerJoinList = new ArrayList<Tuple>();
 				innerJoinList = new ArrayList<Tuple>();
-				io_buf1.init(_bufs1, 1, t1_size, temp_file_fd1);
-				io_buf2.init(_bufs2, 1, t2_size, temp_file_fd2);
+
 				//System.out.println("outer edges");
 				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
 						jc_in1, TempTuple1, jc_in1, distance, target) == 0) {
-					// Insert tuple1 into io_buf1
-					try {
-						io_buf1.Put(tuple1);
-					} catch (Exception e) {
-						throw new JoinsException(e, "IoBuf error in sortmerge");
-					}
 					//Edge e1 = new Edge(tuple1.getTupleByteArray(), 0);
 					//e1.print();
 					Tuple t = new Tuple(tuple1);
@@ -342,12 +328,6 @@ public class SortMerge extends Iterator implements GlobalConst {
 				//System.out.println("inner edges");
 				while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2, jc_in2,
 						TempTuple2, jc_in2, distance, target) == 0) {
-					// Insert tuple2 into io_buf2
-					try {
-						io_buf2.Put(tuple2);
-					} catch (Exception e) {
-						throw new JoinsException(e, "IoBuf error in sortmerge");
-					}
 					//Edge e1 = new Edge(tuple2.getTupleByteArray(), 0);
 					//e1.print();
 					Tuple t = new Tuple(tuple2);

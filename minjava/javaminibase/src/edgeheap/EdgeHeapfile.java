@@ -50,6 +50,11 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 	private boolean _file_deleted;
 	private String _fileName;
 	private static int tempfilecount = 0;
+	
+	public String get_file_name() {
+		return _fileName;
+	}
+	
 
 	/*
 	 * get a new datapage from the buffer manager and initialize dpinfo
