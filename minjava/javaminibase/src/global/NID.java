@@ -27,5 +27,9 @@ public class NID extends RID{
 		pageNo = nid.pageNo;
 		slotNo = nid.slotNo;
 	}
+	
+	public String toString(){
+		return "pageno:" + this.pageNo + ", slotno:"+this.slotNo;
+	}
 }
 
