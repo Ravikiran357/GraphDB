@@ -49,12 +49,14 @@ public class PathQuery {
 	private boolean FAIL = false;
 	private Iterator nextNodeIterator;
 	private Iterator nextEdgeIterator;
-	
-	public PathQuery(String exp){
+
+	public PathQuery(String exp) {
 		this.exp = exp;
 	}
-	
-	public void evaluate(String choice) throws ScanIteratorException, KeyNotMatchException, IteratorException, ConstructPageException, PinPageException, UnpinPageException, IOException, InvalidFrameNumberException, ReplacerException, PageUnpinnedException, HashEntryNotFoundException{
+
+	public void evaluate(String choice) throws ScanIteratorException, KeyNotMatchException, IteratorException,
+			ConstructPageException, PinPageException, UnpinPageException, IOException, InvalidFrameNumberException,
+			ReplacerException, PageUnpinnedException, HashEntryNotFoundException {
 		String[] n = exp.split("/");
 		String element = n[0];
 		element = element.trim();
@@ -63,396 +65,247 @@ public class PathQuery {
 		Ntypes[1] = new AttrType(AttrType.attrDesc);
 		short[] Nsizes = new short[2];
 		Nsizes[0] = 44;
-		//node label
-		if(element.startsWith("L")){
+		BTFileScan scan = null;
+		// node label
+		if (element.startsWith("L")) {
 			String label = element.substring(1).trim();
-			BTFileScan scan = SystemDefs.JavabaseDB.nodeLabelIndexFile.new_scan(new StringKey(label), new StringKey(label));
-			KeyDataEntry entry = scan.get_next();
-			while (entry != null) {
-				// Collect node data
-				LeafData leafData = (LeafData) entry.data;
-				NID nid = new NID();
-				nid.copyRid(leafData.getData());
-				Node startNode = null;
-				//TODO call task 3
-				//print node
-				try{
-				startNode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
-				}catch(Exception e){
-					System.err.println("" + e);
-				}
-				
-				Iterator tailNodes = task3Method(nid,n);
-				if(choice.charAt(0)=='a'){
-					Tuple startTuple = startNode;
-					Tuple t = null;
-					try {
-						
-						while ((t = tailNodes.get_next()) != null) {
-							startTuple.print(Ntypes);
-							t.print(Ntypes);
-	
-							//qcheck1.Check(t);
-						}
-					} catch (Exception e1) {
-						System.err.println("" + e1);
-						e1.printStackTrace();
-						//status = FAIL;
-					}
-					try {
-						tailNodes.close();
-					} catch (Exception e1) {
-						//status = FAIL;
-						e1.printStackTrace();
-					}
-				}
-				if(choice.charAt(0)=='b'){
-					TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
-
-					Sort sort_names = null;
-					try {
-						sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1, Nsizes[0], 10, 0, null);
-					} catch (Exception e1) {
-						System.err.println("*** Error preparing for Sort");
-						System.err.println("" + e1);
-						Runtime.getRuntime().exit(1);
-					}
-					Tuple startTuple = startNode;
-					Tuple t = null;
-					try {
-						System.out.println("sorted");
-						while ((t = sort_names.get_next()) != null) {
-							startTuple.print(Ntypes);
-							t.print(Ntypes);
-	
-							//qcheck1.Check(t);
-						}
-					} catch (Exception e1) {
-						System.err.println("" + e1);
-						e1.printStackTrace();
-						//status = FAIL;
-					}
-					try {
-						sort_names.close();
-					} catch (Exception e1) {
-						//status = FAIL;
-						e1.printStackTrace();
-					}
-					if(choice.charAt(0)=='c'){
-						ascending1 = new TupleOrder(TupleOrder.Ascending);
-
-						sort_names = null;
-						try {
-							sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1, Nsizes[0], 10, 0, null);
-						} catch (Exception e1) {
-							System.err.println("*** Error preparing for Sort");
-							System.err.println("" + e1);
-							Runtime.getRuntime().exit(1);
-						}
-						DuplElim duplElm = null;
-						try{
-							duplElm = new DuplElim(Ntypes, (short)2,Nsizes,(iterator.Iterator)sort_names, 12, true, 0, null);
-							} catch (Exception e1) {
-								System.err.println("*** Error preparing for DuplElim");
-								System.err.println("" + e1);
-								Runtime.getRuntime().exit(1);
-							}
-						
-						startTuple = startNode;
-						t = null;
-						try {
-							System.out.println("duplicate elimination");
-							while ((t = duplElm.get_next()) != null) {
-								startTuple.print(Ntypes);
-								t.print(Ntypes);
-		
-								//qcheck1.Check(t);
-							}
-						} catch (Exception e1) {
-							System.err.println("" + e1);
-							e1.printStackTrace();
-							//status = FAIL;
-						}
-						try {
-							duplElm.close();
-						} catch (Exception e1) {
-							//status = FAIL;
-							e1.printStackTrace();
-						}
-					}
-
-					
-				}
-				
-				entry = scan.get_next();
-			}
-			scan.DestroyBTreeFileScan();		
-		}
-		//node desc
-		else if(element.startsWith("D")){
+			scan = SystemDefs.JavabaseDB.nodeLabelIndexFile.new_scan(new StringKey(label), new StringKey(label));
+		} else if (element.startsWith("D")) {
+			// node desc
 			Descriptor desc = Utility.convertToDescriptor(element.substring(1).trim());
-			BTFileScan scan = SystemDefs.JavabaseDB.nodeDescriptorIndexFile.new_scan(new DescriptorKey(desc), new DescriptorKey(desc));
+			scan = SystemDefs.JavabaseDB.nodeDescriptorIndexFile.new_scan(new DescriptorKey(desc),
+					new DescriptorKey(desc));
+		}
+
+		if (scan != null) {
 			KeyDataEntry entry = scan.get_next();
-			
 			while (entry != null) {
 				// Collect node data
 				LeafData leafData = (LeafData) entry.data;
 				NID nid = new NID();
 				nid.copyRid(leafData.getData());
-				Node startNode = null;
-				//TODO call task 3
-				//print node
-				try{
-				startNode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
-				}catch(Exception e){
+				// print node
+				try {
+					Node startNode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
+					Iterator tailNodes = task3Method(nid, n);
+					printResults(choice, startNode, tailNodes);
+				} catch (Exception e) {
 					System.err.println("" + e);
 				}
-				Iterator tailNodes = task3Method(nid,n);
-				if(choice.charAt(0)=='a'){
-					Tuple startTuple = startNode;
-					Tuple t = null;
-					try {
-						startTuple.print(Ntypes);
-						System.out.println("");
-						while ((t = tailNodes.get_next()) != null) {
-							
-							t.print(Ntypes);
-	
-							//qcheck1.Check(t);
-						}
-					} catch (Exception e1) {
-						System.err.println("" + e1);
-						e1.printStackTrace();
-						//status = FAIL;
-					}
-					try {
-						tailNodes.close();
-					} catch (Exception e1) {
-						//status = FAIL;
-						e1.printStackTrace();
-					}
-				}
-				if(choice.charAt(0)=='b'){
-					TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
 
-					Sort sort_names = null;
-					try {
-						sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1, Nsizes[0], 10, 0, null);
-					} catch (Exception e1) {
-						System.err.println("*** Error preparing for Sort");
-						System.err.println("" + e1);
-						Runtime.getRuntime().exit(1);
-					}
-					Tuple startTuple = startNode;
-					Tuple t = null;
-					try {
-						System.out.println("sorted");
-						startTuple.print(Ntypes);
-						System.out.println("");
-						while ((t = sort_names.get_next()) != null) {
-							t.print(Ntypes);
-	
-							//qcheck1.Check(t);
-						}
-					} catch (Exception e1) {
-						System.err.println("" + e1);
-						e1.printStackTrace();
-						//status = FAIL;
-					}
-					try {
-						sort_names.close();
-					} catch (Exception e1) {
-						//status = FAIL;
-						e1.printStackTrace();
-					}
-	
-					
-				}
-				if(choice.charAt(0)=='c'){
-					TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
-
-					Sort sort_names = null;
-					try {
-						sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1, Nsizes[0], 10, 0, null);
-					} catch (Exception e1) {
-						System.err.println("*** Error preparing for Sort");
-						System.err.println("" + e1);
-						Runtime.getRuntime().exit(1);
-					}
-					DuplElim duplElm = null;
-					try{
-						duplElm = new DuplElim(Ntypes, (short)2,Nsizes,(iterator.Iterator)sort_names, 12, true, 0, null);
-						} catch (Exception e1) {
-							System.err.println("*** Error preparing for DuplElim");
-							System.err.println("" + e1);
-							Runtime.getRuntime().exit(1);
-						}
-					
-					Tuple startTuple = startNode;
-					Tuple t = null;
-					try {
-						System.out.println("duplicate elimination");
-						startTuple.print(Ntypes);
-						System.out.println("");
-						while ((t = duplElm.get_next()) != null) {
-							
-							t.print(Ntypes);
-	
-							//qcheck1.Check(t);
-						}
-					} catch (Exception e1) {
-						System.err.println("" + e1);
-						e1.printStackTrace();
-						//status = FAIL;
-					}
-					try {
-						duplElm.close();
-					} catch (Exception e1) {
-						//status = FAIL;
-						e1.printStackTrace();
-					}
-
-				}
 				entry = scan.get_next();
 			}
 			scan.DestroyBTreeFileScan();
 		}
-		
-		//ignore
+
+		// ignore
 		/*
-		for(String element : n){
-			element = element.trim();
-			//node label
-			if(element.startsWith("L")){
-				path.add(element.substring(1).trim());
-			}
-			//node desc
-			else if(element.startsWith("D")){
-				Descriptor desc = Utility.convertToDescriptor(element.substring(1).trim());
-				path.add(desc);
-			}
-			//ignore
-		}*/
-		
+		 * for(String element : n){ element = element.trim(); //node label
+		 * if(element.startsWith("L")){ path.add(element.substring(1).trim()); }
+		 * //node desc else if(element.startsWith("D")){ Descriptor desc =
+		 * Utility.convertToDescriptor(element.substring(1).trim());
+		 * path.add(desc); } //ignore }
+		 */
+
 		//
 	}
 
+	private void printResults(String choice, Tuple startNode, Iterator tailNodes) {
+		AttrType[] Ntypes = new AttrType[2];
+		Ntypes[0] = new AttrType(AttrType.attrString);
+		Ntypes[1] = new AttrType(AttrType.attrDesc);
+		short[] Nsizes = new short[2];
+		Nsizes[0] = 44;
+		if (choice.charAt(0) == 'a') {
+			Tuple startTuple = startNode;
+			Tuple t = null;
+			try {
+
+				while ((t = tailNodes.get_next()) != null) {
+					startTuple.print(Ntypes);
+					t.print(Ntypes);
+					System.out.println();
+				}
+			} catch (Exception e1) {
+				System.err.println("" + e1);
+				e1.printStackTrace();
+			}
+			try {
+				tailNodes.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+		if (choice.charAt(0) == 'b') {
+			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
+
+			Sort sort_names = null;
+			try {
+				sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1,
+						Nsizes[0], 10, 0, null);
+			} catch (Exception e1) {
+				System.err.println("*** Error preparing for Sort");
+				System.err.println("" + e1);
+				Runtime.getRuntime().exit(1);
+			}
+			Tuple startTuple = startNode;
+			Tuple t = null;
+			try {
+				System.out.println("sorted");
+				while ((t = sort_names.get_next()) != null) {
+					startTuple.print(Ntypes);
+					t.print(Ntypes);
+					System.out.println();
+				}
+			} catch (Exception e1) {
+				System.err.println("" + e1);
+				e1.printStackTrace();
+			}
+			try {
+				sort_names.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+		if (choice.charAt(0) == 'c') {
+			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
+
+			Sort sort_names = null;
+			try {
+				sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1,
+						Nsizes[0], 10, 0, null);
+			} catch (Exception e1) {
+				System.err.println("*** Error preparing for Sort");
+				System.err.println("" + e1);
+				Runtime.getRuntime().exit(1);
+			}
+			DuplElim duplElm = null;
+			try {
+				duplElm = new DuplElim(Ntypes, (short) 2, Nsizes, (iterator.Iterator) sort_names, 12, true, 0,
+						null);
+			} catch (Exception e1) {
+				System.err.println("*** Error preparing for DuplElim");
+				System.err.println("" + e1);
+				Runtime.getRuntime().exit(1);
+			}
+
+			Tuple startTuple = startNode;
+			Tuple t = null;
+			try {
+				System.out.println("duplicate elimination");
+				while ((t = duplElm.get_next()) != null) {
+					startTuple.print(Ntypes);
+					t.print(Ntypes);
+					System.out.println();
+				}
+			} catch (Exception e1) {
+				System.err.println("" + e1);
+				e1.printStackTrace();
+			}
+			try {
+				duplElm.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+
+	}
+
 	private Iterator task3Method(NID nid, String[] n) {
-		
-		
-		// TODO Auto-generated method stub
 		nextNodeIterator = null;
 		nextEdgeIterator = null;
-		//do nid join edge and edge join node
+		// do nid join edge and edge join node
 		int i = 0;
-		while(i < n.length-1){
-			doJoinNodeEdge(nid,n[i++]);
-			if(i>=n.length){
+		while (i < n.length - 1) {
+			doJoinNodeEdge(nid, n[i++]);
+			if (i >= n.length) {
 				break;
 			}
 			doJoinEdgeNode(n[i]);
-			
+
 		}
-		
 		return nextNodeIterator;
 	}
 
-	
-
-	private void doJoinNodeEdge(NID nid,String n) {
+	private void doJoinNodeEdge(NID nid, String n) {
 		boolean status = OK;
-		String startLabel ="";
+		String startLabel = "";
 		Node node;
 		try {
 			node = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
 			startLabel = node.getLabel();
 		} catch (Exception e2) {
-			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-		
-		// TODO Auto-generated method stub
-		System.out.print("\n(Tests NodeScan, Projection, and Nested Loop Join)\n");
+
 		char type = n.charAt(0);
 		CondExpr[] outFilter = new CondExpr[2];
 		outFilter[0] = new CondExpr();
-		
-		if(type == 'L'){
-			
+
+		if (nextNodeIterator == null) {
+			// first node join edge. should found all edges with given NID/label
+			// as source.
+			System.out.println(
+					"Node join Edge with source NID: " + nid + ", label: " + startLabel + " No edge conditions");
 			outFilter[0].next = null;
 			outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
 			outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
 			outFilter[0].type2 = new AttrType(AttrType.attrString);
 			outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
-			String label = n.substring(1).trim();
-			outFilter[0].operand2.string = label;
+			outFilter[0].operand2.string = startLabel;
 			outFilter[1] = null;
-		}
-		else{
-			if(nextNodeIterator == null){
+		} else {
+			if (type == 'L') {
+				String label = n.substring(1).trim();
+				System.out.println("Node join Edge with source node label " + label + ". No edge conditions");
 				outFilter[0].next = null;
 				outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
 				outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
 				outFilter[0].type2 = new AttrType(AttrType.attrString);
 				outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
-				String label = n.substring(1).trim();
-				outFilter[0].operand2.string = startLabel;
+				outFilter[0].operand2.string = label;
 				outFilter[1] = null;
+			} else {
+				// descriptor node join edge
+				Descriptor desc1 = new Descriptor();
+				String descstr = n.substring(1).trim();
+				desc1 = Utility.convertToDescriptor(descstr);
+				System.out.println("Node join Edge with source node descriptor: " + descstr + ". No edge conditions");
+				outFilter[0].next = null;
+				outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
+				outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+				outFilter[0].type2 = new AttrType(AttrType.attrDesc);
+				outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 2);
+				outFilter[0].operand2.desc = desc1;
+				outFilter[1] = null;
+
 			}
-			else{
-			outFilter[0].next = null;
-			outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
-			outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
-			outFilter[0].type2 = new AttrType(AttrType.attrDesc);
-			outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 2);
-			Descriptor desc1 = new Descriptor();
-			desc1 = Utility.convertToDescriptor(n.substring(1).trim());
-			outFilter[0].operand2.desc = desc1;
-			outFilter[1] = null;
-			}
-		}
-		
-		Tuple t = new Tuple();
-		Node n1;
-		try {
-			n1 = new Node();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
 		}
 
 		AttrType[] Ntypes = new AttrType[2];
 		Ntypes[0] = new AttrType(AttrType.attrString);
 		Ntypes[1] = new AttrType(AttrType.attrDesc);
-		
+
 		// SOS
 		short[] Nsizes = new short[2];
 		Nsizes[0] = 44;
-		//Nsizes[1] = 20;// first elt. is 30
+		// Nsizes[1] = 20;// first elt. is 30
 
 		FldSpec[] Nprojection = new FldSpec[2];
 		Nprojection[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
-		Nprojection[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);//wrong
-		
+		Nprojection[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);// wrong
+
 		Iterator am = null;
-		if(nextNodeIterator == null){
-		try {
-			am = new NodeScan("nodeheapfile", Ntypes, Nsizes, (short) 2, (short) 2, Nprojection, null);
-		} catch (Exception e) {
-			status = FAIL;
-			System.err.println("" + e);
-		}
-		}
-		if(nextNodeIterator != null){
+		if (nextNodeIterator == null) {
 			try {
-				//am.close();
+				am = new NodeScan("nodeheapfile", Ntypes, Nsizes, (short) 2, (short) 2, Nprojection, null);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
+				status = FAIL;
+				System.err.println("" + e);
+			}
+		} else {
 			am = nextNodeIterator;
 		}
-
 
 		if (status != OK) {
 			// bail out
@@ -464,12 +317,12 @@ public class PathQuery {
 		jtype12[1] = new AttrType(AttrType.attrDesc);
 
 		AttrType[] Etypes = new AttrType[6];
-		Etypes[0] = new AttrType(AttrType.attrString);//label
-		Etypes[1] = new AttrType(AttrType.attrInteger);//pgidsource
-		Etypes[2] = new AttrType(AttrType.attrInteger);//slotidsource
-		Etypes[3] = new AttrType(AttrType.attrInteger);//pgiddest
-		Etypes[4] = new AttrType(AttrType.attrInteger);//slotiddest
-		Etypes[5] = new AttrType(AttrType.attrInteger);//weight
+		Etypes[0] = new AttrType(AttrType.attrString);// label
+		Etypes[1] = new AttrType(AttrType.attrInteger);// pgidsource
+		Etypes[2] = new AttrType(AttrType.attrInteger);// slotidsource
+		Etypes[3] = new AttrType(AttrType.attrInteger);// pgiddest
+		Etypes[4] = new AttrType(AttrType.attrInteger);// slotiddest
+		Etypes[5] = new AttrType(AttrType.attrInteger);// weight
 
 		short[] Esizes = new short[1];
 		Esizes[0] = 44;
@@ -480,7 +333,7 @@ public class PathQuery {
 		Eprojection[3] = new FldSpec(new RelSpec(RelSpec.innerRel), 4);
 		Eprojection[4] = new FldSpec(new RelSpec(RelSpec.innerRel), 5);
 		Eprojection[5] = new FldSpec(new RelSpec(RelSpec.innerRel), 6);
-		
+
 		short[] JJsize = new short[4];
 		JJsize[0] = 44;
 		JJsize[2] = 44;
@@ -497,133 +350,102 @@ public class PathQuery {
 
 		NestedLoopExtended inl = null;
 		try {
-			inl = new NestedLoopExtended(Ntypes, 2, Nsizes, Etypes, 6, Esizes, 10, am, "edgeSourceIndexFile", outFilter, null, Eprojection, 6);
+			// no inner filter. get all edges.
+			inl = new NestedLoopExtended(Ntypes, 2, Nsizes, Etypes, 6, Esizes, 10, am, "edgeSourceIndexFile", outFilter,
+					null, Eprojection, 6);
 		} catch (Exception e) {
 			System.err.println("*** Error preparing for nested_loop_join");
 			System.err.println("" + e);
 			e.printStackTrace();
 			Runtime.getRuntime().exit(1);
 		}
-		if(inl==null){
+		if (inl == null) {
 			System.out.print("inl null");
 		}
-		
 
-		System.out.print("After nested loop join Node and Edge\n");
 		if (status != OK) {
 			// bail out
 			System.err.println("*** Error constructing SortMerge");
 			Runtime.getRuntime().exit(1);
 		}
-//		try {
-//			//startTuple.print(Ntypes);
-//			System.out.println("");
-//			while ((t = inl.get_next()) != null) {
-//				
-//				t.print(Etypes);
-//
-//				//qcheck1.Check(t);
-//			}
-//		} catch (Exception e1) {
-//			System.err.println("" + e1);
-//			e1.printStackTrace();
-//			//status = FAIL;
-//		}
-//
-		
-		//set Iterator
+		// try {
+		// //startTuple.print(Ntypes);
+		// System.out.println("");
+		// while ((t = inl.get_next()) != null) {
+		//
+		// t.print(Etypes);
+		//
+		// //qcheck1.Check(t);
+		// }
+		// } catch (Exception e1) {
+		// System.err.println("" + e1);
+		// e1.printStackTrace();
+		// //status = FAIL;
+		// }
+		//
+
+		// set Iterator
 		nextEdgeIterator = inl;
 
-		if (status != OK) {
-			// bail out
-			System.err.println("*** Error in get next tuple ");
-			Runtime.getRuntime().exit(1);
-		}
+		System.out.println("Node Join Edge completed.\n");
 
-		//qcheck1.report(1);
-		try {
-			//inl.close();
-		} catch (Exception e) {
-			status = FAIL;
-			e.printStackTrace();
-		}
-		System.out.println("\n");
-		if (status != OK) {
-			// bail out
-			System.err.println("*** Error in closing ");
-			Runtime.getRuntime().exit(1);
-		}
-
-		
 	}
-	
+
 	private void doJoinEdgeNode(String n) {
 		boolean status = OK;
 
-		// TODO Auto-generated method stub
 		CondExpr[] outFilter = new CondExpr[2];
 		outFilter[0] = new CondExpr();
-	
+
 		outFilter[0].next = null;
 		outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
 		outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
 		outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
 		outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 3);
 		outFilter[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 1);
-		
+
 		outFilter[1] = null;
-		
+
 		CondExpr[] rightFilter = new CondExpr[2];
 		rightFilter[0] = new CondExpr();
-		
-		if(n.startsWith("D")){
-			String desc_string = n.substring(1).trim();
-				
-		rightFilter[0].next = null;
-		rightFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
-		rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
-		rightFilter[0].type2 = new AttrType(AttrType.attrDesc);
-		rightFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 2);
-		Descriptor desc1 = new Descriptor();
-		desc1 = Utility.convertToDescriptor(n.substring(1).trim());
-		rightFilter[0].operand2.desc = desc1;
-		
-		rightFilter[1] = null;
-		outFilter[0].updateDesc();
-		rightFilter[0].updateDesc();
-		}
-		if(n.startsWith("L")){
-			String label = n.substring(1).trim();
-				
-		rightFilter[0].next = null;
-		rightFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
-		rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
-		rightFilter[0].type2 = new AttrType(AttrType.attrString);
-		rightFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 1);
-		
-		rightFilter[0].operand2.string = label;
-		
-		rightFilter[1] = null;
-		}
-		//Query3_CondExpr(outFilter, rightFilter);
-		
-		Tuple t = new Tuple();
-		Edge e;
-		try {
-			e = new Edge();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 
+		if (n.startsWith("D")) {
+			String desc_string = n.substring(1).trim();
+			System.out.println("Edge join node with destination node descriptor: " + desc_string);
+			rightFilter[0].next = null;
+			rightFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
+			rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+			rightFilter[0].type2 = new AttrType(AttrType.attrDesc);
+			rightFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 2);
+			Descriptor desc1 = new Descriptor();
+			desc1 = Utility.convertToDescriptor(n.substring(1).trim());
+			rightFilter[0].operand2.desc = desc1;
+
+			rightFilter[1] = null;
+			outFilter[0].updateDesc();
+			rightFilter[0].updateDesc();
+		} else if (n.startsWith("L")) {
+			String label = n.substring(1).trim();
+			System.out.println("Edge join node with destination node label: " + label);
+			rightFilter[0].next = null;
+			rightFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
+			rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+			rightFilter[0].type2 = new AttrType(AttrType.attrString);
+			rightFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 1);
+
+			rightFilter[0].operand2.string = label;
+
+			rightFilter[1] = null;
+		}
+		// Query3_CondExpr(outFilter, rightFilter);
 
 		AttrType[] Etypes = new AttrType[6];
-		Etypes[0] = new AttrType(AttrType.attrString);//label
-		Etypes[1] = new AttrType(AttrType.attrInteger);//pgidsource
-		Etypes[2] = new AttrType(AttrType.attrInteger);//slotidsource
-		Etypes[3] = new AttrType(AttrType.attrInteger);//pgiddest
-		Etypes[4] = new AttrType(AttrType.attrInteger);//slotiddest
-		Etypes[5] = new AttrType(AttrType.attrInteger);//weight
+		Etypes[0] = new AttrType(AttrType.attrString);// label
+		Etypes[1] = new AttrType(AttrType.attrInteger);// pgidsource
+		Etypes[2] = new AttrType(AttrType.attrInteger);// slotidsource
+		Etypes[3] = new AttrType(AttrType.attrInteger);// pgiddest
+		Etypes[4] = new AttrType(AttrType.attrInteger);// slotiddest
+		Etypes[5] = new AttrType(AttrType.attrInteger);// weight
 
 		short[] Esizes = new short[1];
 		Esizes[0] = 44;
@@ -634,26 +456,20 @@ public class PathQuery {
 		Eprojection[3] = new FldSpec(new RelSpec(RelSpec.outer), 4);
 		Eprojection[4] = new FldSpec(new RelSpec(RelSpec.outer), 5);
 		Eprojection[5] = new FldSpec(new RelSpec(RelSpec.outer), 6);
-		CondExpr[] selects = new CondExpr[1];
-		selects = null; 
+		// no outer edge filter.
 
-		Iterator am = null;
-		try {
-			am = new EdgeScan("edgeheapfile", Etypes, Esizes, (short) 6, (short) 6, Eprojection, null);
-		} catch (Exception e1) {
-			status = FAIL;
-			System.err.println("" + e1);
-		}
-		if(nextEdgeIterator!=null){
+		Iterator am = null;		
+		if (nextEdgeIterator == null) {
 			try {
-				am.close();
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} 
+				am = new EdgeScan("edgeheapfile", Etypes, Esizes, (short) 6, (short) 6, Eprojection, null);
+			} catch (Exception e) {
+				status = FAIL;
+				System.err.println("" + e);
+			}
+		} else {
 			am = nextEdgeIterator;
 		}
-		
+
 
 		if (status != OK) {
 			// bail out
@@ -663,30 +479,29 @@ public class PathQuery {
 		AttrType[] Ntypes = new AttrType[2];
 		Ntypes[0] = new AttrType(AttrType.attrString);
 		Ntypes[1] = new AttrType(AttrType.attrDesc);
-		
+
 		// SOS
 		short[] Nsizes = new short[2];
 		Nsizes[0] = 44;
-		//Nsizes[1] = 20;// first elt. is 30
+		// Nsizes[1] = 20;// first elt. is 30
 
 		AttrType[] jtype12 = new AttrType[2];
 		jtype12[0] = new AttrType(AttrType.attrString);
 		jtype12[1] = new AttrType(AttrType.attrDesc);
 
-				
-		AttrType[] JJtype = { new AttrType(AttrType.attrString),new AttrType(AttrType.attrDesc)};
+		AttrType[] JJtype = { new AttrType(AttrType.attrString), new AttrType(AttrType.attrDesc) };
 
 		short[] JJsize = new short[1];
 		JJsize[0] = 44;
-		
 
-//		FileScan am2 = null;
-//		try {
-//			am2 = new FileScan("edgeheapfile", Etypes, Esizes, (short) 6, (short) 6, Eprojection, null);
-//		} catch (Exception e) {
-//			status = FAIL;
-//			System.err.println("" + e);
-//		}
+		// FileScan am2 = null;
+		// try {
+		// am2 = new FileScan("edgeheapfile", Etypes, Esizes, (short) 6, (short)
+		// 6, Eprojection, null);
+		// } catch (Exception e) {
+		// status = FAIL;
+		// System.err.println("" + e);
+		// }
 
 		if (status != OK) {
 			// bail out
@@ -694,64 +509,46 @@ public class PathQuery {
 			Runtime.getRuntime().exit(1);
 		}
 
-//		
+		//
 		AttrType[] jtype = new AttrType[2];
 		jtype[0] = new AttrType(AttrType.attrString);
 		jtype[1] = new AttrType(AttrType.attrDesc);
 
-		
-		
 		FldSpec[] proj1 = new FldSpec[2];
 		proj1[0] = new FldSpec(new RelSpec(RelSpec.innerRel), 1);
 		proj1[1] = new FldSpec(new RelSpec(RelSpec.innerRel), 2);
-		
+
 		NestedLoopExtendedEdge inl = null;
 		try {
-			//if(n.startsWith("L")){
-				inl = new NestedLoopExtendedEdge(Etypes, 6, Esizes, Ntypes, 2, Nsizes, 10, am, "nodeLabelIndexFile", outFilter, rightFilter, proj1, 2);
-//			}
-//			else{
-//				inl = new NestedLoopExtendedEdge(Etypes, 6, Esizes, Ntypes, 2, Nsizes, 10, am, "nodeDescIndexFile", outFilter, rightFilter, proj1, 2);
-//			}
-			
+			// if(n.startsWith("L")){
+			inl = new NestedLoopExtendedEdge(Etypes, 6, Esizes, Ntypes, 2, Nsizes, 10, am, "nodeLabelIndexFile",
+					outFilter, rightFilter, proj1, 2);
+			// }
+			// else{
+			// inl = new NestedLoopExtendedEdge(Etypes, 6, Esizes, Ntypes, 2,
+			// Nsizes, 10, am, "nodeDescIndexFile", outFilter, rightFilter,
+			// proj1, 2);
+			// }
+
 		} catch (Exception e1) {
 			System.err.println("*** Error preparing for nested_loop_join");
 			System.err.println("" + e1);
 			e1.printStackTrace();
 			Runtime.getRuntime().exit(1);
 		}
-		if(inl==null){
+		if (inl == null) {
 			System.out.print("inl null");
 		}
 
-		System.out.print("After nested loop join Edge and Node\n");
+		System.out.print("");
 		if (status != OK) {
 			// bail out
 			System.err.println("*** Error constructing SortMerge");
 			Runtime.getRuntime().exit(1);
 		}
-				
-		nextNodeIterator = inl;
-		
-		if (status != OK) {
-			// bail out
-			System.err.println("*** Error in get next tuple ");
-			Runtime.getRuntime().exit(1);
-		}
 
-		//qcheck1.report(1);
-		try {
-			//inl.close();
-		} catch (Exception e1) {
-			status = FAIL;
-			e1.printStackTrace();
-		}
-		System.out.println("\n");
-		if (status != OK) {
-			// bail out
-			System.err.println("*** Error in closing ");
-			Runtime.getRuntime().exit(1);
-		}
-		
+		nextNodeIterator = inl;
+		System.out.println("Edge Join Node completed.\n");
+
 	}
 }
