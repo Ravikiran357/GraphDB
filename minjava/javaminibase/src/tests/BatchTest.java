@@ -1,6 +1,4 @@
-package tests;
-
-import iterator.SmjEdge;
+//package tests;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.Random;
 import java.util.Scanner;
 
-import btree.BT;
 import bufmgr.BufMgrException;
 import bufmgr.HashEntryNotFoundException;
 import bufmgr.HashOperationException;
@@ -23,15 +20,12 @@ import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
 import diskmgr.GraphDB;
 import diskmgr.PCounter;
-import edgeheap.EdgeHeapfile;
 import global.GlobalConst;
 import global.SystemDefs;
 import nodeheap.NodeHeapfile;
 
 class BatchDriver implements GlobalConst {
 	protected String dbpath = "data.minibase-db";
-	private int numBuf = NUMBUF;
-	
 	public void exitClean() throws PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException, HashOperationException, PagePinnedException, PageNotFoundException, BufMgrException, IOException{
 		//close index files
 		SystemDefs.JavabaseDB.nodeDescriptorIndexFile.close();
@@ -53,7 +47,7 @@ class BatchDriver implements GlobalConst {
 		if(f.exists()) { 
 			SystemDefs.MINIBASE_RESTART_FLAG = true;
 		}
-		SystemDefs sysdef = new SystemDefs(dbpath, 50000, 5000, "Clock");		
+		new SystemDefs(dbpath, 50000, 5000, "Clock");		
 	}
 	
 	public void clearFiles(){
@@ -116,10 +110,11 @@ class BatchDriver implements GlobalConst {
 		System.out.println("[3] Batch Edge Delete\n");
 		System.out.println("[4] Simple Node Query");
 		System.out.println("[5] Simple Edge Query\n");
-		System.out.println("[6] Path Query");
+		System.out.println("[6] Task 6: Path Query");
 		System.out.println("[7] Nested Loop Join Test");
-		System.out.println("[8] Task 9: Triangle Query");
-		System.out.println("\n[9] Quit");
+		System.out.println("[8] Task 7: Path Query 2");
+		System.out.println("[9] Task 9: Triangle Query");
+		System.out.println("\n[10] Quit");
 	}
 
 	public void runAllTests(int choice) throws Exception {
@@ -140,7 +135,6 @@ class BatchDriver implements GlobalConst {
 
 			}
 			System.out.println("Node count: " + db.getNodeCnt() + "\nEdge count:" + db.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
 			break;
 		case 1:
 			System.out.println("Nodefile name: ");
@@ -153,7 +147,6 @@ class BatchDriver implements GlobalConst {
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:"
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
 			break;
 
 		case 2:
@@ -163,7 +156,7 @@ class BatchDriver implements GlobalConst {
 			dbpath = in.nextLine();
 			BatchEdgeInsert batchEdgeInsert = new BatchEdgeInsert();
 			String[] edgeVals = new String[4];
-			int i = 0;
+			int i = 1;
 			for (String line : Files.readAllLines(Paths.get(edgeFile), StandardCharsets.US_ASCII)) {
 				line = line.trim();
 				edgeVals = line.split(" ");
@@ -172,7 +165,6 @@ class BatchDriver implements GlobalConst {
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:"
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
 			break;
 
 		case 3:
@@ -191,14 +183,13 @@ class BatchDriver implements GlobalConst {
 			}
 			System.out.println("Node count: " + SystemDefs.JavabaseDB.getNodeCnt() + "\nEdge count:"
 					+ SystemDefs.JavabaseDB.getEdgeCnt());
-			System.out.println("No of pages read" + PCounter.rcounter + "\nNo of pages written" + PCounter.wcounter);
 			break;
 			
 		case 4:
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
 			System.out.println("Enter Numbuf: ");
-			numBuf = in.nextInt();
+			in.nextInt();
 			System.out.println("Enter Query Type:");
 			int qtype = in.nextInt();
 			System.out.println("With(1) or Without index(0):");
@@ -233,7 +224,7 @@ class BatchDriver implements GlobalConst {
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
 			System.out.println("Enter Numbuf: ");
-			numBuf = in.nextInt();
+			in.nextInt();
 			System.out.println("Enter Query Type:");
 			qtype = in.nextInt();
 			System.out.println("With(1) or Without index(0):");
@@ -277,26 +268,41 @@ class BatchDriver implements GlobalConst {
 			dbpath = in.nextLine();
 			JoinTestExtended jte = new JoinTestExtended();
 			jte.doTheJoin();
+			break;
 
-		case 8: 
+		case 8:
+			System.out.println("Enter Graphdb name: ");
+			dbpath = in.nextLine();
+			System.out.println("Enter query path: ");
+			String path = in.nextLine();
+			PathQuery2 p = new PathQuery2(path, false);
+			p.joinOperation();
+			break;
+
+		case 9:
 			String query_type;
 			System.out.println("Enter query type: a or b or c");
 			query_type = in.nextLine();
 			String[] values = new String[3];
 			args = new String[3];
-			System.out.println("Enter the type of first parameter (l) for label || (w) for max weight");
-			args[0] = in.nextLine();
-			System.out.println("Enter the label or max_weight ");
-			values[0] = in.nextLine();
-			System.out.println("Enter the type of second parameter (l) for label || (w) for max weight");
-			args[1] = in.nextLine();
-			System.out.println("Enter the label or max_weight ");
-			values[1] = in.nextLine();
-			System.out.println("Enter the type of third parameter (l) for label || (w) for max weight");
-			args[2] = in.nextLine();
-			System.out.println("Enter the label or max_weight ");
-			values[2] = in.nextLine();
-
+			try {
+				System.out.println("Enter 3 values for the type of parameters; (l) for label || (w) for max weight in Semi-colon separated format");
+				args[0] = in.nextLine();
+				args = args[0].split(";");
+				args[0] = args[0].trim();
+				args[1] = args[1].trim();
+				args[2] = args[2].trim();
+				System.out.println("Enter 3 values for the corresponding types of parameters in Semi-colon separated format");
+				values[0] = in.nextLine();
+				values = values[0].split(";");
+				values[0] = values[0].trim();
+				values[1] = values[1].trim();
+				values[2] = values[2].trim();
+			}
+			catch (Exception e) {
+				System.out.println("Invalid input");
+				break;
+			}
 			TriangleQuery tq = new TriangleQuery();
 //			args[0] = args[1] = args[2] = "l";
 //			values[0] = values[1] = values[2] = "50";
@@ -312,6 +318,8 @@ class BatchDriver implements GlobalConst {
 
 		default:System.out.println("Invalid input");
 		}
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
+		System.out.println("No of pins: " + PCounter.prcounter + "\nNo of unpins: " + PCounter.pwcounter);
 	}
 }
 
@@ -344,7 +352,7 @@ public class BatchTest implements GlobalConst {
 			BatchDriver bttest = new BatchDriver();
 			bttest.init();
 			bttest.menu();
-			while ((choice = GetStuff.getChoice()) != 9) {
+			while ((choice = GetStuff.getChoice()) != 10) {
 				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);
