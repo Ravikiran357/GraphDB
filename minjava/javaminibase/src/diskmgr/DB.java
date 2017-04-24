@@ -607,6 +607,8 @@ public class DB implements GlobalConst {
 		PageId hpid = new PageId();
 		PageId nexthpid = new PageId(0);
 		DBHeaderPage dp;
+		
+		pCounter.readIncrement();
 
 		do {// Start DO01
 
@@ -633,7 +635,6 @@ public class DB implements GlobalConst {
 
 			while (entry < dp.getNumOfEntries()) {
 				tmpname = dp.getFileEntry(tmppid, entry);
-
 				if ((tmppid.pid != INVALID_PAGE) && (tmpname.compareTo(name) == 0))
 					break;
 				entry++;

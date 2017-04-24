@@ -32,7 +32,7 @@ public class Page implements GlobalConst {
 	 * @return the byte array of the page
 	 */
 	public byte[] getpage() {
-		PCounter.readIncrement();
+//		PCounter.readIncrement();
 		return data;
 
 	}
@@ -44,7 +44,7 @@ public class Page implements GlobalConst {
 	 *            a byte array of page size
 	 */
 	public void setpage(byte[] array) {
-		PCounter.writeIncrement();
+//		PCounter.writeIncrement();
 		data = array;
 	}
 

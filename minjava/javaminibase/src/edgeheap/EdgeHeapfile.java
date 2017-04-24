@@ -110,7 +110,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 														// currentDirPageId
 														// valid and pinned and
 														// Locked.
-
+			PCounter.readIncrement();
 			for (currentDataPageEid = currentDirPage
 					.firstEdge(); currentDataPageEid != null; currentDataPageEid = currentDirPage
 							.nextEdge(currentDataPageEid)) {
@@ -302,7 +302,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 		while (currentDirPageId.pid != INVALID_PAGE) {
 			pinPage(currentDirPageId, currentDirPage, false);
-
+			PCounter.readIncrement();
 			EID eid = new EID();
 			Edge enEdge;
 			for (eid = currentDirPage.firstEdge(); eid != null; // eid==NULL
@@ -432,6 +432,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 					// case (2.1) : add a new data page edge into the
 					// current directory page
 					currentDataPage = _newDatapage(dpinfo);
+					PCounter.writeIncrement();
 					// currentDataPage is pinned! and dpinfo->pageId is also
 					// locked
 					// in the exclusive mode
@@ -973,6 +974,7 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 		try {
 			tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
+			PCounter.readIncrement();
 		} catch (Exception e) {
 			throw new HFDiskMgrException(e, "Heapfile.java: get_file_entry() failed");
 		}

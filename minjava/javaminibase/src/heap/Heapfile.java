@@ -90,7 +90,7 @@ public class Heapfile implements Filetype, GlobalConst {
 		RID currentDataPageRid = new RID();
 		PageId nextDirPageId = new PageId();
 		// datapageId is stored in dpinfo.pageId
-
+		
 		pinPage(currentDirPageId, currentDirPage, false/* read disk */);
 
 		Tuple atuple = new Tuple();
@@ -101,7 +101,7 @@ public class Heapfile implements Filetype, GlobalConst {
 														// currentDirPageId
 														// valid and pinned and
 														// Locked.
-
+			PCounter.readIncrement();
 			for (currentDataPageRid = currentDirPage
 					.firstRecord(); currentDataPageRid != null; currentDataPageRid = currentDirPage
 							.nextRecord(currentDataPageRid)) {
@@ -418,6 +418,7 @@ public class Heapfile implements Filetype, GlobalConst {
 					// Start IF02
 					// case (2.1) : add a new data page record into the
 					// current directory page
+					PCounter.writeIncrement();
 					currentDataPage = _newDatapage(dpinfo);
 					// currentDataPage is pinned! and dpinfo->pageId is also
 					// locked

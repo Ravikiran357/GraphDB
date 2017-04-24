@@ -489,7 +489,7 @@ public class BufMgr implements GlobalConst {
 		boolean bst, bst2;
 		PageId oldpageNo = new PageId(-1);
 		int needwrite = 0;
-
+		PCounter.preadIncrement();
 		frameNo = hashTable.lookup(pin_pgid);
 
 		if (frameNo < 0) { // Not in the buffer pool
@@ -591,6 +591,7 @@ public class BufMgr implements GlobalConst {
 		int frameNo;
 
 		frameNo = hashTable.lookup(PageId_in_a_DB);
+		PCounter.pwriteIncrement();
 
 		if (frameNo < 0) {
 			throw new HashEntryNotFoundException(null, "BUFMGR: HASH_NOT_FOUND.");

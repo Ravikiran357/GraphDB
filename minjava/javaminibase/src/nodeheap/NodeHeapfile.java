@@ -3,6 +3,7 @@ package nodeheap;
 import java.io.IOException;
 import java.util.HashSet;
 
+import diskmgr.PCounter;
 import diskmgr.Page;
 import global.GlobalConst;
 import global.NID;
@@ -109,7 +110,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 														// currentDirPageId
 														// valid and pinned and
 														// Locked.
-
+			PCounter.readIncrement();
 			for (currentDataPageNid = currentDirPage
 					.firstNode(); currentDataPageNid != null; currentDataPageNid = currentDirPage
 							.nextNode(currentDataPageNid)) {
@@ -301,7 +302,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 		while (currentDirPageId.pid != INVALID_PAGE) {
 			pinPage(currentDirPageId, currentDirPage, false);
-
+			PCounter.readIncrement();
 			NID nid = new NID();
 			Node atuple;
 			for (nid = currentDirPage.firstNode(); nid != null; // nid==NULL
@@ -372,7 +373,6 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 		NHFPage nextDirPage = new NHFPage();
 		PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 		PageId nextDirPageId = new PageId(); // OK
-
 		pinPage(currentDirPageId, currentDirPage, false/* Rdisk */);
 
 		found = false;
@@ -430,6 +430,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 					// case (2.1) : add a new data page node into the
 					// current directory page
 					currentDataPage = _newDatapage(dpinfo);
+					PCounter.writeIncrement();
 					// currentDataPage is pinned! and dpinfo->pageId is also
 					// locked
 					// in the exclusive mode
@@ -972,6 +973,7 @@ public class NodeHeapfile implements Filetype, GlobalConst {
 
 		try {
 			tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
+			PCounter.readIncrement();
 		} catch (Exception e) {
 			throw new HFDiskMgrException(e, "Heapfile.java: get_file_entry() failed");
 		}
