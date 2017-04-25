@@ -17,6 +17,7 @@ import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
 import catalog.Utility;
+import diskmgr.PCounter;
 import edgeheap.Edge;
 import global.AttrOperator;
 import global.AttrType;
@@ -116,8 +117,11 @@ public class PathQuery {
 		Ntypes[1] = new AttrType(AttrType.attrDesc);
 		short[] Nsizes = new short[2];
 		Nsizes[0] = 44;
+		int pageRead = PCounter.rcounter;
+		int pageWrite = PCounter.wcounter;
+		Tuple startTuple = startNode;
+		System.out.println("Printing all tail nodes corresp to head");
 		if (choice.charAt(0) == 'a') {
-			Tuple startTuple = startNode;
 			Tuple t = null;
 			try {
 
@@ -136,10 +140,11 @@ public class PathQuery {
 				e1.printStackTrace();
 			}
 		}
-		if (choice.charAt(0) == 'b') {
+		else if (choice.charAt(0) == 'b') {
 			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
 
 			Sort sort_names = null;
+			System.out.println("Start sorting tail nodes");
 			try {
 				sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1,
 						Nsizes[0], 10, 0, null);
@@ -148,10 +153,9 @@ public class PathQuery {
 				System.err.println("" + e1);
 				Runtime.getRuntime().exit(1);
 			}
-			Tuple startTuple = startNode;
 			Tuple t = null;
 			try {
-				System.out.println("sorted");
+				System.out.println("Sorting completed");
 				while ((t = sort_names.get_next()) != null) {
 					startTuple.print(Ntypes);
 					t.print(Ntypes);
@@ -167,9 +171,9 @@ public class PathQuery {
 				e1.printStackTrace();
 			}
 		}
-		if (choice.charAt(0) == 'c') {
+		else if (choice.charAt(0) == 'c') {
 			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
-
+			System.out.println("Start sorting tail nodes");
 			Sort sort_names = null;
 			try {
 				sort_names = new Sort(Ntypes, (short) 2, Nsizes, (iterator.Iterator) tailNodes, 1, ascending1,
@@ -179,6 +183,7 @@ public class PathQuery {
 				System.err.println("" + e1);
 				Runtime.getRuntime().exit(1);
 			}
+			System.out.println("Sorting completed");
 			DuplElim duplElm = null;
 			try {
 				duplElm = new DuplElim(Ntypes, (short) 2, Nsizes, (iterator.Iterator) sort_names, 12, true, 0,
@@ -189,10 +194,9 @@ public class PathQuery {
 				Runtime.getRuntime().exit(1);
 			}
 
-			Tuple startTuple = startNode;
 			Tuple t = null;
 			try {
-				System.out.println("duplicate elimination");
+				System.out.println("Starting duplicate elimination");
 				while ((t = duplElm.get_next()) != null) {
 					startTuple.print(Ntypes);
 					t.print(Ntypes);
@@ -202,12 +206,17 @@ public class PathQuery {
 				System.err.println("" + e1);
 				e1.printStackTrace();
 			}
+			System.out.println("Duplicate elimination completed.");
 			try {
 				duplElm.close();
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		}
+		
+		pageRead = PCounter.rcounter - pageRead;
+		pageWrite = PCounter.wcounter - pageWrite;
+		System.out.println("No of pages read: " + pageRead + "\nNo of pages written: " + pageWrite + "\n");
 
 	}
 
@@ -228,6 +237,8 @@ public class PathQuery {
 	}
 
 	private void doJoinNodeEdge(NID nid, String n) {
+		int pageRead = PCounter.rcounter;
+		int pageWrite = PCounter.wcounter;
 		boolean status = OK;
 		String startLabel = "";
 		Node node;
@@ -387,11 +398,16 @@ public class PathQuery {
 		// set Iterator
 		nextEdgeIterator = inl;
 
-		System.out.println("Node Join Edge completed.\n");
-
+		System.out.println("Node Join Edge completed");
+		pageRead = PCounter.rcounter - pageRead;
+		pageWrite = PCounter.wcounter - pageWrite;
+		System.out.println("No of pages read: " + pageRead + "\nNo of pages written: " + pageWrite + "\n");
 	}
 
 	private void doJoinEdgeNode(String n) {
+		int pageRead = PCounter.rcounter;
+		int pageWrite = PCounter.wcounter;
+
 		boolean status = OK;
 
 		CondExpr[] outFilter = new CondExpr[2];
@@ -548,7 +564,10 @@ public class PathQuery {
 		}
 
 		nextNodeIterator = inl;
-		System.out.println("Edge Join Node completed.\n");
+		System.out.println("Edge Join Node completed.");
+		pageRead = PCounter.rcounter - pageRead;
+		pageWrite = PCounter.wcounter - pageWrite;
+		System.out.println("No of pages read: " + pageRead + "\nNo of pages written: " + pageWrite + "\n");
 
 	}
 }
