@@ -271,21 +271,22 @@ class BatchDriver implements GlobalConst {
 			break;
 
 		case 8:
-			
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
-			System.out.println("Enter query type: ");
+			 System.out.println("Enter query type: a or b or c");
 			String query = in.nextLine();
 			System.out.println("Enter query path: ");
+			// L1/L1/L2/L3
 			String path = in.nextLine();
 			PathQuery2 p = new PathQuery2(path, false);
 			p.joinOperation(query);
 			break;
 
 		case 9:
-			String query_type;
+			System.out.println("Enter Graphdb name: ");
+			dbpath = in.nextLine();
 			System.out.println("Enter query type: a or b or c");
-			query_type = in.nextLine();
+			String query_type = in.nextLine();
 			String[] values = new String[3];
 			args = new String[3];
 			try {
