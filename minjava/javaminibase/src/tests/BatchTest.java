@@ -322,6 +322,7 @@ class BatchDriver implements GlobalConst {
 
 		default:System.out.println("Invalid input");
 		}
+
 		if (choice < 6)
 			System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 		System.out.println("No of pins: " + PCounter.prcounter + "\nNo of unpins: " + PCounter.pwcounter);
