@@ -2,6 +2,8 @@ package tests;
 // Task 4,7
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import diskmgr.PCounter;
 
@@ -55,10 +57,12 @@ import iterator.RelSpec;
 import iterator.Sort;
 import iterator.UnknowAttrType;
 import iterator.UnknownKeyTypeException;
+import nodeheap.Node;
 
 public class PathQuery2 {
 	private String [] edge_path;
 	private int no_of_edges;
+	List<String> descLabel = new ArrayList<String>();
 
 	PathQuery2(String path) throws FieldNumberOutOfBoundException, 
 		nodeheap.InvalidSlotNumberException, nodeheap.HFException, 
@@ -69,9 +73,10 @@ public class PathQuery2 {
 		BTFileScan iscan;
 		NID nid = null;
 		// getting the label using the descriptor
-		if (edge_path[0].contains(",")) {
+		if (edge_path[0].startsWith("D")) {
 			String[] node_desc = new String[5];
-			node_desc = edge_path[0].split(",");
+			String descriptor = edge_path[0].substring(1).trim();
+			node_desc = descriptor.split(",");
 			ZTreeFile node_index = SystemDefs.JavabaseDB.nodeDescriptorIndexFile;
 			Descriptor node_key = new Descriptor();
 			node_key.set(Integer.parseInt(node_desc[0]),Integer.parseInt(node_desc[1]),
@@ -79,14 +84,28 @@ public class PathQuery2 {
 					Integer.parseInt(node_desc[4]));
 			iscan = node_index.new_scan(new DescriptorKey(node_key), new DescriptorKey(node_key));
 			KeyDataEntry entry = iscan.get_next();
-			if (entry != null) {
+			while(entry != null) {
 				// Get NID
 				LeafData leafData = (LeafData) entry.data;
 				nid = new NID();
 				nid.copyRid(leafData.getData());
+				descLabel.add(SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid).getLabel());
+				entry = iscan.get_next();
 			}
 			iscan.DestroyBTreeFileScan();
-			edge_path[0] = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid).getLabel();
+		}else if(edge_path[0].startsWith("L")){
+			String label = edge_path[0].substring(1).trim();
+			iscan = SystemDefs.JavabaseDB.nodeLabelIndexFile.new_scan(new StringKey(label), new StringKey(label));
+			if (iscan != null) {
+				KeyDataEntry entry = iscan.get_next();
+				// Collect node data
+				LeafData leafData = (LeafData) entry.data;
+				NID nidlabel = new NID();
+				nidlabel.copyRid(leafData.getData());
+				// print node
+				descLabel.add(SystemDefs.JavabaseDB.nodeHeapfile.getNode(nidlabel).getLabel());		
+				iscan.DestroyBTreeFileScan();
+			}
 		}
 	}
 	
@@ -104,7 +123,7 @@ public class PathQuery2 {
 			return e;
 
 		if (edgeLabel.equals(e.getLabel())){
-			System.out.println("Selection on index key (label): " + edgeLabel);
+			//System.out.println("Selection on index key (label): " + edgeLabel);
 			return e;
 		} else {
 			return getNextindexFilterSource(iscan, edgeLabel);
@@ -125,7 +144,7 @@ public class PathQuery2 {
 			return e;
 
 		if (e.getWeight() <= Integer.parseInt(edgeWeight)){
-			System.out.println("Selection on index key (weight): " + edgeWeight);
+			
 			return e;
 		} else {
 			return getNextindexFilterWeight(iscan, edgeWeight);
@@ -149,13 +168,13 @@ public class PathQuery2 {
 		
 		Tuple t = new Tuple();
 		t.setHdr((short)3, attrs, str_sizes);
-		FldSpec[] projlist = new FldSpec[2];
+		FldSpec[] projlist = new FldSpec[3];
 		projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
 		projlist[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);
 		projlist[2] = new FldSpec(new RelSpec(RelSpec.outer), 3);
 		
 		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
-		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 2, 2, projlist, null);
+		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 3, 3, projlist, null);
 		System.out.println("Sort operation");
 		resSort = new Sort(attrs, (short) 3, str_sizes, sorted, 3, order, 44, 12 , -1, null);
 		
@@ -271,17 +290,21 @@ public class PathQuery2 {
 		Edge e = new Edge();
 		if (edge_path[edgeLabelIndex].startsWith("L")){
 			String label = edge_path[edgeLabelIndex].substring(1).trim();
-			System.out.println("Selection based on label");
+			//System.out.println("Selection based on label");
 			e = getNextindexFilterSource(iscan, label);
 		}else if (edge_path[edgeLabelIndex].startsWith("W")){
 			String weight = edge_path[edgeLabelIndex].substring(1).trim();
-			System.out.println("Selection based on weight");
+			//System.out.println("Selection based on weight");
 			e = getNextindexFilterWeight(iscan, weight);
 		}
 		
 		while (e != null) {
+			
 			// if all the joins are performed print the tail
 			if (edgeLabelIndex == no_of_edges) {
+				SystemDefs.JavabaseDB.resetPageCounter();
+				System.out.println("Index Nested Loop Join operation");
+				
 				AttrType[] attrs = new AttrType[3];
 				attrs[0] = new AttrType(AttrType.attrString);
 				attrs[1] = new AttrType(AttrType.attrString);
@@ -303,19 +326,23 @@ public class PathQuery2 {
 				t.setStrFld(2, destnode);
 				t.setStrFld(3, firstLabel+destnode);
 				hf.insertRecord(t.getTupleByteArray());
+				System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + 
+						PCounter.wcounter);
 				//e.print();				
 			} else {
 				String sourceLabel = SystemDefs.JavabaseDB.nodeHeapfile.getNode(
 						e.getDestination()).getLabel();//e's destination which will be source to inner guy
 				//edgeLabelIndex++;
-				System.out.println("Nested loop join ");
+				//System.out.println("Nested loop join ");
 				NestedLoopJoin(sourceLabel, edgeLabelIndex+1, outhf, firstLabel);
 			}
 			if (edge_path[edgeLabelIndex].startsWith("L")){
 				String label = edge_path[edgeLabelIndex].substring(1).trim();
+				//System.out.println("Selection based on label");
 				e = getNextindexFilterSource(iscan, label);
 			}else if (edge_path[edgeLabelIndex].startsWith("W")){
 				String weight = edge_path[edgeLabelIndex].substring(1).trim();
+				//System.out.println("Selection based on weight");
 				e = getNextindexFilterWeight(iscan, weight);
 			}
 		}
@@ -328,21 +355,18 @@ public class PathQuery2 {
 		String outhf = "outputheapfile";
 		String resSorthf = "sortheapfile";
 		String resDistincthf = "distinctheapfile";
+		
+		System.out.println("Selections based on label or weight");
+		
 		if(edge_path[0].startsWith("L")){
-			String label = edge_path[0].substring(1).trim();
-			NestedLoopJoin(label, 1, outhf, edge_path[0]);
+			NestedLoopJoin(descLabel.get(0), 1, outhf, descLabel.get(0));
 			
 		}else if(edge_path[0].startsWith("D")){
-			String desc = edge_path[0].substring(1).trim();
-			NestedLoopJoin(desc, 1, outhf, edge_path[0]);
+			for(int i = 0 ; i< descLabel.size();i++){
+				NestedLoopJoin(descLabel.get(i), 1, outhf, descLabel.get(i));
+			}
 		}
 		
-		
-		SystemDefs.JavabaseDB.resetPageCounter();
-		System.out.println("Index Nested Loop Join operation");
-		NestedLoopJoin(edge_path[0], 1, outhf, edge_path[0]);
-		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + 
-				PCounter.wcounter);
 		
 		SystemDefs.JavabaseDB.resetPageCounter();
 		if(query.equals("a")){
@@ -364,7 +388,7 @@ public class PathQuery2 {
 			distinctLabels(outhf, resDistincthf);
 			printTuplesInRelation(resDistincthf);
 		}
-		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
+		//System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 		cleanup(outhf, resSorthf, resDistincthf);
 	}
 	
