@@ -1,6 +1,8 @@
-package tests;
+//package tests;
 
 import java.io.IOException;
+
+import diskmgr.PCounter;
 
 import bufmgr.PageNotReadException;
 import edgeheap.EScan;
@@ -351,23 +353,31 @@ public class TriangleQuery {
 		String rheapfile = "edges_filter1";
 		String sheapfile = "edges_filter2";
 		System.out.println("-------- Query Plan -----");
+		SystemDefs.JavabaseDB.resetPageCounter();
 		if(args[0].equals("w")){
 			filterTupleWeights(hf, Integer.parseInt(values[0]), rheapfile);
 		}else if(args[0].equals("l")){
 			filterTupleLabels(hf, values[0], rheapfile);
 		}
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
+		
+		SystemDefs.JavabaseDB.resetPageCounter();
 		if(args[1].equals("w")){
 			filterTupleWeights(hf, Integer.parseInt(values[1]), sheapfile);
 		}else if(args[1].equals("l")){
 			filterTupleLabels(hf, values[1], sheapfile);
 		}
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 
 		String joinheapfile1 = "joinheapfile1";
+		SystemDefs.JavabaseDB.resetPageCounter();
 		SmjEdge smj1 = new SmjEdge();
 		smj1.joinOperation(rheapfile, sheapfile, joinheapfile1, joinOperationType, true);
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 //		smj1.printTuplesInRelation(joinheapfile1, 0);
 
 		//Pass the already joined heapfile and the file filtered on label3 as input to smj
+		SystemDefs.JavabaseDB.resetPageCounter();
 		joinOperationType = 1;
 		String sheapfile_s = "edges_filter3";
 		if(args[2].equals("w")){
@@ -375,17 +385,23 @@ public class TriangleQuery {
 		}else if(args[2].equals("l")){
 			filterTupleLabels(hf, values[2], sheapfile_s);
 		}
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 		
+		SystemDefs.JavabaseDB.resetPageCounter();
 		String joinheapfile2 = "joinheapfile2";
 		SmjEdge smj2 = new SmjEdge();	
 		smj2.joinOperation(joinheapfile1, sheapfile_s, joinheapfile2, joinOperationType, true);
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 //		smj2.printTuplesInRelation(resFileName, 1);
 		
 		//Filter by checking NID of 3rd edge and 1st edge
+		SystemDefs.JavabaseDB.resetPageCounter();
 		String resFileName = "resultTriangels";
 		System.out.println("Selection based on NID and Projection of node labels");
 		filterTupleByNID(joinheapfile2, resFileName, nodeheapfile);
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 		
+		SystemDefs.JavabaseDB.resetPageCounter();
 		if(query_type.equals("a")){
 			System.out.println("------------------");
 			System.out.println("------- Task 9: TQa - Insertion order -------");
@@ -405,6 +421,7 @@ public class TriangleQuery {
 			System.out.println("------ Task 9: TQc - Distinct nodes -------");
 			printTuplesInRelation(distinctResFile);
 		}
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 		
 		smj1.close();
 		smj2.close();
