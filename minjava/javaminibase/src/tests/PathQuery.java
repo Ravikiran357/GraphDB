@@ -25,6 +25,7 @@ import global.Descriptor;
 import global.NID;
 import global.SystemDefs;
 import global.TupleOrder;
+import heap.FieldNumberOutOfBoundException;
 import heap.Tuple;
 import iterator.CondExpr;
 import iterator.DuplElim;
@@ -101,9 +102,10 @@ public class PathQuery {
 			} catch (SortException e) {
 				System.err.println("" + e);
 			}
-			if (sort_names != null) {
-				Tuple startNode = null;
-				try {
+			try {
+				if (sort_names != null) {
+					Tuple startNode = null;
+
 					startNode = sort_names.get_next();
 					while (startNode != null) {
 						// Collect node data
@@ -116,11 +118,14 @@ public class PathQuery {
 
 						startNode = sort_names.get_next();
 					}
-				} catch (Exception e) {
-					System.err.println("" + e);
+
+					sort_names.close();
+
 				}
-				scan.DestroyBTreeFileScan();
+			} catch (Exception e) {
+				System.err.println("" + e);
 			}
+
 		}
 
 		// ignore
@@ -148,10 +153,11 @@ public class PathQuery {
 		if (choice.charAt(0) == 'a') {
 			Tuple t = null;
 			try {
-
 				while ((t = tailNodes.get_next()) != null) {
-					startTuple.print(Ntypes);
-					t.print(Ntypes);
+					System.out.println("Head node:");
+					printNode(startTuple);
+					System.out.println("Tail node:");
+					printNode(t);
 					System.out.println();
 				}
 			} catch (Exception e1) {
@@ -180,9 +186,10 @@ public class PathQuery {
 			try {
 				System.out.println("Sorting completed");
 				while ((t = sort_names.get_next()) != null) {
-					startTuple.print(Ntypes);
-					t.print(Ntypes);
-					System.out.println();
+					System.out.println("Head node:");
+					printNode(startTuple);
+					System.out.println("Tail node:");
+					printNode(t);
 				}
 			} catch (Exception e1) {
 				System.err.println("" + e1);
@@ -219,9 +226,10 @@ public class PathQuery {
 			try {
 				System.out.println("Starting duplicate elimination");
 				while ((t = duplElm.get_next()) != null) {
-					startTuple.print(Ntypes);
-					t.print(Ntypes);
-					System.out.println();
+					System.out.println("Head node:");
+					printNode(startTuple);
+					System.out.println("Tail node:");
+					printNode(t);
 				}
 			} catch (Exception e1) {
 				System.err.println("" + e1);
@@ -239,6 +247,10 @@ public class PathQuery {
 		pageWrite = PCounter.wcounter - pageWrite;
 		System.out.println("No of pages read: " + pageRead + "\nNo of pages written: " + pageWrite + "\n");
 
+	}
+
+	private void printNode(Tuple startTuple) throws FieldNumberOutOfBoundException, IOException {
+		System.out.println(startTuple.getStrFld(1));
 	}
 
 	private Iterator task3Method(String label, String[] n) {
