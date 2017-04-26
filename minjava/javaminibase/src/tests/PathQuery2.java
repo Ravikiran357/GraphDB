@@ -132,24 +132,27 @@ public class PathQuery2 {
 			PageNotReadException, PredEvalException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception{
 		Heapfile sortedresfile = new Heapfile(sortedResFile);	
 		Iterator resSort;
-		AttrType[] attrs = new AttrType[2];
+		AttrType[] attrs = new AttrType[3];
 		attrs[0] = new AttrType(AttrType.attrString);
 		attrs[1] = new AttrType(AttrType.attrString);
+		attrs[2] = new AttrType(AttrType.attrString);
 		
-		short[] str_sizes = new short[2];
+		short[] str_sizes = new short[3];
 		str_sizes[0] = (short)44;
 		str_sizes[1] = (short)44;
+		str_sizes[2] = (short)44;
 		
 		Tuple t = new Tuple();
-		t.setHdr((short)2, attrs, str_sizes);
+		t.setHdr((short)3, attrs, str_sizes);
 		FldSpec[] projlist = new FldSpec[2];
 		projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
 		projlist[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);
+		projlist[2] = new FldSpec(new RelSpec(RelSpec.outer), 3);
 		
 		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
 		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 2, 2, projlist, null);
 		System.out.println("Sort operation");
-		resSort = new Sort(attrs, (short) 2, str_sizes, sorted, 2, order, 44, 12 , -1, null);
+		resSort = new Sort(attrs, (short) 3, str_sizes, sorted, 3, order, 44, 12 , -1, null);
 		
 		t = resSort.get_next();
 		while (t != null) {
@@ -173,31 +176,34 @@ public class PathQuery2 {
 		
 		Iterator resSort;
 		Iterator dupeli;
-		AttrType[] attrs = new AttrType[2];
+		AttrType[] attrs = new AttrType[3];
 		attrs[0] = new AttrType(AttrType.attrString);
 		attrs[1] = new AttrType(AttrType.attrString);
+		attrs[2] = new AttrType(AttrType.attrString);
 		
-		short[] str_sizes = new short[2];
+		short[] str_sizes = new short[3];
 		
 		str_sizes[0] = (short)44;
 		str_sizes[1] = (short)44;
+		str_sizes[2] = (short)44;
 		
 		Tuple t = new Tuple();
-		t.setHdr((short)2, attrs, str_sizes);
-		FldSpec[] projlist = new FldSpec[2];
+		t.setHdr((short)3, attrs, str_sizes);
+		FldSpec[] projlist = new FldSpec[3];
 		projlist[0] = new FldSpec(new RelSpec(RelSpec.outer), 1);
 		projlist[1] = new FldSpec(new RelSpec(RelSpec.outer), 2);
+		projlist[2] = new FldSpec(new RelSpec(RelSpec.outer), 3);
 		
 		
 		TupleOrder order = new TupleOrder(TupleOrder.Ascending);
 		
-		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 2, 2, projlist, null);
+		FileScan sorted = new FileScan(nodelabelheapfile, attrs, str_sizes, (short) 3, 3, projlist, null);
 		
 		System.out.println("Sort operation");
-		resSort = new Sort(attrs, (short) 2, str_sizes, sorted, 2, order, 44, 12 , -1, null);
+		resSort = new Sort(attrs, (short) 3, str_sizes, sorted, 3, order, 44, 12 , -1, null);
 		
 		System.out.println("Distinct operation");
-		dupeli = new DuplElim(attrs, (short) 2, str_sizes, resSort, 12, true, -1, null);
+		dupeli = new DuplElim(attrs, (short) 3, str_sizes, resSort, 12, true, -1, null);
 		
 		t = dupeli.get_next();
 		
@@ -221,14 +227,16 @@ public class PathQuery2 {
 	HFDiskMgrException, InvalidTypeException{
 	
 	int count = 0;
-	AttrType[] attrs = new AttrType[2];
+	AttrType[] attrs = new AttrType[3];
 	attrs[0] = new AttrType(AttrType.attrString);
 	attrs[1] = new AttrType(AttrType.attrString);
+	attrs[2] = new AttrType(AttrType.attrString);
 	
 	
-	short[] str_sizes = new short[2];
+	short[] str_sizes = new short[3];
 	str_sizes[0] = (short)44;
 	str_sizes[1] = (short)44;
+	str_sizes[2] = (short)44;
 	
 	
 	Heapfile hf = new Heapfile(heapfilename);
@@ -237,7 +245,7 @@ public class PathQuery2 {
 	Tuple t = fscan.getNext(rid);
     while(t != null){
     	count++;
-		t.setHdr((short)2, attrs, str_sizes);
+		t.setHdr((short)3, attrs, str_sizes);
         System.out.println(t.getStrFld(1) + " " + t.getStrFld(2));
         t = fscan.getNext(rid);
     }
@@ -261,9 +269,11 @@ public class PathQuery2 {
 		Edge e = new Edge();
 		if (edge_path[edgeLabelIndex].startsWith("L")){
 			String label = edge_path[edgeLabelIndex].substring(1).trim();
+			System.out.println("Selection based on label");
 			e = getNextindexFilterSource(iscan, label);
 		}else if (edge_path[edgeLabelIndex].startsWith("W")){
 			String weight = edge_path[edgeLabelIndex].substring(1).trim();
+			System.out.println("Selection based on weight");
 			e = getNextindexFilterWeight(iscan, weight);
 		}
 		
@@ -274,23 +284,26 @@ public class PathQuery2 {
 		while (e != null) {
 			// if all the joins are performed print the tail
 			if (edgeLabelIndex == no_of_edges) {
-				AttrType[] attrs = new AttrType[2];
+				AttrType[] attrs = new AttrType[3];
 				attrs[0] = new AttrType(AttrType.attrString);
 				attrs[1] = new AttrType(AttrType.attrString);
+				attrs[2] = new AttrType(AttrType.attrString);
 				
-				short[] str_sizes = new short[2];
+				short[] str_sizes = new short[3];
 				
 				Tuple t = new Tuple();
 				
 				str_sizes[0] = (short)44;
 				str_sizes[1] = (short)44;
+				str_sizes[2] = (short)44;
 				
-				t.setHdr((short)2, attrs, str_sizes);
+				t.setHdr((short)3, attrs, str_sizes);
 				
 				//System.out.println("!!!!!!!");
 				String destnode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(e.getDestination()).getStrFld(1);
 				t.setStrFld(1, firstLabel);
 				t.setStrFld(2, destnode);
+				t.setStrFld(3, firstLabel+destnode);
 				hf.insertRecord(t.getTupleByteArray());
 				//e.print();				
 			} else {
@@ -298,6 +311,7 @@ public class PathQuery2 {
 				String sourceLabel = SystemDefs.JavabaseDB.nodeHeapfile.getNode(
 						e.getDestination()).getLabel();//e's destination which will be source to inner guy
 				//edgeLabelIndex++;
+				System.out.println("Nested loop join ");
 				NestedLoopJoin(sourceLabel, edgeLabelIndex+1, outhf, firstLabel);
 			}
 			if (edge_path[edgeLabelIndex].startsWith("L")){
@@ -316,17 +330,30 @@ public class PathQuery2 {
 		String outhf = "outputheapfile";
 		String resSorthf = "sortheapfile";
 		String resDistincthf = "distinctheapfile";
+		if(edge_path[0].startsWith("L")){
+			String label = edge_path[0].substring(1).trim();
+			NestedLoopJoin(label, 1, outhf, edge_path[0]);
+			
+		}else if(edge_path[0].startsWith("D")){
+			String desc = edge_path[0].substring(1).trim();
+			NestedLoopJoin(desc, 1, outhf, edge_path[0]);
+		}
+		
+		
 		NestedLoopJoin(edge_path[0], 1, outhf, edge_path[0]);
 		if(query.equals("a")){
+			System.out.println("------- PQa -----------");
 			printTuplesInRelation(outhf);
 		}
 		
 		if(query.equals("b")){
+			System.out.println("------- PQb -----------");
 			sortLabels(outhf, resSorthf);
 			printTuplesInRelation(resSorthf);
 		}
 		
 		if(query.equals("c")){
+			System.out.println("------- PQc -----------");
 			distinctLabels(outhf, resDistincthf);
 			printTuplesInRelation(resDistincthf);
 		}
