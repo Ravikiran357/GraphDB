@@ -123,7 +123,6 @@ public class PathQuery2 {
 			return e;
 
 		if (edgeLabel.equals(e.getLabel())){
-			//System.out.println("Selection on index key (label): " + edgeLabel);
 			return e;
 		} else {
 			return getNextindexFilterSource(iscan, edgeLabel);
