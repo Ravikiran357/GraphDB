@@ -111,10 +111,9 @@ class BatchDriver implements GlobalConst {
 		System.out.println("[4] Simple Node Query");
 		System.out.println("[5] Simple Edge Query\n");
 		System.out.println("[6] Task 6: Path Query");
-		System.out.println("[7] Nested Loop Join Test");
-		System.out.println("[8] Task 7: Path Query 2");
-		System.out.println("[9] Task 9: Triangle Query");
-		System.out.println("\n[10] Quit");
+		System.out.println("[7] Task 7: Path Query 2");
+		System.out.println("[8] Task 9: Triangle Query");
+		System.out.println("\n[9] Quit");
 	}
 
 	public void runAllTests(int choice) throws Exception {
@@ -257,20 +256,20 @@ class BatchDriver implements GlobalConst {
 			String arg = in.nextLine();
 		    //PathQuery pq = new PathQuery("L0/L248/L384/L514");
 			//D7,1,44,22,12/L248/L384/D41,34,28,23,41/D41,22,9,32,18/L996
-			System.out.println("Enter choice: ");
+			System.out.println("Enter choice a or b or c: ");
 			String choice1 = in.nextLine();
 			PathQuery pq = new PathQuery(arg);
 		    pq.evaluate(choice1);
 			break;
 
-		case 7:
-			System.out.println("Enter Graphdb name: ");
-			dbpath = in.nextLine();
-			JoinTestExtended jte = new JoinTestExtended();
-			jte.doTheJoin();
-			break;
+//		case 7:
+//			System.out.println("Enter Graphdb name: ");
+//			dbpath = in.nextLine();
+//			JoinTestExtended jte = new JoinTestExtended();
+//			jte.doTheJoin();
+//			break;
 
-		case 8:
+		case 7:
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
 			 System.out.println("Enter query type: a or b or c");
@@ -282,7 +281,7 @@ class BatchDriver implements GlobalConst {
 			p.joinOperation(query);
 			break;
 
-		case 9:
+		case 8:
 			System.out.println("Enter Graphdb name: ");
 			dbpath = in.nextLine();
 			System.out.println("Enter query type: a or b or c");
@@ -325,7 +324,7 @@ class BatchDriver implements GlobalConst {
 
 		if (choice < 6)
 			System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
-		System.out.println("No of pins: " + PCounter.prcounter + "\nNo of unpins: " + PCounter.pwcounter);
+		//System.out.println("No of pins: " + PCounter.prcounter + "\nNo of unpins: " + PCounter.pwcounter);
 	}
 }
 
@@ -358,7 +357,7 @@ public class BatchTest implements GlobalConst {
 			BatchDriver bttest = new BatchDriver();
 			bttest.init();
 			bttest.menu();
-			while ((choice = GetStuff.getChoice()) != 10) {
+			while ((choice = GetStuff.getChoice()) != 9) {
 				SystemDefs.JavabaseDB.resetPageCounter();
 				try {
 					bttest.runAllTests(choice);
