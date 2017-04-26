@@ -278,7 +278,7 @@ class BatchDriver implements GlobalConst {
 			System.out.println("Enter query path: ");
 			// L1/L1/L2/L3
 			String path = in.nextLine();
-			PathQuery2 p = new PathQuery2(path, false);
+			PathQuery2 p = new PathQuery2(path);
 			p.joinOperation(query);
 			break;
 
@@ -322,7 +322,8 @@ class BatchDriver implements GlobalConst {
 
 		default:System.out.println("Invalid input");
 		}
-		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
+		if (choice < 6)
+			System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
 		System.out.println("No of pins: " + PCounter.prcounter + "\nNo of unpins: " + PCounter.pwcounter);
 	}
 }

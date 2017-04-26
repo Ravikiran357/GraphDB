@@ -90,11 +90,12 @@ public class PathQuery2 {
 		}
 	}
 	
-	private Edge getNextindexFilterSource(BTFileScan iscan, String edgeLabel) throws edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, edgeheap.HFException, edgeheap.HFDiskMgrException, edgeheap.HFBufMgrException, Exception{
+	private Edge getNextindexFilterSource(BTFileScan iscan, String edgeLabel) throws 
+		edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, 
+		edgeheap.HFException, edgeheap.HFDiskMgrException, edgeheap.HFBufMgrException, Exception{
 		KeyDataEntry keyData = iscan.get_next();
 		if (keyData == null)
 			return null;
-		System.out.println("Selection on index key (label): " + edgeLabel);
 		LeafData edgeLeaf =  (LeafData)keyData.data;
 		EID edgeId = new EID();
 		edgeId.copyRid(edgeLeaf.getData());
@@ -103,17 +104,19 @@ public class PathQuery2 {
 			return e;
 
 		if (edgeLabel.equals(e.getLabel())){
+			System.out.println("Selection on index key (label): " + edgeLabel);
 			return e;
 		} else {
 			return getNextindexFilterSource(iscan, edgeLabel);
 		}
 	}
 	
-	private Edge getNextindexFilterWeight(BTFileScan iscan, String edgeWeight) throws edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, edgeheap.HFException, edgeheap.HFDiskMgrException, edgeheap.HFBufMgrException, Exception{
+	private Edge getNextindexFilterWeight(BTFileScan iscan, String edgeWeight) throws 
+		edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, 
+		edgeheap.HFException, edgeheap.HFDiskMgrException, edgeheap.HFBufMgrException, Exception{
 		KeyDataEntry keyData = iscan.get_next();
 		if (keyData == null)
 			return null;
-		System.out.println("Selection on index key (weight): " + edgeWeight);
 		LeafData edgeLeaf =  (LeafData)keyData.data;
 		EID edgeId = new EID();
 		edgeId.copyRid(edgeLeaf.getData());
@@ -122,6 +125,7 @@ public class PathQuery2 {
 			return e;
 
 		if (e.getWeight() <= Integer.parseInt(edgeWeight)){
+			System.out.println("Selection on index key (weight): " + edgeWeight);
 			return e;
 		} else {
 			return getNextindexFilterWeight(iscan, edgeWeight);
@@ -255,7 +259,8 @@ public class PathQuery2 {
 		
 		Heapfile hf = new Heapfile(outhf);
 		BTreeFile sourceNodeIndexFile = SystemDefs.JavabaseDB.edgeSourceIndexFile;
-		BTFileScan iscan = sourceNodeIndexFile.new_scan(new StringKey(sourceNodeLabel), new StringKey(sourceNodeLabel));
+		BTFileScan iscan = sourceNodeIndexFile.new_scan(new StringKey(sourceNodeLabel),
+				new StringKey(sourceNodeLabel));
 		Edge e = new Edge();
 		if (edge_path[edgeLabelIndex].startsWith("L")){
 			String label = edge_path[edgeLabelIndex].substring(1).trim();
@@ -276,7 +281,8 @@ public class PathQuery2 {
 				str_sizes[1] = (short)44;
 				Tuple t = new Tuple();
 				t.setHdr((short)2, attrs, str_sizes);
-				String destnode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(e.getDestination()).getStrFld(1);
+				String destnode = SystemDefs.JavabaseDB.nodeHeapfile.
+					getNode(e.getDestination()).getStrFld(1);
 				t.setStrFld(1, firstLabel);
 				t.setStrFld(2, destnode);
 				hf.insertRecord(t.getTupleByteArray());			
@@ -296,14 +302,17 @@ public class PathQuery2 {
 		iscan.DestroyBTreeFileScan();
 	}
 	
-	public void joinOperation(String query) throws edgeheap.InvalidSlotNumberException, edgeheap.InvalidTupleSizeException, 
-		edgeheap.HFException, edgeheap.HFDiskMgrException, edgeheap.HFBufMgrException, Exception {
+	public void joinOperation(String query) throws edgeheap.InvalidSlotNumberException, 
+		edgeheap.InvalidTupleSizeException,	edgeheap.HFException, 
+		edgeheap.HFDiskMgrException, edgeheap.HFBufMgrException, Exception {
 		String outhf = "outputheapfile";
 		String resSorthf = "sortheapfile";
 		String resDistincthf = "distinctheapfile";
 		SystemDefs.JavabaseDB.resetPageCounter();
+		System.out.println("Index Nested Loop Join operation");
 		NestedLoopJoin(edge_path[0], 1, outhf, edge_path[0]);
-		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + PCounter.wcounter);
+		System.out.println("No of pages read: " + PCounter.rcounter + "\nNo of pages written: " + 
+				PCounter.wcounter);
 		
 		SystemDefs.JavabaseDB.resetPageCounter();
 		if(query.equals("a")){
