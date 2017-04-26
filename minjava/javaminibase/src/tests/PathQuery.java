@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import btree.BTFileScan;
 import btree.ConstructPageException;
+import btree.IndexLeafIterator;
 import btree.IteratorException;
 import btree.KeyDataEntry;
 import btree.KeyNotMatchException;
@@ -18,23 +19,18 @@ import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
 import catalog.Utility;
 import diskmgr.PCounter;
-import edgeheap.Edge;
 import global.AttrOperator;
 import global.AttrType;
 import global.Descriptor;
 import global.NID;
 import global.SystemDefs;
 import global.TupleOrder;
-import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
 import heap.Tuple;
-import index.IndexException;
 import iterator.CondExpr;
 import iterator.DuplElim;
 import iterator.EdgeScan;
 import iterator.FldSpec;
 import iterator.Iterator;
-import iterator.JoinsException;
 import iterator.NestedLoopExtended;
 import iterator.NestedLoopExtendedEdge;
 import iterator.NodeScan;
@@ -71,32 +67,60 @@ public class PathQuery {
 		if (element.startsWith("L")) {
 			String label = element.substring(1).trim();
 			scan = SystemDefs.JavabaseDB.nodeLabelIndexFile.new_scan(new StringKey(label), new StringKey(label));
+			if (scan != null) {
+				KeyDataEntry entry = scan.get_next();
+				while (entry != null) {
+					// Collect node data
+					LeafData leafData = (LeafData) entry.data;
+					NID nid = new NID();
+					nid.copyRid(leafData.getData());
+					// print node
+					try {
+						Node startNode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
+						Iterator tailNodes = task3Method(startNode.getLabel(), n);
+						printResults(choice, startNode, tailNodes);
+					} catch (Exception e) {
+						System.err.println("" + e);
+					}
+
+					entry = scan.get_next();
+				}
+				scan.DestroyBTreeFileScan();
+			}
 		} else if (element.startsWith("D")) {
 			// node desc
 			Descriptor desc = Utility.convertToDescriptor(element.substring(1).trim());
 			scan = SystemDefs.JavabaseDB.nodeDescriptorIndexFile.new_scan(new DescriptorKey(desc),
 					new DescriptorKey(desc));
-		}
-
-		if (scan != null) {
-			KeyDataEntry entry = scan.get_next();
-			while (entry != null) {
-				// Collect node data
-				LeafData leafData = (LeafData) entry.data;
-				NID nid = new NID();
-				nid.copyRid(leafData.getData());
-				// print node
+			IndexLeafIterator it = new IndexLeafIterator(scan);
+			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
+			Nsizes[0] = 44;
+			Sort sort_names = null;
+			try {
+				sort_names = new Sort(Ntypes, (short) 2, Nsizes, it, 1, ascending1, Nsizes[0], 12, 0, null);
+			} catch (SortException e) {
+				System.err.println("" + e);
+			}
+			if (sort_names != null) {
+				Tuple startNode = null;
 				try {
-					Node startNode = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
-					Iterator tailNodes = task3Method(nid, n);
-					printResults(choice, startNode, tailNodes);
+					startNode = sort_names.get_next();
+					while (startNode != null) {
+						// Collect node data
+						try {
+							Iterator tailNodes = task3Method(startNode.getStrFld(1), n);
+							printResults(choice, startNode, tailNodes);
+						} catch (Exception e) {
+							System.err.println("" + e);
+						}
+
+						startNode = sort_names.get_next();
+					}
 				} catch (Exception e) {
 					System.err.println("" + e);
 				}
-
-				entry = scan.get_next();
+				scan.DestroyBTreeFileScan();
 			}
-			scan.DestroyBTreeFileScan();
 		}
 
 		// ignore
@@ -139,8 +163,7 @@ public class PathQuery {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-		}
-		else if (choice.charAt(0) == 'b') {
+		} else if (choice.charAt(0) == 'b') {
 			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
 
 			Sort sort_names = null;
@@ -170,8 +193,7 @@ public class PathQuery {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-		}
-		else if (choice.charAt(0) == 'c') {
+		} else if (choice.charAt(0) == 'c') {
 			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
 			System.out.println("Start sorting tail nodes");
 			Sort sort_names = null;
@@ -186,8 +208,7 @@ public class PathQuery {
 			System.out.println("Sorting completed");
 			DuplElim duplElm = null;
 			try {
-				duplElm = new DuplElim(Ntypes, (short) 2, Nsizes, (iterator.Iterator) sort_names, 12, true, 0,
-						null);
+				duplElm = new DuplElim(Ntypes, (short) 2, Nsizes, (iterator.Iterator) sort_names, 12, true, 0, null);
 			} catch (Exception e1) {
 				System.err.println("*** Error preparing for DuplElim");
 				System.err.println("" + e1);
@@ -213,20 +234,21 @@ public class PathQuery {
 				e1.printStackTrace();
 			}
 		}
-		
+
 		pageRead = PCounter.rcounter - pageRead;
 		pageWrite = PCounter.wcounter - pageWrite;
 		System.out.println("No of pages read: " + pageRead + "\nNo of pages written: " + pageWrite + "\n");
 
 	}
 
-	private Iterator task3Method(NID nid, String[] n) {
+	private Iterator task3Method(String label, String[] n) {
 		nextNodeIterator = null;
 		nextEdgeIterator = null;
 		// do nid join edge and edge join node
 		int i = 0;
 		while (i < n.length - 1) {
-			doJoinNodeEdge(nid, n[i++]);
+			doJoinNodeEdge(label, n[i++]);
+
 			if (i >= n.length) {
 				break;
 			}
@@ -236,18 +258,10 @@ public class PathQuery {
 		return nextNodeIterator;
 	}
 
-	private void doJoinNodeEdge(NID nid, String n) {
+	private void doJoinNodeEdge(String startLabel, String n) {
 		int pageRead = PCounter.rcounter;
 		int pageWrite = PCounter.wcounter;
 		boolean status = OK;
-		String startLabel = "";
-		Node node;
-		try {
-			node = SystemDefs.JavabaseDB.nodeHeapfile.getNode(nid);
-			startLabel = node.getLabel();
-		} catch (Exception e2) {
-			e2.printStackTrace();
-		}
 
 		char type = n.charAt(0);
 		CondExpr[] outFilter = new CondExpr[2];
@@ -256,8 +270,7 @@ public class PathQuery {
 		if (nextNodeIterator == null) {
 			// first node join edge. should found all edges with given NID/label
 			// as source.
-			System.out.println(
-					"Node join Edge with source NID: " + nid + ", label: " + startLabel + " No edge conditions");
+			System.out.println("Node join Edge with source label" + startLabel + " No edge conditions");
 			outFilter[0].next = null;
 			outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
 			outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
@@ -474,7 +487,7 @@ public class PathQuery {
 		Eprojection[5] = new FldSpec(new RelSpec(RelSpec.outer), 6);
 		// no outer edge filter.
 
-		Iterator am = null;		
+		Iterator am = null;
 		if (nextEdgeIterator == null) {
 			try {
 				am = new EdgeScan("edgeheapfile", Etypes, Esizes, (short) 6, (short) 6, Eprojection, null);
@@ -485,7 +498,6 @@ public class PathQuery {
 		} else {
 			am = nextEdgeIterator;
 		}
-
 
 		if (status != OK) {
 			// bail out
