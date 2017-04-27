@@ -7,6 +7,8 @@
 package btree;
 
 import java.io.*;
+
+import diskmgr.PCounter;
 import global.*;
 import heap.*;
 
@@ -64,6 +66,7 @@ public class BTFileScan extends IndexFileScan implements GlobalConst {
 					leafPage = null;
 					return null;
 				}
+				PCounter.readIncrement();
 
 				leafPage = new BTLeafPage(nextpage, keyType);
 

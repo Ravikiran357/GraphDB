@@ -563,6 +563,7 @@ public class BTreeFile extends IndexFile implements GlobalConst {
 			// to redistribute the index entries
 			newIndexPage = new BTIndexPage(headerPage.get_keyType());
 			newIndexPageId = newIndexPage.getCurPage();
+			PCounter.writeIncrement();
 
 			if (trace != null) {
 				if (headerPage.get_rootId().pid != currentIndexPageId.pid)
@@ -703,6 +704,7 @@ public class BTreeFile extends IndexFile implements GlobalConst {
 			// to redistribute the data entries entries
 			newLeafPage = new BTLeafPage(headerPage.get_keyType());
 			newLeafPageId = newLeafPage.getCurPage();
+			PCounter.writeIncrement();
 
 			newLeafPage.setNextPage(currentLeafPage.getNextPage());
 			newLeafPage.setPrevPage(currentLeafPageId); // for dbl-linked list

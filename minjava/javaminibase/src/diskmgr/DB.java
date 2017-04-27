@@ -608,8 +608,6 @@ public class DB implements GlobalConst {
 		PageId nexthpid = new PageId(0);
 		DBHeaderPage dp;
 		
-		pCounter.readIncrement();
-
 		do {// Start DO01
 
 			// System.out.println("get_file_entry do-loop01: "+name);

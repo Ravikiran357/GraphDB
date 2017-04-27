@@ -1,6 +1,7 @@
 package iterator;
 
 import diskmgr.GraphDB;
+import diskmgr.PCounter;
 import edgeheap.Edge;
 import edgeheap.EdgeHeapfile;
 import global.AttrType;
@@ -173,6 +174,8 @@ public class NestedLoopExtended extends Iterator {
 
 		if (done)
 			return null;
+		
+		PCounter.preadIncrement();
 
 		do {
 			// If get_from_outer is true, Get a tuple from the outer, delete

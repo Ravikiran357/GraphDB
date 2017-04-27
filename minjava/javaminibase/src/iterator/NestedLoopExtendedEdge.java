@@ -9,6 +9,7 @@ import btree.LeafData;
 import btree.StringKey;
 import bufmgr.PageNotReadException;
 import diskmgr.GraphDB;
+import diskmgr.PCounter;
 import edgeheap.EdgeHeapfile;
 import global.AttrType;
 import global.Descriptor;
@@ -170,6 +171,8 @@ public class NestedLoopExtendedEdge extends Iterator {
 		if (done)
 			return null;
 
+		PCounter.preadIncrement();
+		
 		do {
 			// If get_from_outer is true, Get a tuple from the outer, delete
 			// an existing scan on the file, and reopen a new scan on the file.

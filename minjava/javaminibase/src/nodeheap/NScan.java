@@ -8,7 +8,6 @@ package nodeheap;
 
 import java.io.*;
 import global.*;
-import bufmgr.*;
 import diskmgr.*;
 
 /**
@@ -91,6 +90,8 @@ public class NScan implements GlobalConst {
 		if (datapage == null)
 			return null;
 
+		PCounter.preadIncrement();
+		
 		nid.pageNo.pid = usernid.pageNo.pid;
 		nid.slotNo = usernid.slotNo;
 

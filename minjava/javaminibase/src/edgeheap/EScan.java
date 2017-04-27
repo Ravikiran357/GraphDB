@@ -7,6 +7,7 @@ package edgeheap;
  */
 import java.io.IOException;
 
+import diskmgr.PCounter;
 import diskmgr.Page;
 import global.EID;
 import global.GlobalConst;
@@ -93,6 +94,8 @@ public class EScan implements GlobalConst {
 
 		if (datapage == null)
 			return null;
+		
+		PCounter.preadIncrement();
 
 		eid.pageNo.pid = usereid.pageNo.pid;
 		eid.slotNo = usereid.slotNo;

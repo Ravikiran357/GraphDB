@@ -974,7 +974,6 @@ public class EdgeHeapfile implements Filetype, GlobalConst {
 
 		try {
 			tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
-			PCounter.readIncrement();
 		} catch (Exception e) {
 			throw new HFDiskMgrException(e, "Heapfile.java: get_file_entry() failed");
 		}
