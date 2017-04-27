@@ -96,17 +96,12 @@ public class PathQuery {
 			IndexLeafIterator it = new IndexLeafIterator(scan);
 			TupleOrder ascending1 = new TupleOrder(TupleOrder.Ascending);
 			Nsizes[0] = 44;
-			Sort sort_names = null;
-			try {
-				sort_names = new Sort(Ntypes, (short) 2, Nsizes, it, 1, ascending1, Nsizes[0], 12, 0, null);
-			} catch (SortException e) {
-				System.err.println("" + e);
-			}
-			try {
-				if (sort_names != null) {
+			if(choice.charAt(0) == 'a'){
+				try{
+				if(it!=null){
 					Tuple startNode = null;
 
-					startNode = sort_names.get_next();
+					startNode = it.get_next();
 					while (startNode != null) {
 						// Collect node data
 						try {
@@ -116,14 +111,46 @@ public class PathQuery {
 							System.err.println("" + e);
 						}
 
-						startNode = sort_names.get_next();
+						startNode = it.get_next();
 					}
 
-					sort_names.close();
+					it.close();
 
 				}
 			} catch (Exception e) {
 				System.err.println("" + e);
+			}
+			}
+			else{
+				Sort sort_names = null;
+				try {
+					sort_names = new Sort(Ntypes, (short) 2, Nsizes, it, 1, ascending1, Nsizes[0], 12, 0, null);
+				} catch (SortException e) {
+					System.err.println("" + e);
+				}
+				try {
+					if (sort_names != null) {
+						Tuple startNode = null;
+
+						startNode = sort_names.get_next();
+						while (startNode != null) {
+							// Collect node data
+							try {
+								Iterator tailNodes = task3Method(startNode.getStrFld(1), n);
+								printResults(choice, startNode, tailNodes);
+							} catch (Exception e) {
+								System.err.println("" + e);
+							}
+
+							startNode = sort_names.get_next();
+						}
+
+						sort_names.close();
+
+					}
+				} catch (Exception e) {
+					System.err.println("" + e);
+				}
 			}
 
 		}
